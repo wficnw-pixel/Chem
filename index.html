@@ -231,7 +231,7 @@
 const sc=document.getElementById('stars');
 for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';sc.appendChild(s);}
 
-let unit=null,diff='basic',prob=null,stats={a:0,c:0},hinted=false,lastProbKey='';
+let unit=null,diff='basic',prob=null,stats={a:0,c:0},hinted=false,seenKeys={};
 const names={measurements:'Measurements',matter:'Matter',moles:'The Mole',stoichiometry:'Stoichiometry',gases:'Gases',solutions:'Solutions',thermochemistry:'Thermochemistry',equilibrium:'Equilibrium',acids:'Acids & Bases',redox:'Redox & Electrochem',nuclear:'Nuclear Chemistry',nomenclature:'Nomenclature',electrons:'Electrons & Light',bonding:'Bonding',states:'States of Matter',periodic:'Periodic Trends',reactions:'Reactions'};
 
 document.querySelectorAll('.unit-btn').forEach(b=>b.addEventListener('click',function(){
@@ -248,7 +248,7 @@ document.querySelectorAll('.diff-btn').forEach(b=>b.addEventListener('click',fun
     document.querySelectorAll('.diff-btn').forEach(x=>x.classList.remove('active'));
     this.classList.add('active');
     diff=this.dataset.diff;
-    if(unit) generateProblem();
+    if(unit){seenKeys[unit]=new Set();generateProblem();}
 }));
 
 function probKey(p){const i=p.question.search(/\n\s*\d+\s*=/);return i>=0?p.question.substring(0,i).trim():p.question.substring(0,120);}
@@ -273,9 +273,11 @@ function generateProblem(){
     const _fb=document.getElementById('feedback');_fb.innerHTML='';_fb.className='feedback';
     document.getElementById('answerInput').value='';
     const gens={measurements:genMeasure,matter:genMatter,moles:genMoles,stoichiometry:genStoich,gases:genGases,solutions:genSolutions,thermochemistry:genThermo,equilibrium:genEquil,acids:genAcids,redox:genRedox,nuclear:genNuclear,nomenclature:genNomencl,electrons:genElectrons,bonding:genBonding,states:genStates,periodic:genPeriodic,reactions:genReactions};
+    if(!seenKeys[unit]) seenKeys[unit]=new Set();
     let attempts=0;
-    do{prob=gens[unit]();attempts++;}while(attempts<5&&probKey(prob)===lastProbKey);
-    lastProbKey=probKey(prob);
+    do{prob=gens[unit]();attempts++;}while(attempts<30&&seenKeys[unit].has(probKey(prob)));
+    if(attempts>=30) seenKeys[unit].clear();
+    seenKeys[unit].add(probKey(prob));
 
     const firstOpt=prob.question.search(/\n\s*\d+\s*=/);
     if(firstOpt>=0){
