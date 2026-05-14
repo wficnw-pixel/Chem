@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chem Practice</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e27; --bg2: #151b3d; --card: #1a2351;
+            --blue: #4a9eff; --cyan: #00d4ff; --yellow: #ffd700;
+            --text: #e8edf5; --muted: #a8b5d1; --border: #2d3a5f;
+            --ok: #00ff88; --err: #ff4466;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html, body { height:100%; overflow:hidden; }
+        body { font-family:'Crimson Pro',serif; background:var(--bg); color:var(--text); }
+
+        .stars { position:fixed; inset:0; pointer-events:none; z-index:0; }
+        .star { position:absolute; width:2px; height:2px; background:var(--cyan); border-radius:50%; animation:twinkle 3s infinite; }
+        @keyframes twinkle { 0%,100%{opacity:.2} 50%{opacity:1} }
+
+        /* ── TOP BAR ── */
+        .topbar {
+            position:relative; z-index:1;
+            display:flex; align-items:center; justify-content:space-between;
+            padding:14px 24px;
+            background:var(--bg2); border-bottom:2px solid var(--border);
+        }
+        .logo { font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700;
+            background:linear-gradient(135deg,var(--cyan),var(--blue));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .stats { display:flex; gap:30px; }
+        .stat { text-align:center; }
+        .stat-val { font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--cyan); line-height:1; }
+        .stat-lbl { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+
+        /* ── MAIN LAYOUT ── */
+        .layout {
+            position:relative; z-index:1;
+            display:grid;
+            grid-template-columns:240px 1fr;
+            height:calc(100vh - 61px);
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            background:var(--bg2); border-right:2px solid var(--border);
+            overflow-y:auto; padding:12px 10px; display:flex; flex-direction:column; gap:6px;
+        }
+        .sidebar-label {
+            font-family:'JetBrains Mono',monospace; font-size:0.65rem; text-transform:uppercase;
+            letter-spacing:2px; color:var(--muted); padding:4px 8px 8px;
+        }
+        .unit-btn {
+            display:flex; align-items:center; gap:10px;
+            padding:10px 12px; border-radius:10px; cursor:pointer;
+            background:var(--card); border:2px solid transparent;
+            transition:all .25s ease; font-family:'JetBrains Mono',monospace;
+            font-size:0.82rem; font-weight:600; color:var(--text);
+        }
+        .unit-btn:hover { border-color:var(--blue); transform:translateX(3px); }
+        .unit-btn.active { border-color:var(--cyan); background:linear-gradient(135deg,var(--card),#1e2a5a); color:var(--cyan); }
+        .unit-btn .icon { font-size:1.1rem; flex-shrink:0; }
+        .unit-btn .name { flex:1; }
+
+        /* ── PROBLEM PANEL ── */
+        .panel { overflow-y:auto; padding:24px 28px; display:flex; flex-direction:column; gap:16px; }
+
+        .placeholder {
+            flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+            color:var(--muted); font-family:'JetBrains Mono',monospace; gap:12px; text-align:center;
+        }
+        .placeholder .big { font-size:3rem; }
+        .placeholder p { font-size:0.85rem; letter-spacing:1px; }
+
+        .unit-header {
+            display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+        }
+        .unit-title-lbl {
+            font-family:'JetBrains Mono',monospace; font-size:0.8rem; text-transform:uppercase;
+            letter-spacing:2px; color:var(--cyan);
+        }
+        .diff-row { display:flex; gap:8px; }
+        .diff-btn {
+            padding:7px 16px; background:var(--card); border:2px solid var(--border);
+            border-radius:8px; color:var(--muted); font-family:'JetBrains Mono',monospace;
+            font-size:0.8rem; font-weight:600; cursor:pointer; transition:all .2s;
+        }
+        .diff-btn:hover { border-color:var(--blue); color:var(--text); }
+        .diff-btn.active { background:var(--blue); border-color:var(--blue); color:var(--bg); }
+
+        .problem-box {
+            background:var(--card); border-left:4px solid var(--cyan);
+            border-radius:12px; padding:22px 24px; font-size:1.15rem; line-height:1.75;
+        }
+        .given-data {
+            background:rgba(74,158,255,.1); border-radius:8px; padding:12px 14px;
+            margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:.88rem; line-height:1.7;
+        }
+
+        .answer-row { display:flex; gap:12px; }
+        input[type=number] {
+            flex:1; padding:13px 18px; background:var(--bg); border:2px solid var(--border);
+            border-radius:10px; color:var(--text); font-family:'JetBrains Mono',monospace;
+            font-size:1rem; transition:all .2s;
+        }
+        input[type=number]:focus { outline:none; border-color:var(--cyan); box-shadow:0 0 0 3px rgba(0,212,255,.15); }
+
+        .btn {
+            padding:13px 28px; background:linear-gradient(135deg,var(--blue),var(--cyan));
+            border:none; border-radius:10px; color:var(--bg); font-family:'JetBrains Mono',monospace;
+            font-size:.9rem; font-weight:700; cursor:pointer; transition:all .2s;
+            text-transform:uppercase; letter-spacing:.5px; white-space:nowrap;
+        }
+        .btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(74,158,255,.4); }
+        .btn:active { transform:translateY(0); }
+        .btn-sec {
+            background:var(--card); border:2px solid var(--border); color:var(--text);
+        }
+        .btn-sec:hover { border-color:var(--blue); box-shadow:0 6px 18px rgba(74,158,255,.2); }
+        .btn-hint {
+            background:transparent; border:2px dashed var(--border); color:var(--muted);
+        }
+        .btn-hint:hover { border-color:var(--yellow); color:var(--yellow); }
+
+        .action-row { display:flex; gap:12px; }
+
+        .feedback { border-radius:12px; padding:18px; animation:fadeIn .3s ease; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        .feedback.correct { background:rgba(0,255,136,.12); border:2px solid var(--ok); }
+        .feedback.incorrect { background:rgba(255,68,102,.12); border:2px solid var(--err); }
+        .fb-title { font-family:'JetBrains Mono',monospace; font-size:1.1rem; font-weight:700; margin-bottom:8px; }
+        .solution { background:var(--card); border-radius:10px; padding:16px; margin-top:12px; }
+        .solution h4 { color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:.85rem; margin-bottom:10px; }
+        .step { margin:8px 0; padding-left:16px; border-left:3px solid var(--border); font-size:.95rem; }
+        .hint-box { background:rgba(255,215,0,.08); border:2px solid var(--yellow); border-radius:10px; padding:14px; font-size:.95rem; }
+
+        /* ── MOBILE ── */
+        @media(max-width:700px){
+            html,body{ overflow:auto; }
+            .layout{ grid-template-columns:1fr; height:auto; }
+            .sidebar{ flex-direction:row; flex-wrap:wrap; overflow-y:visible; border-right:none; border-bottom:2px solid var(--border); }
+            .unit-btn{ flex:0 0 calc(50% - 6px); }
+            .panel{ padding:16px; }
+            .stats{ gap:16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">⚗ Chem Practice</div>
+    <div class="stats">
+        <div class="stat"><div class="stat-val" id="sAttempted">0</div><div class="stat-lbl">Attempted</div></div>
+        <div class="stat"><div class="stat-val" id="sCorrect">0</div><div class="stat-lbl">Correct</div></div>
+        <div class="stat"><div class="stat-val" id="sAccuracy">—</div><div class="stat-lbl">Accuracy</div></div>
+    </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-label">Units</div>
+        <div class="unit-btn" data-unit="measurements"><span class="icon">📏</span><span class="name">Measurements</span></div>
+        <div class="unit-btn" data-unit="moles"><span class="icon">⚛️</span><span class="name">The Mole</span></div>
+        <div class="unit-btn" data-unit="stoichiometry"><span class="icon">⚗️</span><span class="name">Stoichiometry</span></div>
+        <div class="unit-btn" data-unit="gases"><span class="icon">💨</span><span class="name">Gases</span></div>
+        <div class="unit-btn" data-unit="solutions"><span class="icon">🧪</span><span class="name">Solutions</span></div>
+        <div class="unit-btn" data-unit="thermochemistry"><span class="icon">🔥</span><span class="name">Thermochemistry</span></div>
+        <div class="unit-btn" data-unit="equilibrium"><span class="icon">⚖️</span><span class="name">Equilibrium</span></div>
+        <div class="unit-btn" data-unit="acids"><span class="icon">🧫</span><span class="name">Acids &amp; Bases</span></div>
+        <div class="unit-btn" data-unit="redox"><span class="icon">⚡</span><span class="name">Redox &amp; Electrochem</span></div>
+        <div class="unit-btn" data-unit="nuclear"><span class="icon">☢️</span><span class="name">Nuclear Chemistry</span></div>
+    </div>
+
+    <!-- PROBLEM PANEL -->
+    <div class="panel" id="panel">
+        <div class="placeholder" id="placeholder">
+            <div class="big">⚗️</div>
+            <p>SELECT A UNIT FROM THE LEFT TO BEGIN</p>
+        </div>
+        <div id="problemUI" style="display:none; display:flex; flex-direction:column; gap:16px;">
+            <div class="unit-header">
+                <div class="unit-title-lbl" id="unitLbl"></div>
+                <div class="diff-row">
+                    <button class="diff-btn active" data-diff="basic">Basic</button>
+                    <button class="diff-btn" data-diff="intermediate">Intermediate</button>
+                    <button class="diff-btn" data-diff="advanced">Advanced ★</button>
+                </div>
+            </div>
+            <div class="problem-box" id="problemBox"></div>
+            <div class="answer-row">
+                <input type="number" id="answerInput" placeholder="Enter your answer…" step="any">
+                <button class="btn" onclick="checkAnswer()">Submit</button>
+            </div>
+            <div class="action-row">
+                <button class="btn btn-sec" onclick="generateProblem()">New Problem</button>
+                <button class="btn btn-hint" onclick="showHint()">💡 Hint</button>
+            </div>
+            <div id="feedback"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Stars
+const sc=document.getElementById('stars');
+for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';sc.appendChild(s);}
+
+let unit=null,diff='basic',prob=null,stats={a:0,c:0},hinted=false;
+const names={measurements:'Measurements',moles:'The Mole',stoichiometry:'Stoichiometry',gases:'Gases',solutions:'Solutions',thermochemistry:'Thermochemistry',equilibrium:'Equilibrium',acids:'Acids & Bases',redox:'Redox & Electrochem',nuclear:'Nuclear Chemistry'};
+
+document.querySelectorAll('.unit-btn').forEach(b=>b.addEventListener('click',function(){
+    document.querySelectorAll('.unit-btn').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    unit=this.dataset.unit;
+    document.getElementById('placeholder').style.display='none';
+    document.getElementById('problemUI').style.display='flex';
+    document.getElementById('unitLbl').textContent='// '+names[unit];
+    generateProblem();
+}));
+
+document.querySelectorAll('.diff-btn').forEach(b=>b.addEventListener('click',function(){
+    document.querySelectorAll('.diff-btn').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    diff=this.dataset.diff;
+    if(unit) generateProblem();
+}));
+
+function r(a,b,d=0){const v=Math.random()*(b-a)+a;return d===0?Math.round(v):parseFloat(v.toFixed(d));}
+
+// Convert Unicode sub/superscripts → proper HTML tags so formulas render cleanly
+function chemFmt(s){
+    if(!s)return s;
+    const sub={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
+    const sup={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁺':'+','⁻':'-'};
+    return s
+        .replace(/[₀-₉]/g, c => `<sub>${sub[c]||c}</sub>`)
+        .replace(/[⁰-⁹⁺⁻]/g, c => `<sup>${sup[c]||c}</sup>`);
+}
+
+function generateProblem(){
+    if(!unit)return;
+    hinted=false;
+    document.getElementById('feedback').innerHTML='';
+    document.getElementById('answerInput').value='';
+    const gens={measurements:genMeasure,moles:genMoles,stoichiometry:genStoich,gases:genGases,solutions:genSolutions,thermochemistry:genThermo,equilibrium:genEquil,acids:genAcids,redox:genRedox,nuclear:genNuclear};
+    prob=gens[unit]();
+    document.getElementById('problemBox').innerHTML=`<div>${chemFmt(prob.question)}</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MEASUREMENTS
+// ══════════════════════════════════════════════════════════════════════════════
+function genMeasure(){
+    const basic=['si_convert','sci_notation'];
+    const inter=['si_convert','sci_notation','density','percent_error'];
+    const adv=['multistep_convert','density_chain','percent_error_chain'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    if(t==='si_convert'){
+        const cvs=[{f:'km',to:'m',k:1000},{f:'cm',to:'m',k:0.01},{f:'mm',to:'m',k:0.001},{f:'kg',to:'g',k:1000},{f:'mg',to:'g',k:0.001},{f:'L',to:'mL',k:1000},{f:'mL',to:'L',k:0.001}];
+        const cv=cvs[Math.floor(Math.random()*cvs.length)],val=r(1,500,2),ans=val*cv.k;
+        return{question:`Convert ${val} ${cv.f} to ${cv.to}.`,given:`1 ${cv.f} = ${cv.k} ${cv.to}`,answer:ans,unit:cv.to,steps:[`${val} × ${cv.k} = ${ans} ${cv.to}`],hint:`Multiply by the conversion factor to cancel the original unit.`};
+    }
+    if(t==='sci_notation'){
+        const exp=r(-4,6),co=r(1,9,2),ans=co*Math.pow(10,exp);
+        return{question:`Express ${co} × 10^${exp} as a standard number.`,given:`${co} × 10^${exp}`,answer:ans,unit:'',steps:[`Move decimal ${Math.abs(exp)} places ${exp>=0?'right':'left'}`,`= ${ans}`],hint:`Positive exponent → right; negative → left.`};
+    }
+    if(t==='density'){
+        const subs=[{n:'water',d:1.00},{n:'ethanol',d:0.789},{n:'iron',d:7.87},{n:'aluminum',d:2.70},{n:'gold',d:19.3}];
+        const s=subs[Math.floor(Math.random()*subs.length)],sf=['density','mass','volume'][Math.floor(Math.random()*3)];
+        if(sf==='density'){const m=r(10,200,1),v=r(5,100,1),d=m/v;return{question:`A sample has mass ${m} g and volume ${v} mL. What is its density?`,given:`m=${m} g, V=${v} mL`,answer:d,unit:'g/mL',steps:[`d = m/V = ${m}/${v} = ${d.toFixed(3)} g/mL`],hint:`d = m/V`};}
+        if(sf==='mass'){const v=r(5,50,1),m=s.d*v;return{question:`What is the mass of ${v} mL of ${s.n}? (d = ${s.d} g/mL)`,given:`V=${v} mL, d=${s.d} g/mL`,answer:m,unit:'g',steps:[`m = d×V = ${s.d}×${v} = ${m.toFixed(2)} g`],hint:`m = d × V`};}
+        const m=r(10,200,1),v=m/s.d;return{question:`What volume does ${m} g of ${s.n} occupy? (d = ${s.d} g/mL)`,given:`m=${m} g, d=${s.d} g/mL`,answer:v,unit:'mL',steps:[`V = m/d = ${m}/${s.d} = ${v.toFixed(3)} mL`],hint:`V = m/d`};
+    }
+    if(t==='percent_error'){
+        const th=r(10,100,2),ex=parseFloat((th+(Math.random()*10-5)).toFixed(2)),pe=Math.abs((ex-th)/th)*100;
+        return{question:`Theoretical = ${th}, experimental = ${ex}. What is the percent error?`,given:`Theoretical=${th}, Experimental=${ex}`,answer:pe,unit:'%',steps:[`|${ex}−${th}|/${th} × 100 = ${pe.toFixed(2)}%`],hint:`% error = (|exp − theo| / theo) × 100`};
+    }
+    // ADVANCED MULTI-STEP
+    if(t==='multistep_convert'){
+        // Convert km/h to m/s
+        const kmh=r(40,140,1),ms=kmh*1000/3600;
+        return{question:`A car travels at ${kmh} km/h. What is this speed in m/s? (Answer to 3 decimal places)`,given:`Speed = ${kmh} km/h\n1 km = 1000 m\n1 h = 3600 s`,answer:ms,unit:'m/s',steps:[`Step 1: km → m: ${kmh} km/h × 1000 m/km = ${kmh*1000} m/h`,`Step 2: h → s: ${kmh*1000} m/h ÷ 3600 s/h = ${ms.toFixed(3)} m/s`],hint:`Two conversions needed: km→m (×1000), then h→s (÷3600).`};
+    }
+    if(t==='density_chain'){
+        // Given volume in cm³, density, find mass in kg
+        const subs2=[{n:'iron',d:7.87},{n:'aluminum',d:2.70},{n:'copper',d:8.96},{n:'lead',d:11.34}];
+        const s=subs2[Math.floor(Math.random()*subs2.length)],vol=r(50,500,1),massG=s.d*vol,massKg=massG/1000;
+        return{question:`A block of ${s.n} has a volume of ${vol} cm³. Given its density is ${s.d} g/cm³, what is its mass in kg?`,given:`V=${vol} cm³, d=${s.d} g/cm³\n1 kg = 1000 g`,answer:massKg,unit:'kg',steps:[`Step 1: mass = d×V = ${s.d}×${vol} = ${massG.toFixed(1)} g`,`Step 2: convert g → kg: ${massG.toFixed(1)} ÷ 1000 = ${massKg.toFixed(4)} kg`],hint:`First find mass in grams (m=dV), then convert to kg (÷1000).`};
+    }
+    // percent_error_chain: given 3 trials, find average then % error
+    const trials=[r(9,11,2),r(9,11,2),r(9,11,2)],theo=10.00,avg=(trials[0]+trials[1]+trials[2])/3,pe=Math.abs((avg-theo)/theo)*100;
+    return{question:`Three trials give values of ${trials[0]}, ${trials[1]}, and ${trials[2]}. The accepted value is ${theo}. Find the average of the trials, then calculate the percent error.`,given:`Trial 1=${trials[0]}, Trial 2=${trials[1]}, Trial 3=${trials[2]}\nAccepted=${theo}`,answer:pe,unit:'%',steps:[`Avg = (${trials[0]}+${trials[1]}+${trials[2]})/3 = ${avg.toFixed(3)}`,`% error = |${avg.toFixed(3)}−${theo}|/${theo} × 100 = ${pe.toFixed(3)}%`],hint:`First calculate the average of the trials, then use % error = |avg − accepted| / accepted × 100.`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MOLES
+// ══════════════════════════════════════════════════════════════════════════════
+function genMoles(){
+    const basic=['mass_to_mol','mol_to_mass'];
+    const inter=['mass_to_mol','mol_to_mass','mol_to_part','part_to_mol'];
+    const adv=['mass_to_part','part_to_mass','mol_chain'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+    const cpds=[{n:'H₂O',mm:18.02},{n:'NaCl',mm:58.44},{n:'CO₂',mm:44.01},{n:'CH₄',mm:16.04},{n:'O₂',mm:32.00},{n:'NH₃',mm:17.03},{n:'CaCO₃',mm:100.09},{n:'C₆H₁₂O₆',mm:180.16},{n:'H₂SO₄',mm:98.09}];
+    const c=cpds[Math.floor(Math.random()*cpds.length)];
+    const NA=6.022e23;
+
+    if(t==='mass_to_mol'){const m=r(10,200,2),ans=m/c.mm;return{question:`How many moles are in ${m} g of ${c.n}?`,given:`Mass=${m} g, MM(${c.n})=${c.mm} g/mol`,answer:ans,unit:'mol',steps:[`n = m/M = ${m}/${c.mm} = ${ans.toFixed(4)} mol`],hint:`n = m/M`};}
+    if(t==='mol_to_mass'){const n=r(0.5,10,3),ans=n*c.mm;return{question:`What is the mass of ${n} mol of ${c.n}?`,given:`n=${n} mol, MM=${c.mm} g/mol`,answer:ans,unit:'g',steps:[`m = n×M = ${n}×${c.mm} = ${ans.toFixed(4)} g`],hint:`m = n × M`};}
+    if(t==='mol_to_part'){const n=r(0.5,5,3),ans=n*NA;return{question:`How many molecules are in ${n} mol of ${c.n}?`,given:`n=${n} mol, Nₐ=6.022×10²³`,answer:ans,unit:'molecules',steps:[`particles = n×Nₐ = ${n}×6.022×10²³ = ${ans.toExponential(3)}`],hint:`particles = n × Nₐ`};}
+    if(t==='part_to_mol'){const p=parseFloat((r(1,15)*1e23).toExponential(2)),ans=p/NA;return{question:`How many moles are in ${p} molecules of ${c.n}?`,given:`Molecules=${p}, Nₐ=6.022×10²³`,answer:ans,unit:'mol',steps:[`n = particles/Nₐ = ${p}/6.022×10²³ = ${ans.toFixed(4)} mol`],hint:`n = particles ÷ Nₐ`};}
+    // ADVANCED MULTI-STEP
+    if(t==='mass_to_part'){
+        const m=r(10,150,2),mol=m/c.mm,part=mol*NA;
+        return{question:`How many molecules are in ${m} g of ${c.n}? (two-step)`,given:`Mass=${m} g, MM=${c.mm} g/mol, Nₐ=6.022×10²³`,answer:part,unit:'molecules',steps:[`Step 1: moles = ${m}/${c.mm} = ${mol.toFixed(5)} mol`,`Step 2: molecules = ${mol.toFixed(5)} × 6.022×10²³ = ${part.toExponential(4)}`],hint:`Mass → moles (÷MM), then moles → molecules (×Nₐ).`};
+    }
+    if(t==='part_to_mass'){
+        const p=parseFloat((r(2,12)*1e23).toExponential(2)),mol=p/NA,m=mol*c.mm;
+        return{question:`What is the mass (in grams) of ${p} molecules of ${c.n}? (two-step)`,given:`Molecules=${p}, Nₐ=6.022×10²³, MM=${c.mm} g/mol`,answer:m,unit:'g',steps:[`Step 1: moles = ${p}/6.022×10²³ = ${mol.toFixed(5)} mol`,`Step 2: mass = ${mol.toFixed(5)} × ${c.mm} = ${m.toFixed(4)} g`],hint:`Molecules → moles (÷Nₐ), then moles → mass (×MM).`};
+    }
+    // mol_chain: given % composition, find moles of one element in a sample
+    const c2=cpds[Math.floor(Math.random()*cpds.length)];
+    const massOfSample=r(50,300,1),molCompound=massOfSample/c2.mm;
+    // pick a random element-like fraction
+    const frac=r(1,4),molElement=molCompound*frac;
+    return{question:`A ${massOfSample} g sample of ${c2.n} is fully decomposed. Each formula unit contains ${frac} oxygen atoms. How many moles of oxygen atoms are released?`,given:`Mass=${massOfSample} g, MM(${c2.n})=${c2.mm} g/mol\n${frac} O atoms per formula unit`,answer:molElement,unit:'mol O',steps:[`Step 1: moles of ${c2.n} = ${massOfSample}/${c2.mm} = ${molCompound.toFixed(4)} mol`,`Step 2: moles O = ${molCompound.toFixed(4)} × ${frac} = ${molElement.toFixed(4)} mol`],hint:`Find moles of compound first, then multiply by atoms per formula unit.`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STOICHIOMETRY
+// ══════════════════════════════════════════════════════════════════════════════
+function genStoich(){
+    const rxns=[
+        {eq:'2H₂ + O₂ → 2H₂O',desc:'hydrogen reacts with oxygen to form water',r:[{n:'H₂',d:'hydrogen',mm:2.02,c:2},{n:'O₂',d:'oxygen',mm:32.00,c:1}],p:[{n:'H₂O',d:'water',mm:18.02,c:2}]},
+        {eq:'N₂ + 3H₂ → 2NH₃',desc:'nitrogen and hydrogen form ammonia',r:[{n:'N₂',d:'nitrogen',mm:28.02,c:1},{n:'H₂',d:'hydrogen',mm:2.02,c:3}],p:[{n:'NH₃',d:'ammonia',mm:17.03,c:2}]},
+        {eq:'CH₄ + 2O₂ → CO₂ + 2H₂O',desc:'methane combusts in oxygen',r:[{n:'CH₄',d:'methane',mm:16.04,c:1},{n:'O₂',d:'oxygen',mm:32.00,c:2}],p:[{n:'CO₂',d:'CO₂',mm:44.01,c:1}]},
+        {eq:'2Na + Cl₂ → 2NaCl',desc:'sodium reacts with chlorine',r:[{n:'Na',d:'sodium',mm:22.99,c:2},{n:'Cl₂',d:'chlorine',mm:70.90,c:1}],p:[{n:'NaCl',d:'NaCl',mm:58.44,c:2}]},
+        {eq:'C₃H₈ + 5O₂ → 3CO₂ + 4H₂O',desc:'propane combusts in oxygen',r:[{n:'C₃H₈',d:'propane',mm:44.10,c:1},{n:'O₂',d:'oxygen',mm:32.00,c:5}],p:[{n:'CO₂',d:'CO₂',mm:44.01,c:3}]}
+    ];
+    const rxn=rxns[Math.floor(Math.random()*rxns.length)];
+    const basic=['m2m'],inter=['m2m','lr'],adv=['lr_yield'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    if(t==='m2m'){
+        const re=rxn.r[0],pr=rxn.p[0],m=diff==='basic'?r(5,25):r(10,80,2);
+        const mol=m/re.mm,pmol=mol*(pr.c/re.c),pm=pmol*pr.mm;
+        return{question:`When ${rxn.desc}, how many grams of ${pr.d} are produced from ${m} g of ${re.d}?`,given:`Equation: ${rxn.eq}\nMM: ${re.n}=${re.mm}, ${pr.n}=${pr.mm} g/mol\nRatio: ${re.c} mol ${re.n} : ${pr.c} mol ${pr.n}`,answer:pm,unit:'g',steps:[`mol ${re.n}: ${m}/${re.mm}=${mol.toFixed(4)}`,`mol ${pr.n}: ×(${pr.c}/${re.c})=${pmol.toFixed(4)}`,`g ${pr.n}: ×${pr.mm}=${pm.toFixed(3)} g`],hint:`g→mol→mole ratio→mol→g`};
+    }
+    if(t==='lr'){
+        const r1=rxn.r[0],r2=rxn.r[1],pr=rxn.p[0];
+        const m1=r(10,40,2),m2=r(10,40,2),n1=m1/r1.mm,n2=m2/r2.mm;
+        const rat1=n1/r1.c,rat2=n2/r2.c,lim=rat1<rat2?r1:r2,limN=rat1<rat2?n1:n2;
+        const pm=limN*(pr.c/lim.c)*pr.mm;
+        return{question:`When ${rxn.desc}, given ${m1} g of ${r1.d} and ${m2} g of ${r2.d}, how many grams of ${pr.d} are produced?`,given:`${r1.n}: ${m1} g (MM=${r1.mm})\n${r2.n}: ${m2} g (MM=${r2.mm})\nMM ${pr.n}=${pr.mm}`,answer:pm,unit:'g',steps:[`mol ${r1.n}=${n1.toFixed(4)} ÷${r1.c}=${rat1.toFixed(4)}`,`mol ${r2.n}=${n2.toFixed(4)} ÷${r2.c}=${rat2.toFixed(4)}`,`${lim.n} is limiting`,`Product: ${pm.toFixed(3)} g`],hint:`Divide moles by coefficient — smaller ratio = limiting reactant.`};
+    }
+    // ADVANCED: limiting reactant + percent yield combined (3 steps)
+    const r1=rxn.r[0],r2=rxn.r.length>1?rxn.r[1]:rxn.r[0],pr=rxn.p[0];
+    const m1=r(15,50,2),m2=r(15,50,2),n1=m1/r1.mm,n2=m2/r2.mm;
+    const rat1=n1/r1.c,rat2=n2/r2.c;
+    const lim=rat1<rat2?r1:r2,limN=rat1<rat2?n1:n2;
+    const theo=limN*(pr.c/lim.c)*pr.mm;
+    const actual=theo*(0.70+Math.random()*0.20),py=(actual/theo)*100;
+    return{question:`When ${rxn.desc}, ${m1} g of ${r1.d} reacts with ${m2} g of ${r2.d}. If the actual yield of ${pr.d} is ${actual.toFixed(2)} g, what is the percent yield?`,given:`${r1.n}: ${m1} g (MM=${r1.mm})\n${r2.n}: ${m2} g (MM=${r2.mm})\nActual yield of ${pr.n}: ${actual.toFixed(2)} g`,answer:py,unit:'%',steps:[`Step 1 — find LR: ${r1.n} ratio=${rat1.toFixed(4)}, ${r2.n} ratio=${rat2.toFixed(4)} → ${lim.n} limits`,`Step 2 — theoretical yield: ${limN.toFixed(4)} × (${pr.c}/${lim.c}) × ${pr.mm} = ${theo.toFixed(3)} g`,`Step 3 — % yield: (${actual.toFixed(2)}/${theo.toFixed(3)}) × 100 = ${py.toFixed(2)}%`],hint:`Three steps: (1) find limiting reactant, (2) calculate theoretical yield, (3) % yield = actual/theoretical × 100.`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GASES
+// ══════════════════════════════════════════════════════════════════════════════
+function genGases(){
+    const basic=['boyle','charles','gay_lussac'];
+    const inter=['boyle','charles','gay_lussac','combined','ideal'];
+    const adv=['ideal_stoich','combined_celsius','dalton_partial'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    if(t==='boyle'){const P1=r(1,5,2),V1=r(1,10,2),P2=r(1,8,2),V2=P1*V1/P2;return{question:`A gas is at ${P1} atm and ${V1} L. What volume does it occupy at ${P2} atm (constant T)?`,given:`P₁=${P1} atm, V₁=${V1} L, P₂=${P2} atm`,answer:V2,unit:'L',steps:[`P₁V₁=P₂V₂ → V₂=${P1}×${V1}/${P2}=${V2.toFixed(3)} L`],hint:`Boyle's Law: P₁V₁ = P₂V₂`};}
+    if(t==='charles'){const V1=r(1,10,2),T1=r(250,400,1),T2=r(200,500,1),V2=V1*T2/T1;return{question:`A gas occupies ${V1} L at ${T1} K. What volume at ${T2} K (constant P)?`,given:`V₁=${V1} L, T₁=${T1} K, T₂=${T2} K`,answer:V2,unit:'L',steps:[`V₁/T₁=V₂/T₂ → V₂=${V1}×${T2}/${T1}=${V2.toFixed(3)} L`],hint:`Charles's Law: V₁/T₁ = V₂/T₂ (K required!)`};}
+    if(t==='gay_lussac'){const P1=r(1,5,2),T1=r(250,400,1),T2=r(200,500,1),P2=P1*T2/T1;return{question:`A gas has pressure ${P1} atm at ${T1} K. What is its pressure at ${T2} K (constant V)?`,given:`P₁=${P1} atm, T₁=${T1} K, T₂=${T2} K`,answer:P2,unit:'atm',steps:[`P₁/T₁=P₂/T₂ → P₂=${P1}×${T2}/${T1}=${P2.toFixed(3)} atm`],hint:`Gay-Lussac's Law: P₁/T₁ = P₂/T₂`};}
+    if(t==='combined'){const P1=r(1,4,2),V1=r(1,8,2),T1=r(250,400,1),P2=r(1,5,2),T2=r(200,500,1),V2=P1*V1*T2/(T1*P2);return{question:`Gas: P₁=${P1} atm, V₁=${V1} L, T₁=${T1} K. Find V₂ when P₂=${P2} atm, T₂=${T2} K.`,given:`P₁=${P1},V₁=${V1},T₁=${T1},P₂=${P2},T₂=${T2}`,answer:V2,unit:'L',steps:[`P₁V₁/T₁=P₂V₂/T₂ → V₂=${V2.toFixed(3)} L`],hint:`Combined Gas Law: P₁V₁/T₁ = P₂V₂/T₂`};}
+    if(t==='ideal'){
+        const R=0.08206,sf=['P','V','n','T'][Math.floor(Math.random()*4)];
+        if(sf==='P'){const n=r(0.5,3,2),V=r(1,10,2),T=r(250,400,1),P=n*R*T/V;return{question:`Find pressure: ${n} mol gas, ${V} L, ${T} K.`,given:`n=${n},V=${V},T=${T},R=0.08206`,answer:P,unit:'atm',steps:[`P=nRT/V=(${n}×0.08206×${T})/${V}=${P.toFixed(3)} atm`],hint:`PV=nRT → P=nRT/V`};}
+        if(sf==='V'){const n=r(0.5,3,2),P=r(1,4,2),T=r(250,400,1),V=n*R*T/P;return{question:`Find volume: ${n} mol, ${P} atm, ${T} K.`,given:`n=${n},P=${P},T=${T},R=0.08206`,answer:V,unit:'L',steps:[`V=nRT/P=(${n}×0.08206×${T})/${P}=${V.toFixed(3)} L`],hint:`PV=nRT → V=nRT/P`};}
+        if(sf==='n'){const P=r(1,4,2),V=r(2,10,2),T=r(280,400,1),n=P*V/(R*T);return{question:`Find moles: ${P} atm, ${V} L, ${T} K.`,given:`P=${P},V=${V},T=${T},R=0.08206`,answer:n,unit:'mol',steps:[`n=PV/(RT)=(${P}×${V})/(0.08206×${T})=${n.toFixed(4)} mol`],hint:`PV=nRT → n=PV/RT`};}
+        const P=r(1,4,2),V=r(2,10,2),n=r(0.5,3,2),T=P*V/(n*R);return{question:`Find temperature: ${P} atm, ${V} L, ${n} mol.`,given:`P=${P},V=${V},n=${n},R=0.08206`,answer:T,unit:'K',steps:[`T=PV/(nR)=(${P}×${V})/(${n}×0.08206)=${T.toFixed(2)} K`],hint:`PV=nRT → T=PV/(nR)`};
+    }
+    // ADVANCED MULTI-STEP
+    if(t==='ideal_stoich'){
+        // Given mass of compound, find volume of gas produced at given T and P
+        const R=0.08206;
+        const rxns2=[{eq:'CaCO₃ → CaO + CO₂',mm:100.09,gasN:'CO₂',ratio:1},{eq:'2H₂O₂ → 2H₂O + O₂',mm:34.01,gasN:'O₂',ratio:0.5}];
+        const rxn2=rxns2[Math.floor(Math.random()*rxns2.length)];
+        const mass=r(5,30,2),T=r(290,400,1),P=r(0.9,1.5,2);
+        const molCompound=mass/rxn2.mm,molGas=molCompound*rxn2.ratio,V=molGas*R*T/P;
+        return{question:`${mass} g of reactant decomposes: ${rxn2.eq}. What volume of ${rxn2.gasN} gas is produced at ${T} K and ${P} atm?`,given:`Mass=${mass} g, MM=${rxn2.mm} g/mol\nT=${T} K, P=${P} atm, R=0.08206 L·atm/mol·K`,answer:V,unit:'L',steps:[`Step 1: mol compound = ${mass}/${rxn2.mm} = ${molCompound.toFixed(4)} mol`,`Step 2: mol ${rxn2.gasN} = ${molCompound.toFixed(4)} × ${rxn2.ratio} = ${molGas.toFixed(4)} mol`,`Step 3: V = nRT/P = ${molGas.toFixed(4)}×0.08206×${T}/${P} = ${V.toFixed(3)} L`],hint:`Stoich first to get moles of gas, then use PV=nRT to find volume.`};
+    }
+    if(t==='combined_celsius'){
+        // Give temps in °C, students must convert to K first
+        const P1=r(1,4,2),V1=r(2,8,2),T1c=r(20,100),P2=r(1,5,2),T2c=r(100,300);
+        const T1=T1c+273,T2=T2c+273,V2=P1*V1*T2/(T1*P2);
+        return{question:`A gas is at ${P1} atm, ${V1} L, ${T1c}°C. Find V₂ when P₂=${P2} atm and T₂=${T2c}°C. Remember to convert °C to K!`,given:`P₁=${P1} atm, V₁=${V1} L, T₁=${T1c}°C\nP₂=${P2} atm, T₂=${T2c}°C`,answer:V2,unit:'L',steps:[`Step 1: T₁=${T1c}+273=${T1} K, T₂=${T2c}+273=${T2} K`,`Step 2: V₂=P₁V₁T₂/(T₁P₂)=${P1}×${V1}×${T2}/(${T1}×${P2})=${V2.toFixed(3)} L`],hint:`ALWAYS convert °C to K before using gas laws (add 273).`};
+    }
+    // dalton_partial: given total P and two partial P, find the third
+    const Pa=r(0.15,0.40,3),Pb=r(0.10,0.35,3),Ptot=r(0.80,1.20,2),Pc=Ptot-Pa-Pb;
+    return{question:`A gas mixture has total pressure ${Ptot} atm. Gas A has partial pressure ${Pa} atm and Gas B has ${Pb} atm. What is the partial pressure of Gas C?`,given:`P_total=${Ptot} atm, P_A=${Pa} atm, P_B=${Pb} atm`,answer:Pc,unit:'atm',steps:[`Dalton: P_total = P_A+P_B+P_C`,`P_C = ${Ptot}−${Pa}−${Pb} = ${Pc.toFixed(3)} atm`],hint:`P_total = sum of all partial pressures → isolate P_C.`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SOLUTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function genSolutions(){
+    const basic=['molarity','dilution'];
+    const inter=['molarity','dilution','mass_percent','find_vol'];
+    const adv=['solid_then_dilute','mass_to_molarity','molality_chain'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+    const sols=[{n:'NaCl',mm:58.44},{n:'KCl',mm:74.55},{n:'NaOH',mm:40.00},{n:'HCl',mm:36.46},{n:'CaCl₂',mm:110.98}];
+    const s=sols[Math.floor(Math.random()*sols.length)];
+
+    if(t==='molarity'){const mol=r(0.1,2,3),vol=r(100,1000)/1000,M=mol/vol;return{question:`What is the molarity of ${mol} mol of ${s.n} in ${vol*1000} mL of solution?`,given:`mol=${mol}, V=${vol*1000} mL`,answer:M,unit:'M',steps:[`M=n/V=${mol}/${vol}=${M.toFixed(4)} M`],hint:`M = mol ÷ L`};}
+    if(t==='dilution'){const M1=r(1,6,2),V1=r(10,100,1),M2=r(0.1,1,2),V2=M1*V1/M2;return{question:`How many mL of ${M2} M can be prepared by diluting ${V1} mL of ${M1} M ${s.n}?`,given:`M₁=${M1}, V₁=${V1} mL, M₂=${M2}`,answer:V2,unit:'mL',steps:[`M₁V₁=M₂V₂ → V₂=${M1}×${V1}/${M2}=${V2.toFixed(2)} mL`],hint:`M₁V₁ = M₂V₂`};}
+    if(t==='mass_percent'){const mSol=r(5,50,2),mSoln=r(100,500,1),mp=mSol/mSoln*100;return{question:`What is the mass percent of ${mSol} g ${s.n} in ${mSoln} g of solution?`,given:`m_solute=${mSol} g, m_solution=${mSoln} g`,answer:mp,unit:'%',steps:[`mass% = ${mSol}/${mSoln}×100=${mp.toFixed(3)}%`],hint:`mass% = (m_solute/m_solution)×100`};}
+    if(t==='find_vol'){const M=r(0.5,3,2),mol=r(0.05,0.5,3),V=mol/M;return{question:`What volume (mL) of ${M} M ${s.n} contains ${mol} mol?`,given:`M=${M}, n=${mol}`,answer:V*1000,unit:'mL',steps:[`V=n/M=${mol}/${M}=${V.toFixed(4)} L = ${(V*1000).toFixed(2)} mL`],hint:`V=n/M, then × 1000 for mL`};}
+    // ADVANCED MULTI-STEP
+    if(t==='solid_then_dilute'){
+        // Dissolve solid → initial solution → dilute to final volume
+        const mass=r(5,30,2),V1=r(100,300)/1000,V2=r(500,2000)/1000;
+        const mol=mass/s.mm,M1=mol/V1,M2=M1*V1/V2;
+        return{question:`${mass} g of ${s.n} is dissolved in ${V1*1000} mL of water, then diluted to a total volume of ${V2*1000} mL. What is the final molarity?`,given:`Mass=${mass} g, MM=${s.mm} g/mol\nInitial volume=${V1*1000} mL, Final volume=${V2*1000} mL`,answer:M2,unit:'M',steps:[`Step 1: mol ${s.n} = ${mass}/${s.mm} = ${mol.toFixed(4)} mol`,`Step 2: M₁ = ${mol.toFixed(4)}/${V1} = ${M1.toFixed(4)} M`,`Step 3: M₁V₁=M₂V₂ → M₂ = ${M1.toFixed(4)}×${V1}/${V2} = ${M2.toFixed(4)} M`],hint:`Three steps: (1) grams→moles, (2) molarity of stock, (3) dilution formula M₁V₁=M₂V₂.`};
+    }
+    if(t==='mass_to_molarity'){
+        // Given mass% and density, find molarity
+        const mp=r(5,20,1),dens=r(1.0,1.3,3),mm=s.mm;
+        // molarity = (mass% × density × 10) / molar mass
+        const M=(mp*dens*10)/mm;
+        return{question:`A ${s.n} solution is ${mp}% by mass with a density of ${dens} g/mL. What is its molarity?`,given:`Mass% = ${mp}%, Density = ${dens} g/mL, MM = ${mm} g/mol`,answer:M,unit:'M',steps:[`Assume 1 L of solution: mass = ${dens} g/mL × 1000 mL = ${dens*1000} g`,`Mass of ${s.n} = ${mp/100} × ${dens*1000} = ${(mp/100*dens*1000).toFixed(2)} g`,`mol = ${(mp/100*dens*1000).toFixed(2)}/${mm} = ${((mp/100*dens*1000)/mm).toFixed(4)} mol`,`M = mol/1 L = ${M.toFixed(4)} M`],hint:`Assume 1 L solution. Use density to find total mass, then mass% to find solute mass, then ÷MM.`};
+    }
+    // molality_chain: given mass solute and mass solvent, find molality then boiling point elevation
+    const massS=r(5,30,2),massSolv=r(100,400,1),mol2=massS/s.mm,m2=mol2/(massSolv/1000);
+    return{question:`${massS} g of ${s.n} is dissolved in ${massSolv} g of water. What is the molality of the solution?`,given:`m_solute=${massS} g, MM=${s.mm} g/mol\nm_solvent=${massSolv} g`,answer:m2,unit:'m',steps:[`Step 1: mol = ${massS}/${s.mm} = ${mol2.toFixed(4)} mol`,`Step 2: molality = ${mol2.toFixed(4)}/${massSolv/1000} kg = ${m2.toFixed(4)} m`],hint:`molality = moles of solute ÷ kilograms of SOLVENT (not solution).`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// THERMOCHEMISTRY
+// ══════════════════════════════════════════════════════════════════════════════
+function genThermo(){
+    const basic=['heating','cooling','phase_change'];
+    const inter=['heating','cooling','phase_change','find_c','find_dT','calorimetry'];
+    const adv=['multi_step','heating_then_phase','mixed_calorimetry'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+    const subs=[{n:'water',c:4.18,Tf:0,Tb:100,Hf:334,Hv:2260},{n:'aluminum',c:0.897,Tf:660,Tb:2470,Hf:397,Hv:10500},{n:'iron',c:0.449,Tf:1538,Tb:2862,Hf:247,Hv:6090},{n:'copper',c:0.385,Tf:1085,Tb:2562,Hf:205,Hv:4730},{n:'ethanol',c:2.44,Tf:-114,Tb:78,Hf:108,Hv:838}];
+    const sub=subs[Math.floor(Math.random()*subs.length)];
+
+    if(t==='heating'){const m=r(50,300,1),T1=r(10,40),dT=r(10,60),q=m*sub.c*dT;return{question:`How much heat is needed to raise ${m} g of ${sub.n} from ${T1}°C to ${T1+dT}°C?`,given:`m=${m} g, c=${sub.c} J/g°C, ΔT=${dT}°C`,answer:q,unit:'J',steps:[`q=mcΔT=${m}×${sub.c}×${dT}=${q.toFixed(2)} J`],hint:`q = mcΔT`};}
+    if(t==='cooling'){const m=r(50,300,1),T1=r(50,100),dT=r(10,50),q=m*sub.c*dT;return{question:`How much heat is released when ${m} g of ${sub.n} cools from ${T1}°C to ${T1-dT}°C?`,given:`m=${m} g, c=${sub.c} J/g°C, ΔT=${dT}°C`,answer:q,unit:'J',steps:[`q=mcΔT=${m}×${sub.c}×${dT}=${q.toFixed(2)} J`],hint:`q = mcΔT (use magnitude of ΔT)`};}
+    if(t==='phase_change'){
+        const m=r(50,150,1),pTs=['melting','freezing','vaporization','condensation'],pT=pTs[Math.floor(Math.random()*4)];
+        const isMelt=pT==='melting'||pT==='freezing',H=isMelt?sub.Hf:sub.Hv,T=isMelt?sub.Tf:sub.Tb,q=m*H;
+        return{question:`How much heat is ${pT==='melting'||pT==='vaporization'?'required':'released'} to ${pT} ${m} g of ${sub.n} at ${T}°C?`,given:`m=${m} g, ΔH_${isMelt?'fus':'vap'}=${H} J/g`,answer:q,unit:'J',steps:[`q=mΔH=${m}×${H}=${q.toFixed(2)} J`],hint:`Phase change: q = mΔH (temperature doesn't change)`};}
+    if(t==='find_c'){const m=r(50,200,1),T1=r(20,40),dT=r(20,60),q=r(1000,8000,1),c=q/(m*dT);return{question:`A ${m} g metal absorbs ${q} J, rising from ${T1}°C to ${T1+dT}°C. What is its specific heat?`,given:`m=${m} g, q=${q} J, ΔT=${dT}°C`,answer:c,unit:'J/g°C',steps:[`c=q/(mΔT)=${q}/(${m}×${dT})=${c.toFixed(4)} J/g°C`],hint:`Rearrange q=mcΔT: c=q/(mΔT)`};}
+    if(t==='find_dT'){const m=r(100,300,1),q=r(2000,8000,1),dT=q/(m*sub.c);return{question:`${m} g of ${sub.n} absorbs ${q} J. By how many °C does its temperature rise?`,given:`m=${m} g, q=${q} J, c=${sub.c} J/g°C`,answer:dT,unit:'°C',steps:[`ΔT=q/(mc)=${q}/(${m}×${sub.c})=${dT.toFixed(3)}°C`],hint:`Rearrange q=mcΔT: ΔT=q/(mc)`};}
+    if(t==='calorimetry'){const m1=r(50,150,1),T1=r(60,95),m2=r(100,200,1),T2=r(15,30),Tf=(m1*T1+m2*T2)/(m1+m2);return{question:`${m1} g of hot water at ${T1}°C mixes with ${m2} g of cold water at ${T2}°C. Final temperature?`,given:`m₁=${m1} g @ ${T1}°C, m₂=${m2} g @ ${T2}°C`,answer:Tf,unit:'°C',steps:[`Tf=(m₁T₁+m₂T₂)/(m₁+m₂)=(${m1}×${T1}+${m2}×${T2})/${m1+m2}=${Tf.toFixed(2)}°C`],hint:`Heat lost = heat gained → Tf = (m₁T₁+m₂T₂)/(m₁+m₂)`};}
+    // ADVANCED MULTI-STEP
+    if(t==='multi_step'){
+        const m=r(25,60,1),q1=m*2.09*10,q2=m*334,q3=m*4.18*100,q4=m*2260,q5=m*2.01*10,qT=q1+q2+q3+q4+q5;
+        return{question:`How much total heat is needed to convert ${m} g of ice at −10°C to steam at 110°C?`,given:`m=${m} g\nc: ice=2.09, water=4.18, steam=2.01 J/g°C\nΔH_fus=334, ΔH_vap=2260 J/g`,answer:qT,unit:'J',steps:[`q₁ (heat ice −10→0): ${m}×2.09×10=${q1.toFixed(1)} J`,`q₂ (melt at 0°C): ${m}×334=${q2.toFixed(1)} J`,`q₃ (heat water 0→100): ${m}×4.18×100=${q3.toFixed(1)} J`,`q₄ (vaporize at 100°C): ${m}×2260=${q4.toFixed(1)} J`,`q₅ (heat steam 100→110): ${m}×2.01×10=${q5.toFixed(1)} J`,`Total = ${qT.toFixed(1)} J`],hint:`5 steps: heat solid → melt → heat liquid → vaporize → heat gas. Add all q values.`};
+    }
+    if(t==='heating_then_phase'){
+        // Heat water from room temp to boiling, then vaporize part of it
+        const m=r(50,200,1),T1=r(15,30),dTwarm=100-T1,qWarm=m*4.18*dTwarm;
+        const mVap=r(10,Math.floor(m/2),1),qVap=mVap*2260,qTotal=qWarm+qVap;
+        return{question:`${m} g of water starts at ${T1}°C. It is heated to 100°C, then ${mVap} g is vaporized. What is the total heat required?`,given:`m_total=${m} g, T₁=${T1}°C → 100°C (c=4.18 J/g°C)\nm_vaporized=${mVap} g (ΔH_vap=2260 J/g)`,answer:qTotal,unit:'J',steps:[`Step 1 — heat all ${m} g: q₁=${m}×4.18×${dTwarm}=${qWarm.toFixed(1)} J`,`Step 2 — vaporize ${mVap} g: q₂=${mVap}×2260=${qVap.toFixed(1)} J`,`Total = ${qWarm.toFixed(1)}+${qVap.toFixed(1)} = ${qTotal.toFixed(1)} J`],hint:`Two-step: (1) use q=mcΔT for temperature change, (2) use q=mΔH for the phase change. Add results.`};
+    }
+    // mixed_calorimetry: hot metal dropped in cold water — different substances
+    const metals=[{n:'aluminum',c:0.897},{n:'iron',c:0.449},{n:'copper',c:0.385}];
+    const met=metals[Math.floor(Math.random()*metals.length)];
+    const mMet=r(50,150,1),TMet=r(150,300),mWat=r(200,400,1),TWat=r(15,30);
+    const Tf=(mMet*met.c*TMet+mWat*4.18*TWat)/(mMet*met.c+mWat*4.18);
+    return{question:`${mMet} g of ${met.n} at ${TMet}°C is dropped into ${mWat} g of water at ${TWat}°C. What is the final equilibrium temperature?`,given:`${met.n}: m=${mMet} g, c=${met.c} J/g°C, T=${TMet}°C\nWater: m=${mWat} g, c=4.18 J/g°C, T=${TWat}°C`,answer:Tf,unit:'°C',steps:[`q_lost = q_gained`,`m₁c₁(T₁-Tf) = m₂c₂(Tf-T₂)`,`Tf = (m₁c₁T₁+m₂c₂T₂)/(m₁c₁+m₂c₂)`,`Tf = (${mMet}×${met.c}×${TMet}+${mWat}×4.18×${TWat})/(${mMet}×${met.c}+${mWat}×4.18)=${Tf.toFixed(2)}°C`],hint:`Different substances: Tf = (m₁c₁T₁ + m₂c₂T₂) / (m₁c₁ + m₂c₂). Both c values matter.`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EQUILIBRIUM
+// ══════════════════════════════════════════════════════════════════════════════
+function genEquil(){
+    const basic=['keq_calc','keq_coeff'];
+    const inter=['keq_calc','keq_coeff','ice_simple','find_conc'];
+    const adv=['ice_quadratic','q_direction','keq_reverse'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    if(t==='keq_calc'){const A=r(0.1,1,3),B=r(0.1,1,3),C=r(0.1,1,3),D=r(0.1,1,3),Keq=C*D/(A*B);return{question:`For A+B⇌C+D: [A]=${A},[B]=${B},[C]=${C},[D]=${D} M. Find Keq.`,given:`[A]=${A},[B]=${B},[C]=${C},[D]=${D}`,answer:Keq,unit:'',steps:[`Keq=[C][D]/([A][B])=(${C}×${D})/(${A}×${B})=${Keq.toFixed(4)}`],hint:`Keq = products/reactants, each raised to its coefficient`};}
+    if(t==='keq_coeff'){const A=r(0.2,2,3),B=r(0.2,2,3),C=r(0.1,1,3),Keq=C**2/(A*B);return{question:`For A+B⇌2C: [A]=${A},[B]=${B},[C]=${C} M. Find Keq.`,given:`[A]=${A},[B]=${B},[C]=${C}`,answer:Keq,unit:'',steps:[`Keq=[C]²/([A][B])=${C}²/(${A}×${B})=${Keq.toFixed(4)}`],hint:`Coefficients become exponents in Keq expression`};}
+    if(t==='ice_simple'){const Keq=r(0.01,4,4),init=r(0.5,2,2),x=Keq*init/(1+Keq);return{question:`For A⇌B, Keq=${Keq}. Starting [A]₀=${init} M, [B]₀=0. Find [B] at equilibrium.`,given:`Keq=${Keq},[A]₀=${init} M`,answer:x,unit:'M',steps:[`ICE: x=amount reacted`,`Keq=x/(${init}-x)=${Keq}`,`x=${Keq}×${init}/(1+${Keq})=${x.toFixed(4)} M`],hint:`Set up ICE table, write Keq expression, solve for x.`};}
+    if(t==='find_conc'){const Keq=r(0.5,5,3),A=r(0.1,1,3),B=r(0.1,1,3),C=Math.sqrt(Keq*A*B);return{question:`For A+B⇌2C, Keq=${Keq}. At equilibrium [A]=${A},[B]=${B}. Find [C].`,given:`Keq=${Keq},[A]=${A},[B]=${B}`,answer:C,unit:'M',steps:[`Keq=[C]²/([A][B]) → [C]=√(Keq×[A]×[B])=√(${(Keq*A*B).toFixed(5)})=${C.toFixed(4)} M`],hint:`Rearrange Keq expression to isolate [C], then take square root.`};}
+    // ADVANCED MULTI-STEP
+    if(t==='ice_quadratic'){
+        // A + B ⇌ C, Keq given, both reactants start at same concentration
+        const Keq=r(0.5,8,3),init=r(0.5,2,2);
+        // x/(init-x)^2 = Keq → quadratic
+        // Keq(init-x)^2 = x → Keq*init^2 - 2Keq*init*x + Keq*x^2 = x
+        // Keq*x^2 - (2Keq*init+1)*x + Keq*init^2 = 0
+        const a=Keq,b=-(2*Keq*init+1),c_=Keq*init*init;
+        const disc=b*b-4*a*c_,x=(-b-Math.sqrt(disc))/(2*a);
+        const Ceq=x;
+        return{question:`For A+B⇌C with Keq=${Keq}, both [A]₀=[B]₀=${init} M and [C]₀=0. Find [C] at equilibrium. (Requires quadratic formula)`,given:`Keq=${Keq}, [A]₀=[B]₀=${init} M, [C]₀=0`,answer:Ceq,unit:'M',steps:[`ICE: [A]=${init}-x, [B]=${init}-x, [C]=x`,`Keq = x/(${init}-x)² = ${Keq}`,`Expand: ${Keq}x² - ${(2*Keq*init+1).toFixed(4)}x + ${(Keq*init*init).toFixed(4)} = 0`,`x = ${Ceq.toFixed(4)} M = [C]_eq`],hint:`Set up ICE, write Keq expression, rearrange to quadratic ax²+bx+c=0, use quadratic formula.`};
+    }
+    if(t==='q_direction'){
+        const A=r(0.3,1,3),B=r(0.3,1,3),C=r(0.1,0.5,3),D=r(0.1,0.5,3),Keq=r(1,10,3),Q=C*D/(A*B);
+        return{question:`For A+B⇌C+D, Keq=${Keq}. Current concentrations: [A]=${A},[B]=${B},[C]=${C},[D]=${D} M. Calculate Q.`,given:`Keq=${Keq},[A]=${A},[B]=${B},[C]=${C},[D]=${D}`,answer:Q,unit:'(Q value)',steps:[`Q=[C][D]/([A][B])=(${C}×${D})/(${A}×${B})=${Q.toFixed(4)}`,`Q ${Q<Keq?'<':Q>Keq?'>':'='} Keq → reaction goes ${Q<Keq?'forward':'reverse'}`],hint:`Q uses same expression as Keq but with current (not equilibrium) concentrations.`};
+    }
+    // keq_reverse: given Keq for forward, find Keq for reverse reaction
+    const Keq_fwd=r(0.1,100,4),Keq_rev=1/Keq_fwd;
+    return{question:`The equilibrium constant for A+B⇌C+D is Keq=${Keq_fwd}. What is the Keq for the reverse reaction C+D⇌A+B?`,given:`Keq(forward)=${Keq_fwd}`,answer:Keq_rev,unit:'',steps:[`Reversing a reaction inverts the equilibrium constant`,`Keq(reverse) = 1/Keq(forward) = 1/${Keq_fwd} = ${Keq_rev.toFixed(5)}`],hint:`For the reverse reaction, Keq_rev = 1 / Keq_forward.`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ACIDS & BASES
+// ══════════════════════════════════════════════════════════════════════════════
+function genAcids(){
+    const basic=['ph_H','poh_OH','ph_poh'];
+    const inter=['ph_H','poh_OH','ph_poh','H_from_pH','strong_acid','strong_base'];
+    const adv=['weak_acid_ph','weak_base_ph','ph_to_OH_chain'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    if(t==='ph_H'){const exp=r(-5,-1),co=r(1,9,2),H=co*Math.pow(10,exp),pH=-Math.log10(H);return{question:`What is the pH of a solution with [H⁺]=${co}×10^${exp} M?`,given:`[H⁺]=${co}×10^${exp} M`,answer:pH,unit:'',steps:[`pH=-log[H⁺]=-log(${co}×10^${exp})=${pH.toFixed(3)}`],hint:`pH = −log[H⁺]`};}
+    if(t==='poh_OH'){const exp=r(-5,-1),co=r(1,9,2),OH=co*Math.pow(10,exp),pOH=-Math.log10(OH);return{question:`What is the pOH of a solution with [OH⁻]=${co}×10^${exp} M?`,given:`[OH⁻]=${co}×10^${exp} M`,answer:pOH,unit:'',steps:[`pOH=-log[OH⁻]=${pOH.toFixed(3)}`],hint:`pOH = −log[OH⁻]`};}
+    if(t==='ph_poh'){const pH=r(1,13,2),pOH=14-pH;return{question:`A solution has pH=${pH}. What is its pOH?`,given:`pH=${pH}`,answer:pOH,unit:'',steps:[`pH+pOH=14 → pOH=${pOH.toFixed(2)}`],hint:`pH + pOH = 14`};}
+    if(t==='H_from_pH'){const pH=r(1,13,2),H=Math.pow(10,-pH);return{question:`What is [H⁺] in a solution with pH=${pH}?`,given:`pH=${pH}`,answer:H,unit:'M',steps:[`[H⁺]=10^(-${pH})=${H.toExponential(3)} M`],hint:`[H⁺] = 10^(−pH)`};}
+    if(t==='strong_acid'){const c=r(0.001,1,4),pH=-Math.log10(c),acids=['HCl','HNO₃','HBr'];const a=acids[Math.floor(Math.random()*3)];return{question:`What is the pH of a ${c} M ${a} solution?`,given:`[${a}]=${c} M (strong acid, fully dissociates)`,answer:pH,unit:'',steps:[`[H⁺]=[${a}]=${c} M`,`pH=-log(${c})=${pH.toFixed(3)}`],hint:`Strong acids fully dissociate: [H⁺] = [acid]`};}
+    if(t==='strong_base'){const c=r(0.001,1,4),pOH=-Math.log10(c),pH=14-pOH,bases=['NaOH','KOH'];const b=bases[Math.floor(Math.random()*2)];return{question:`What is the pH of a ${c} M ${b} solution?`,given:`[${b}]=${c} M (strong base, fully dissociates)`,answer:pH,unit:'',steps:[`[OH⁻]=[${b}]=${c} M`,`pOH=-log(${c})=${pOH.toFixed(3)}`,`pH=14-${pOH.toFixed(3)}=${pH.toFixed(3)}`],hint:`Strong base: [OH⁻]=concentration → pOH → pH=14-pOH`};}
+    // ADVANCED MULTI-STEP
+    if(t==='weak_acid_ph'){
+        const Ka=parseFloat((Math.random()*9e-5+1e-5).toFixed(7)),C=r(0.05,0.5,3);
+        const H=Math.sqrt(Ka*C),pH=-Math.log10(H);
+        return{question:`Calculate the pH of a ${C} M weak acid with Ka=${Ka.toExponential(2)}. Use the approximation x≪C.`,given:`C=${C} M, Ka=${Ka.toExponential(2)}`,answer:pH,unit:'',steps:[`[H⁺] = √(Ka×C) = √(${Ka.toExponential(2)}×${C}) = ${H.toExponential(3)} M`,`pH = -log(${H.toExponential(3)}) = ${pH.toFixed(3)}`],hint:`For weak acid: [H⁺] ≈ √(Ka×C), then pH = -log[H⁺].`};
+    }
+    if(t==='weak_base_ph'){
+        const Kb=parseFloat((Math.random()*9e-5+1e-5).toFixed(7)),C=r(0.05,0.5,3);
+        const OH=Math.sqrt(Kb*C),pOH=-Math.log10(OH),pH=14-pOH;
+        return{question:`Calculate the pH of a ${C} M weak base with Kb=${Kb.toExponential(2)}.`,given:`C=${C} M, Kb=${Kb.toExponential(2)}`,answer:pH,unit:'',steps:[`[OH⁻]=√(Kb×C)=√(${Kb.toExponential(2)}×${C})=${OH.toExponential(3)} M`,`pOH=-log(${OH.toExponential(3)})=${pOH.toFixed(3)}`,`pH=14-${pOH.toFixed(3)}=${pH.toFixed(3)}`],hint:`Weak base: [OH⁻]=√(Kb×C) → pOH → pH=14-pOH. Three steps.`};
+    }
+    // ph_to_OH_chain: from pH find [OH⁻]
+    const pH=r(2,12,2),H=Math.pow(10,-pH),OH=1e-14/H;
+    return{question:`A solution has pH=${pH}. What is [OH⁻]? (Use Kw=1×10⁻¹⁴)`,given:`pH=${pH}, Kw=1×10⁻¹⁴`,answer:OH,unit:'M',steps:[`[H⁺]=10^(-${pH})=${H.toExponential(3)} M`,`[OH⁻]=Kw/[H⁺]=${(1e-14).toExponential(1)}/${H.toExponential(3)}=${OH.toExponential(3)} M`],hint:`[H⁺]=10^(-pH), then [OH⁻]=Kw/[H⁺]=1×10⁻¹⁴/[H⁺].`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REDOX
+// ══════════════════════════════════════════════════════════════════════════════
+const RT=[{ion:'Ag⁺',metal:'Ag',E:+0.80,n:1},{ion:'Hg²⁺',metal:'Hg',E:+0.85,n:2},{ion:'Cu²⁺',metal:'Cu',E:+0.34,n:2},{ion:'Fe³⁺',metal:'Fe',E:-0.04,n:3},{ion:'Pb²⁺',metal:'Pb',E:-0.13,n:2},{ion:'Ni²⁺',metal:'Ni',E:-0.25,n:2},{ion:'Co²⁺',metal:'Co',E:-0.29,n:2},{ion:'Cd²⁺',metal:'Cd',E:-0.40,n:2},{ion:'Fe²⁺',metal:'Fe',E:-0.41,n:2},{ion:'Cr³⁺',metal:'Cr',E:-0.74,n:3},{ion:'Zn²⁺',metal:'Zn',E:-0.76,n:2},{ion:'Mn²⁺',metal:'Mn',E:-1.18,n:2},{ion:'Al³⁺',metal:'Al',E:-1.66,n:3},{ion:'Mg²⁺',metal:'Mg',E:-2.37,n:2}];
+const oxCpds=[{f:'LiBr',el:'Br',ans:-1,w:'Li=+1, neutral: Br=−1'},{f:'MgI₂',el:'I',ans:-1,w:'Mg=+2, neutral: I=−1'},{f:'H₂O',el:'O',ans:-2,w:'H=+1, neutral: O=−2'},{f:'H₂SO₄',el:'S',ans:+6,w:'H=+1,O=−2: S=+6'},{f:'Fe₂O₃',el:'Fe',ans:+3,w:'O=−2: Fe=+3'},{f:'KMnO₄',el:'Mn',ans:+7,w:'K=+1,O=−2: Mn=+7'},{f:'CuF',el:'Cu',ans:+1,w:'F=−1: Cu=+1'},{f:'WO₂',el:'W',ans:+4,w:'O=−2: W=+4'},{f:'CF₄',el:'C',ans:+4,w:'F=−1: C=+4'},{f:'CrF₃',el:'Cr',ans:+3,w:'F=−1: Cr=+3'},{f:'MnO₂',el:'Mn',ans:+4,w:'O=−2: Mn=+4'},{f:'N₂O₅',el:'N',ans:+5,w:'O=−2: N=+5'},{f:'Cr₂O₃',el:'Cr',ans:+3,w:'O=−2: Cr=+3'}];
+const oxIons=[{f:'NO₃⁻',el:'N',ch:-1,ans:+5,w:'O=−2,charge=−1: N=+5'},{f:'SO₄²⁻',el:'S',ch:-2,ans:+6,w:'O=−2,charge=−2: S=+6'},{f:'MnO₄⁻',el:'Mn',ch:-1,ans:+7,w:'O=−2,charge=−1: Mn=+7'},{f:'CrO₄²⁻',el:'Cr',ch:-2,ans:+6,w:'O=−2,charge=−2: Cr=+6'},{f:'Cr₂O₇²⁻',el:'Cr',ch:-2,ans:+6,w:'O=−2,charge=−2: Cr=+6'},{f:'PO₄³⁻',el:'P',ch:-3,ans:+5,w:'O=−2,charge=−3: P=+5'},{f:'ClO₄⁻',el:'Cl',ch:-1,ans:+7,w:'O=−2,charge=−1: Cl=+7'}];
+
+function pick2(){let i=Math.floor(Math.random()*RT.length),j=Math.floor(Math.random()*RT.length);while(j===i)j=Math.floor(Math.random()*RT.length);return[RT[i],RT[j]];}
+const gcd=(a,b)=>b===0?a:gcd(b,a%b);
+const lcm=(a,b)=>a*b/gcd(a,b);
+
+function genRedox(){
+    const basic=['ox_state','ecell'];
+    const inter=['ox_state','ox_ion','ecell','ecell_identify'];
+    const adv=['ox_state','ox_ion','ecell_identify','electrons','ecell_full'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    if(t==='ox_state'){const c=oxCpds[Math.floor(Math.random()*oxCpds.length)];return{question:`What is the oxidation state of ${c.el} in ${c.f}?`,given:`${c.f} — neutral compound\nRules: O=−2, H=+1, F=−1, alkali metals=+1, alkaline earth=+2`,answer:c.ans,unit:'',steps:[c.w,`Oxidation state of ${c.el} = ${c.ans}`],hint:`Assign known oxidation states first. All must sum to the overall charge (0 for neutral compounds).`};}
+    if(t==='ox_ion'){const c=oxIons[Math.floor(Math.random()*oxIons.length)];return{question:`What is the oxidation state of ${c.el} in ${c.f}?`,given:`${c.f} — ion with charge ${c.ch}\nRules: O=−2, H=+1`,answer:c.ans,unit:'',steps:[c.w,`Oxidation state of ${c.el} = ${c.ans}`],hint:`Sum of oxidation states = ion charge (not zero for ions!)`};}
+    if(t==='ecell'){const[m1,m2]=pick2(),cat=m1.E>m2.E?m1:m2,an=m1.E>m2.E?m2:m1,E=parseFloat((cat.E-an.E).toFixed(2));return{question:`Calculate E°cell for a cell with ${cat.metal} cathode and ${an.metal} anode.`,given:`E°(${cat.ion}/${cat.metal})=${cat.E} V\nE°(${an.ion}/${an.metal})=${an.E} V`,answer:E,unit:'V',steps:[`E°cell=E°cathode−E°anode=${cat.E}−(${an.E})=${E} V`],hint:`E°cell = E°cathode − E°anode`};}
+    if(t==='ecell_identify'){const[m1,m2]=pick2(),cat=m1.E>m2.E?m1:m2,an=m1.E>m2.E?m2:m1,E=parseFloat((cat.E-an.E).toFixed(2));return{question:`A galvanic cell uses ${m1.metal} and ${m2.metal}. Which is the cathode? Enter E°cell (V).`,given:`E°(${m1.ion}/${m1.metal})=${m1.E} V\nE°(${m2.ion}/${m2.metal})=${m2.E} V`,answer:E,unit:'V',steps:[`Higher E° → cathode: ${cat.metal} (${cat.E} V)`,`${an.metal} is the anode (${an.E} V)`,`E°cell=${cat.E}−(${an.E})=${E} V`],hint:`Cathode = higher reduction potential. E°cell = E°cathode − E°anode.`};}
+    if(t==='electrons'){const[m1,m2]=pick2(),cat=m1.E>m2.E?m1:m2,an=m1.E>m2.E?m2:m1,ne=lcm(cat.n,an.n);return{question:`In a galvanic cell with ${cat.metal} cathode and ${an.metal} anode, how many electrons are transferred per formula unit?`,given:`Cathode: ${cat.ion}+${cat.n}e⁻→${cat.metal}\nAnode: ${an.metal}→${an.ion}+${an.n}e⁻`,answer:ne,unit:'electrons',steps:[`Cathode needs ${cat.n}e⁻; Anode gives ${an.n}e⁻`,`LCM(${cat.n},${an.n})=${ne} electrons transferred`],hint:`Electrons gained = electrons lost. Find LCM of the two n values.`};}
+    // ADVANCED MULTI-STEP: identify everything + E°cell + electrons
+    const[m1,m2]=pick2(),cat=m1.E>m2.E?m1:m2,an=m1.E>m2.E?m2:m1;
+    const E=parseFloat((cat.E-an.E).toFixed(2)),ne=lcm(cat.n,an.n);
+    return{question:`A cell is built with ${m1.metal} and ${m2.metal}. (1) Identify cathode and anode. (2) Write the number of electrons transferred. (3) Enter E°cell as your answer.`,given:`E°(${m1.ion}/${m1.metal})=${m1.E} V\nE°(${m2.ion}/${m2.metal})=${m2.E} V`,answer:E,unit:'V',steps:[`Step 1: ${cat.metal}(${cat.E} V) > ${an.metal}(${an.E} V) → ${cat.metal}=CATHODE, ${an.metal}=ANODE`,`Step 2: LCM(${cat.n},${an.n})=${ne} electrons transferred`,`Step 3: E°cell=${cat.E}−(${an.E})=${E} V`],hint:`Compare E° values: higher=cathode. Then E°cell=E°cathode−E°anode.`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// NUCLEAR
+// ══════════════════════════════════════════════════════════════════════════════
+function genNuclear(){
+    const basic=['remain_n','remain_time'];
+    const inter=['remain_n','remain_time','count_halflives','fraction'];
+    const adv=['decay_constant','find_age','remain_then_lambda'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+    const isos=[{n:'C-14',t:5730,u:'years'},{n:'I-131',t:8.02,u:'days'},{n:'Ra-226',t:1600,u:'years'},{n:'Po-210',t:138.4,u:'days'},{n:'Sr-90',t:28.8,u:'years'},{n:'Tc-99m',t:6.01,u:'hours'}];
+    const iso=isos[Math.floor(Math.random()*isos.length)];
+
+    if(t==='remain_n'){const n=r(1,5),m0=r(100,1000,1),rem=m0*Math.pow(0.5,n);return{question:`A ${m0} g sample of ${iso.n} undergoes ${n} half-lives. How much remains?`,given:`m₀=${m0} g, n=${n} half-lives`,answer:rem,unit:'g',steps:[`remaining=m₀×(½)^n=${m0}×(0.5)^${n}=${rem.toFixed(4)} g`],hint:`remaining = initial × (½)^n`};}
+    if(t==='remain_time'){const n=r(1,5),time=n*iso.t,m0=r(100,800,1),rem=m0*Math.pow(0.5,n);return{question:`How much of a ${m0} g sample of ${iso.n} remains after ${time} ${iso.u}? (t½=${iso.t} ${iso.u})`,given:`m₀=${m0} g, t=${time} ${iso.u}, t½=${iso.t} ${iso.u}`,answer:rem,unit:'g',steps:[`n=t/t½=${time}/${iso.t}=${n} half-lives`,`remaining=${m0}×(0.5)^${n}=${rem.toFixed(4)} g`],hint:`First find n = t/t½, then remaining = m₀×(½)^n`};}
+    if(t==='count_halflives'){const n=r(2,5),m0=r(200,1000,1),rem=m0*Math.pow(0.5,n);return{question:`A ${m0} g sample of ${iso.n} decays to ${rem.toFixed(2)} g. How many half-lives have passed?`,given:`m₀=${m0} g, remaining=${rem.toFixed(2)} g`,answer:n,unit:'half-lives',steps:[`fraction=${rem.toFixed(2)}/${m0}=(½)^n → n=${n}`],hint:`n = log(remaining/initial) / log(0.5)`};}
+    if(t==='fraction'){const n=r(1,5),f=Math.pow(0.5,n);return{question:`What fraction of a sample remains after ${n} half-lives?`,given:`n=${n}`,answer:f,unit:'',steps:[`fraction=(½)^${n}=${f}`],hint:`After each half-life, exactly half remains.`};}
+    // ADVANCED MULTI-STEP
+    if(t==='decay_constant'){const lambda=Math.log(2)/iso.t;return{question:`Calculate the decay constant λ for ${iso.n} (t½=${iso.t} ${iso.u}). Then confirm: what fraction remains after 1 half-life using e^(−λt)? Enter λ as your answer.`,given:`t½=${iso.t} ${iso.u}`,answer:lambda,unit:iso.u+'⁻¹',steps:[`λ=ln(2)/t½=0.6931/${iso.t}=${lambda.toExponential(4)} ${iso.u}⁻¹`,`Check: e^(−λ×t½)=e^(−0.6931)=0.5 ✓`],hint:`λ = ln(2)/t½ = 0.6931/t½`};}
+    if(t==='find_age'){
+        // Given remaining fraction, find age
+        const frac=r(0.05,0.8,3),age=-Math.log(frac)/Math.log(2)*iso.t;
+        return{question:`A sample of ${iso.n} (t½=${iso.t} ${iso.u}) has decayed to ${(frac*100).toFixed(1)}% of its original amount. How old is the sample?`,given:`Fraction remaining=${frac}, t½=${iso.t} ${iso.u}`,answer:age,unit:iso.u,steps:[`n=log(${frac})/log(0.5)=${(-Math.log(frac)/Math.log(2)).toFixed(4)} half-lives`,`Age=n×t½=${(-Math.log(frac)/Math.log(2)).toFixed(4)}×${iso.t}=${age.toFixed(2)} ${iso.u}`],hint:`n = log(fraction)/log(0.5), then age = n × t½.`};
+    }
+    // remain_then_lambda: given m₀ and t, find remaining mass then λ
+    const t_elapsed=r(1,4)*iso.t,m0=r(100,500,1),n_hl=t_elapsed/iso.t,rem=m0*Math.pow(0.5,n_hl),lambda=Math.log(2)/iso.t;
+    return{question:`A ${m0} g sample of ${iso.n} (t½=${iso.t} ${iso.u}) has been decaying for ${t_elapsed} ${iso.u}. (1) How much remains? (2) What is λ? Enter the remaining mass as your answer.`,given:`m₀=${m0} g, t=${t_elapsed} ${iso.u}, t½=${iso.t} ${iso.u}`,answer:rem,unit:'g',steps:[`Step 1: n=${t_elapsed}/${iso.t}=${n_hl} half-lives`,`Step 2: remaining=${m0}×(0.5)^${n_hl}=${rem.toFixed(3)} g`,`Step 3: λ=ln(2)/t½=${lambda.toExponential(4)} ${iso.u}⁻¹`],hint:`n=t/t½ first, then remaining=m₀×(½)^n. Advanced: also know λ=ln2/t½.`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CHECK / FEEDBACK
+// ══════════════════════════════════════════════════════════════════════════════
+function checkAnswer(){
+    const ua=parseFloat(document.getElementById('answerInput').value);
+    if(isNaN(ua)){alert('Please enter a number');return;}
+    stats.a++;
+    const tol=Math.max(Math.abs(prob.answer)*0.02,0.001);
+    const ok=Math.abs(ua-prob.answer)<=tol;
+    if(ok)stats.c++;
+    updateStats();
+    const fb=document.getElementById('feedback');
+    const ans=Math.abs(prob.answer)<1e-4&&prob.answer!==0?prob.answer.toExponential(4):parseFloat(prob.answer.toFixed(4));
+    fb.className='feedback '+(ok?'correct':'incorrect');
+    fb.innerHTML=`<div class="fb-title">${ok?'✓ Correct!':'✗ Not quite'}</div>${!ok?`<p>Your answer: ${ua} ${prob.unit}</p>`:''}<p>Correct answer: ${ans} ${chemFmt(prob.unit)}</p><div class="solution"><h4>Solution Steps:</h4>${prob.steps.map(s=>`<div class="step">${chemFmt(s)}</div>`).join('')}</div>`;
+}
+
+function showHint(){
+    if(hinted)return;
+    hinted=true;
+    document.getElementById('feedback').innerHTML=`<div class="hint-box"><div class="given-data">${chemFmt(prob.given.replace(/\n/g,'<br>'))}</div><br>💡 ${chemFmt(prob.hint)}</div>`;
+}
+
+function updateStats(){
+    document.getElementById('sAttempted').textContent=stats.a;
+    document.getElementById('sCorrect').textContent=stats.c;
+    document.getElementById('sAccuracy').textContent=stats.a>0?(stats.c/stats.a*100).toFixed(0)+'%':'—';
+}
+
+document.getElementById('answerInput').addEventListener('keypress',e=>{if(e.key==='Enter')checkAnswer();});
+</script>
+</body>
+</html>
