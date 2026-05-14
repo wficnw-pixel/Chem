@@ -252,6 +252,9 @@ document.querySelectorAll('.diff-btn').forEach(b=>b.addEventListener('click',fun
 }));
 
 function r(a,b,d=0){const v=Math.random()*(b-a)+a;return d===0?Math.round(v):parseFloat(v.toFixed(d));}
+function shuffle(a){const s=a.slice();for(let i=s.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[s[i],s[j]]=[s[j],s[i]];}return s;}
+function mcPick(correct,wrongPool,n=3){const ws=shuffle(wrongPool).slice(0,n);const opts=shuffle([{lab:correct,c:true},...ws.map(w=>({lab:w,c:false}))]);const ans=opts.findIndex(o=>o.c)+1;const q=opts.map((o,i)=>`\n${i+1} = ${o.lab}`).join('');return{opts,ans,q};}
+
 
 // Convert Unicode sub/superscripts → proper HTML tags so formulas render cleanly
 function chemFmt(s){
@@ -1370,48 +1373,28 @@ function genMatter(){
     const t=pool[Math.floor(Math.random()*pool.length)];
 
     if(t==='classify_pure_mixture'){
-        const items=[
-            {sub:'Ocean water',ans:2,name:'Mixture',r:'Ocean water contains water plus dissolved salts and other substances → Mixture'},
-            {sub:'Graphite (C)',ans:1,name:'Pure substance',r:'Graphite is made entirely of carbon atoms — one type of substance → Pure substance'},
-            {sub:"Fool's gold (FeS₂)",ans:1,name:'Pure substance',r:'FeS₂ is a single compound with a fixed composition → Pure substance'},
-            {sub:'Chocolate',ans:2,name:'Mixture',r:'Chocolate contains cocoa, sugar, fat, etc. mixed together → Mixture'},
-            {sub:'Sulfur (S)',ans:1,name:'Pure substance',r:'Sulfur is a single element with fixed composition → Pure substance'},
-            {sub:'Carbon monoxide (CO)',ans:1,name:'Pure substance',r:'CO is a single compound — always 1 C to 1 O → Pure substance'},
-            {sub:'Pizza',ans:2,name:'Mixture',r:'Pizza contains many different substances → Mixture'},
-            {sub:'Diamond (C)',ans:1,name:'Pure substance',r:'Diamond is pure carbon — one type of atom → Pure substance'},
-            {sub:'Mud water',ans:2,name:'Mixture',r:'Mud in water is a mixture — not uniform throughout → Mixture'},
-            {sub:'Kool-Aid',ans:2,name:'Mixture',r:'Kool-Aid is a mixture of water, sugar, and flavoring → Mixture'},
-            {sub:'Chalk (CaCO₃)',ans:1,name:'Pure substance',r:'CaCO₃ is a pure compound with fixed composition → Pure substance'},
-            {sub:'Sand',ans:1,name:'Pure substance',r:'Sand (SiO₂) is a pure compound → Pure substance'},
-        ];
-        const it=items[Math.floor(Math.random()*items.length)];
-        return{question:`Classify as a Pure substance (P) or Mixture (M):\n"${it.sub}"\n\n1 = Pure substance\n2 = Mixture\n\nEnter the number.`,
-            given:`Substance: ${it.sub}`,answer:it.ans,unit:`(= ${it.name})`,
-            steps:[it.r],
-            hint:`Pure substance: fixed composition, cannot be separated by physical means (elements + compounds). Mixture: two or more substances physically combined, variable composition.`};
+        const pures=['Graphite (C)','Diamond (C)','Sulfur (S)','Carbon monoxide (CO)','Table salt (NaCl)','Distilled water (H₂O)','Iron (Fe)','Chalk (CaCO₃)','Oxygen (O₂)','Silicon (Si)','Copper (Cu)',"Fool's gold (FeS₂)"];
+        const mixtures=['Ocean water','Chocolate','Pizza','Mud water','Kool-Aid','Air','Milk','Salad dressing','Brass alloy','Sand and water','Vinegar','Granite'];
+        const askPure=Math.random()>0.5;
+        const correct=shuffle(askPure?pures:mixtures)[0];
+        const {ans,q}=mcPick(correct,askPure?mixtures:pures);
+        return{question:`Which of the following is a ${askPure?'pure substance':'mixture'}?${q}`,
+            given:'Pure substance: fixed composition, cannot be separated by physical means.\nMixture: two or more substances physically combined.',
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`${correct} is a ${askPure?'pure substance — it has a fixed, definite composition':'mixture — it contains multiple substances physically combined'}`],
+            hint:'Pure: fixed composition (elements + compounds). Mixture: variable composition, can be physically separated.'};
     }
     if(t==='element_compound'){
-        const items=[
-            {sub:'Lead (Pb)',ans:1,name:'Element',r:'Lead is a single element — only Pb atoms → Element'},
-            {sub:'Water (H₂O)',ans:2,name:'Compound',r:'Water contains H and O chemically bonded in a 2:1 ratio → Compound'},
-            {sub:'Boron (B)',ans:1,name:'Element',r:'Boron is a single element — only B atoms → Element'},
-            {sub:'Sodium bicarbonate (NaHCO₃)',ans:2,name:'Compound',r:'NaHCO₃ contains Na, H, C, and O chemically bonded → Compound'},
-            {sub:'Magnesium (Mg)',ans:1,name:'Element',r:'Mg is a single element → Element'},
-            {sub:'Vanadium (V)',ans:1,name:'Element',r:'Vanadium is a single element → Element'},
-            {sub:'Mg₃(PO₄)₂',ans:2,name:'Compound',r:'Mg₃(PO₄)₂ contains Mg, P, and O chemically bonded → Compound'},
-            {sub:'AlCl₃',ans:2,name:'Compound',r:'AlCl₃ contains Al and Cl chemically bonded → Compound'},
-            {sub:'Zinc (Zn)',ans:1,name:'Element',r:'Zinc is a single element → Element'},
-            {sub:'Iron(III) oxide (Fe₂O₃)',ans:2,name:'Compound',r:'Fe₂O₃ contains Fe and O chemically bonded → Compound'},
-            {sub:'Oxygen gas (O₂)',ans:1,name:'Element',r:'O₂ contains only oxygen atoms — it is a diatomic element → Element'},
-            {sub:'Carbon dioxide (CO₂)',ans:2,name:'Compound',r:'CO₂ contains C and O chemically bonded in a fixed ratio → Compound'},
-            {sub:'Sodium borohydride (NaBH₄)',ans:2,name:'Compound',r:'NaBH₄ contains Na, B, and H chemically bonded → Compound'},
-            {sub:'Thallium (Tl)',ans:1,name:'Element',r:'Thallium is a single element → Element'},
-        ];
-        const it=items[Math.floor(Math.random()*items.length)];
-        return{question:`Is the following an Element (E) or Compound (C)?\n"${it.sub}"\n\n1 = Element\n2 = Compound\n\nEnter the number.`,
-            given:`Substance: ${it.sub}`,answer:it.ans,unit:`(= ${it.name})`,
-            steps:[it.r],
-            hint:`Element: made of only ONE type of atom (check periodic table). Compound: two or more different elements chemically bonded in a fixed ratio.`};
+        const elements=['Lead (Pb)','Boron (B)','Magnesium (Mg)','Vanadium (V)','Zinc (Zn)','Oxygen (O₂)','Thallium (Tl)','Copper (Cu)','Iron (Fe)','Sodium (Na)','Argon (Ar)'];
+        const compounds=['Water (H₂O)','Sodium bicarbonate (NaHCO₃)','Mg₃(PO₄)₂','AlCl₃','Iron(III) oxide (Fe₂O₃)','Carbon dioxide (CO₂)','Sodium borohydride (NaBH₄)','Ammonia (NH₃)','Table salt (NaCl)','Glucose (C₆H₁₂O₆)'];
+        const askEl=Math.random()>0.5;
+        const correct=shuffle(askEl?elements:compounds)[0];
+        const {ans,q}=mcPick(correct,askEl?compounds:elements);
+        return{question:`Which of the following is ${askEl?'an element':'a compound'}?${q}`,
+            given:`${askEl?'Element: made of only ONE type of atom.':'Compound: two or more different elements chemically bonded in a fixed ratio.'}`,
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`${correct} is ${askEl?'an element — it contains only one type of atom':'a compound — it contains two or more different elements chemically bonded'}`],
+            hint:'Element: one type of atom, found on the periodic table. Compound: two or more elements bonded in a fixed ratio (has a chemical formula with multiple element symbols).'};
     }
     if(t==='classify_detail'){
         const items=[
@@ -1436,28 +1419,23 @@ function genMatter(){
             hint:`Element: 1 atom type. Compound: pure, 2+ elements bonded. Solution: uniform mixture (particles < 1nm). Colloid: particles 1–100nm (scatter light). Suspension: particles > 100nm (settle out).`};
     }
     if(t==='metal_nonmetal_metalloid'){
-        // Metalloids: B, Si, Ge, As, Sb, Te, Po
-        const elements=[
-            {sym:'Sodium (Na)',ans:1,name:'Metal'},{sym:'Hydrogen (H)',ans:2,name:'Nonmetal'},
-            {sym:'Calcium (Ca)',ans:1,name:'Metal'},{sym:'Silicon (Si)',ans:3,name:'Metalloid'},
-            {sym:'Aluminum (Al)',ans:1,name:'Metal'},{sym:'Mercury (Hg)',ans:1,name:'Metal'},
-            {sym:'Iodine (I)',ans:2,name:'Nonmetal'},{sym:'Xenon (Xe)',ans:2,name:'Nonmetal'},
-            {sym:'Carbon (C)',ans:2,name:'Nonmetal'},{sym:'Oxygen (O)',ans:2,name:'Nonmetal'},
-            {sym:'Bromine (Br)',ans:2,name:'Nonmetal'},{sym:'Nitrogen (N)',ans:2,name:'Nonmetal'},
-            {sym:'Gold (Au)',ans:1,name:'Metal'},{sym:'Boron (B)',ans:3,name:'Metalloid'},
-            {sym:'Cesium (Cs)',ans:1,name:'Metal'},{sym:'Uranium (U)',ans:1,name:'Metal'},
-            {sym:'Arsenic (As)',ans:3,name:'Metalloid'},{sym:'Germanium (Ge)',ans:3,name:'Metalloid'},
-            {sym:'Sulfur (S)',ans:2,name:'Nonmetal'},{sym:'Iron (Fe)',ans:1,name:'Metal'},
-            {sym:'Chlorine (Cl)',ans:2,name:'Nonmetal'},{sym:'Antimony (Sb)',ans:3,name:'Metalloid'},
-        ];
-        const el=elements[Math.floor(Math.random()*elements.length)];
-        return{question:`Classify the element:\n"${el.sym}"\n\n1 = Metal\n2 = Nonmetal\n3 = Metalloid\n\nEnter the number.`,
-            given:`Element: ${el.sym}`,answer:el.ans,unit:`(= ${el.name})`,
-            steps:[`${el.sym} is a ${el.name}`,
-                el.ans===3?`Metalloids (semimetals): B, Si, Ge, As, Sb, Te, Po — along the staircase on the periodic table`:
-                el.ans===1?`Metals: left side and center of the periodic table. Properties: shiny, malleable, conduct electricity`:
-                `Nonmetals: upper right of the periodic table. Properties: dull, brittle, poor conductors`],
-            hint:`Metalloids (staircase): B, Si, Ge, As, Sb, Te, Po. Metals: left/center. Nonmetals: upper right.`};
+        const metals=['Na','Ca','Al','Hg','Au','Cs','U','Fe','Cu','K','Mg','Pb','Zn','Ba','Ag'];
+        const nonmetals=['H','I','Xe','C','O','Br','N','S','Cl','F','P','Se','Ne','Ar'];
+        const metalloids=['B','Si','Ge','As','Sb','Te'];
+        const cats=[{name:'Metal',pool:metals},{name:'Nonmetal',pool:nonmetals},{name:'Metalloid',pool:metalloids}];
+        // Pick which category to ask about, pick 1 correct + 3 from other categories
+        const targetCat=cats[Math.floor(Math.random()*cats.length)];
+        const correct=shuffle(targetCat.pool)[0];
+        const wrongPool=shuffle(cats.filter(c=>c.name!==targetCat.name).flatMap(c=>c.pool));
+        const {ans,q}=mcPick(correct,wrongPool);
+        return{question:`Which of the following elements is a ${targetCat.name.toLowerCase()}?${q}`,
+            given:'Metals: left/center of periodic table. Nonmetals: upper right. Metalloids: B, Si, Ge, As, Sb, Te (staircase).',
+            answer:ans,unit:`(= ${correct}, a ${targetCat.name})`,
+            steps:[`${correct} is a ${targetCat.name}`,
+                targetCat.name==='Metalloid'?'Metalloids lie along the staircase: B, Si, Ge, As, Sb, Te, Po':
+                targetCat.name==='Metal'?'Metals are on the left side and center (d-block) of the periodic table':
+                'Nonmetals are in the upper-right of the periodic table'],
+            hint:'Metalloids (staircase): B, Si, Ge, As, Sb, Te, Po. Metals: left/center. Nonmetals: upper right.'};
     }
     if(t==='periodic_family'){
         const elements=[
@@ -1518,73 +1496,40 @@ function genMatter(){
             hint:`Multiply the coefficient × (sum of all subscripts in the formula). Subscripts inside parentheses multiply by the number outside.`};
     }
     if(t==='phys_chem_change'){
-        const changes=[
-            {desc:'Mothballs gradually vaporize in a closet',ans:1,name:'Physical change',r:'Mothballs sublimate (solid→gas) but the substance is chemically unchanged → Physical change'},
-            {desc:"Chemistry students get holes in clothes from lab acids",ans:2,name:'Chemical change',r:'Acid reacts with fabric to destroy it chemically — new substances form → Chemical change'},
-            {desc:'An antacid tablet fizzes and releases CO₂ gas when dissolved in water',ans:2,name:'Chemical change',r:'A gas (CO₂) is produced — a new substance forms → Chemical change'},
-            {desc:'Magnesium added to HCl produces MgCl₂ and H₂ gas',ans:2,name:'Chemical change',r:'New substances (MgCl₂ and H₂) are produced → Chemical change'},
-            {desc:'Opening a soda can releases CO₂ gas',ans:1,name:'Physical change',r:'CO₂ was already dissolved — releasing it is a physical process, no new substance forms → Physical change'},
-            {desc:'Acetone is used to dissolve and remove nail polish',ans:1,name:'Physical change',r:'Dissolving is a physical process — the nail polish molecules are not changed chemically → Physical change'},
-            {desc:'You burn propane when you grill',ans:2,name:'Chemical change',r:'Combustion produces CO₂ and H₂O — new substances → Chemical change'},
-            {desc:'A flashlight battery corrodes on prolonged storage',ans:2,name:'Chemical change',r:'Corrosion is a chemical reaction — new substances form → Chemical change'},
-            {desc:'You make Kool-Aid by mixing it with water',ans:1,name:'Physical change',r:'Dissolving is a physical process — no new substances form → Physical change'},
-            {desc:'Whole milk curdles when you add vinegar',ans:2,name:'Chemical change',r:'Proteins change structure irreversibly — new substance forms → Chemical change'},
-            {desc:'When copper rusts, it turns green',ans:2,name:'Chemical change',r:'Copper reacts with O₂/CO₂ to form malachite — new substance → Chemical change'},
-            {desc:'A piece of rubber stretches when you pull it',ans:1,name:'Physical change',r:'Shape changes but the rubber is chemically unchanged → Physical change'},
-            {desc:'Calcium chloride lowers the freezing point of water',ans:1,name:'Physical change',r:'CaCl₂ dissolves (physical process) and lowers freezing point — no new substance forms → Physical change'},
-            {desc:'A Hoffman apparatus separates water into H₂ and O₂ gases',ans:2,name:'Chemical change',r:'Electrolysis breaks water into its elements — new substances (H₂, O₂) → Chemical change'},
-            {desc:'Filtration separates a mixture of sand and water',ans:1,name:'Physical change',r:'Filtration separates by physical means — no new substances form → Physical change'},
-            {desc:'Ice melting into liquid water',ans:1,name:'Physical change',r:'Only the state changes — H₂O molecules are unchanged → Physical change'},
-            {desc:'Wood burning in a fire',ans:2,name:'Chemical change',r:'New substances form (CO₂, H₂O, ash) — irreversible → Chemical change'},
-            {desc:'Dry ice (solid CO₂) subliming',ans:1,name:'Physical change',r:'CO₂ changes state (solid→gas) but is chemically unchanged → Physical change'},
-            {desc:'Baking a cake',ans:2,name:'Chemical change',r:'Irreversible reactions occur — new substances and textures form → Chemical change'},
-            {desc:'Dissolving salt in water',ans:1,name:'Physical change',r:'NaCl ions separate into water but no new substance forms → Physical change'},
-            {desc:'Burning your chemistry book',ans:2,name:'Chemical change',r:'Combustion produces CO₂, H₂O, and ash — new substances → Chemical change'},
-        ];
-        const ch=changes[Math.floor(Math.random()*changes.length)];
-        return{question:`Physical or chemical change?\n"${ch.desc}"\n\n1 = Physical change\n2 = Chemical change\n\nEnter the number.`,
-            given:`Observation: ${ch.desc}`,answer:ch.ans,unit:`(= ${ch.name})`,
-            steps:[ch.r],
-            hint:`Physical: no new substance, usually reversible (dissolving, melting, boiling, cutting). Chemical: new substance(s) form, often irreversible (burning, rusting, reacting, souring).`};
+        const phys=['Mothballs vaporizing in a closet','Opening a soda can (CO₂ releases)','Acetone dissolving nail polish','Making Kool-Aid by mixing with water','A rubber band stretching','Ice melting into liquid water','Dry ice subliming','Dissolving salt in water','Filtration separating sand and water','Boiling water on a stove','Cutting paper into pieces','CaCl₂ dissolving in water'];
+        const chem=['Acid eating holes in clothing','Antacid tablet fizzing in water (CO₂ produced)','Mg + HCl → MgCl₂ + H₂','Burning propane on a grill','Battery corroding in storage','Milk curdling when vinegar is added','Copper turning green when it rusts','A Hoffman apparatus splitting water into H₂ and O₂','Baking a cake','Burning wood in a fire','Iron rusting in air','An egg frying'];
+        const askPhys=Math.random()>0.5;
+        const correct=shuffle(askPhys?phys:chem)[0];
+        const {ans,q}=mcPick(correct,askPhys?chem:phys);
+        return{question:`Which of the following is a ${askPhys?'physical':'chemical'} change?${q}`,
+            given:`${askPhys?'Physical change: no new substance forms, usually reversible.':'Chemical change: new substance(s) form, often irreversible.'}`,
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`"${correct}" is a ${askPhys?'physical change — the substance is not chemically altered':'chemical change — new substances are formed'}`],
+            hint:'Physical: state changes, dissolving, shape changes — no new substance. Chemical: burning, rusting, reacting, souring — new substance forms.'};
     }
     if(t==='phys_chem_property'){
-        const props=[
-            {prop:'Copper is reddish in color',ans:1,name:'Physical property',r:'Color is observed without chemically changing copper → Physical property'},
-            {prop:'HCl is a very strong acid',ans:2,name:'Chemical property',r:'Acidity describes how HCl reacts with other substances → Chemical property'},
-            {prop:'Iron is magnetic',ans:1,name:'Physical property',r:'Magnetism is measured without changing iron chemically → Physical property'},
-            {prop:'Sodium reacts violently with water',ans:2,name:'Chemical property',r:'Reactivity with water describes a chemical change → Chemical property'},
-            {prop:'Magnesium ribbon is malleable',ans:1,name:'Physical property',r:'Malleability is a physical property — shape changes without new substance forming → Physical property'},
-            {prop:'Fluorine is a gas at room temperature',ans:1,name:'Physical property',r:'Physical state at room temperature is a physical property → Physical property'},
-            {prop:'Bromine is a liquid at room temperature',ans:1,name:'Physical property',r:'Physical state is observable without chemical change → Physical property'},
-            {prop:'Manganese dioxide is a strong oxidizer',ans:2,name:'Chemical property',r:'Oxidizing ability describes how MnO₂ reacts chemically → Chemical property'},
-            {prop:'Sand is not magnetic',ans:1,name:'Physical property',r:'Magnetism (or lack thereof) is measured without chemical change → Physical property'},
-            {prop:'Sugar is soluble in water',ans:1,name:'Physical property',r:'Solubility involves a physical process — sugar molecules are unchanged → Physical property'},
-        ];
-        const p=props[Math.floor(Math.random()*props.length)];
-        return{question:`Physical or chemical property?\n"${p.prop}"\n\n1 = Physical property\n2 = Chemical property\n\nEnter the number.`,
-            given:`Property: ${p.prop}`,answer:p.ans,unit:`(= ${p.name})`,
-            steps:[p.r],
-            hint:`Physical: observed/measured without changing chemical identity (color, density, mp, bp, magnetism). Chemical: describes ability to react or change into a new substance.`};
+        const phys=['Copper is reddish in color','Iron is magnetic','Magnesium ribbon is malleable','Fluorine is a gas at room temperature','Bromine is a liquid at room temperature','Sand is not magnetic','Sugar is soluble in water','Gold has a density of 19.3 g/mL','Water boils at 100°C','Aluminum is a good conductor of electricity'];
+        const chem=['HCl is a very strong acid','Sodium reacts violently with water','Manganese dioxide is a strong oxidizer','Iron can rust in moist air','Gasoline is highly flammable','Carbon dioxide does not support combustion','Zinc reacts with hydrochloric acid','Silver tarnishes in air'];
+        const askPhys=Math.random()>0.5;
+        const correct=shuffle(askPhys?phys:chem)[0];
+        const {ans,q}=mcPick(correct,askPhys?chem:phys);
+        return{question:`Which of the following is a ${askPhys?'physical':'chemical'} property?${q}`,
+            given:`${askPhys?'Physical property: observed/measured without changing chemical identity.':'Chemical property: describes how a substance reacts or changes into something new.'}`,
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`"${correct}" is a ${askPhys?'physical property — it can be observed without any chemical change':'chemical property — it describes how the substance reacts chemically'}`],
+            hint:'Physical: color, density, mp, bp, magnetism, conductivity. Chemical: flammability, reactivity, acidity, ability to rust/corrode.'};
     }
     if(t==='intensive_extensive'){
-        const props=[
-            {prop:'Chlorine gas is yellow',ans:1,name:'Intensive',r:'Color does not change with sample size → Intensive'},
-            {prop:'Calcium is not magnetic',ans:1,name:'Intensive',r:'Magnetic behavior is the same regardless of amount → Intensive'},
-            {prop:'There are 250 mL of mercury in this flask',ans:2,name:'Extensive',r:'Volume depends on how much mercury is present → Extensive'},
-            {prop:'The density of water is 1.00 g/mL',ans:1,name:'Intensive',r:'Density is the same for any sample of water → Intensive'},
-            {prop:'Francium is the most reactive metal',ans:1,name:'Intensive',r:'Reactivity is an intrinsic property, not dependent on amount → Intensive'},
-            {prop:'I massed out 0.72 grams of carbon',ans:2,name:'Extensive',r:'Mass depends on how much sample you have → Extensive'},
-            {prop:'The density of lead is 11.3 g/mL',ans:1,name:'Intensive',r:'Density is the same for any size sample of lead → Intensive'},
-            {prop:'A cup of water is 8 oz',ans:2,name:'Extensive',r:'Volume (8 oz) depends on the amount of water → Extensive'},
-            {prop:'Chlorine gas is yellow',ans:1,name:'Intensive',r:'Color is the same regardless of amount → Intensive'},
-            {prop:'Mass of a block of iron',ans:2,name:'Extensive',r:'Mass depends on the size of the block → Extensive'},
-            {prop:'Boiling point of ethanol (78.4°C)',ans:1,name:'Intensive',r:'Boiling point is the same no matter how much ethanol you have → Intensive'},
-        ];
-        const p=props[Math.floor(Math.random()*props.length)];
-        return{question:`Intensive or extensive property?\n"${p.prop}"\n\n1 = Intensive\n2 = Extensive\n\nEnter the number.`,
-            given:`Property: ${p.prop}`,answer:p.ans,unit:`(= ${p.name})`,
-            steps:[p.r],
-            hint:`Intensive: does NOT depend on amount (density, color, temperature, bp, mp). Extensive: DOES depend on amount (mass, volume, length).`};
+        const intensive=['Chlorine gas is yellow','Calcium is not magnetic','The density of water is 1.00 g/mL','Francium is the most reactive metal','The density of lead is 11.3 g/mL','Boiling point of ethanol (78.4°C)','Melting point of ice (0°C)','Color of gold (shiny yellow)','Temperature of boiling water (100°C)'];
+        const extensive=['250 mL of mercury in a flask','0.72 grams of carbon','A cup of water is 8 oz','Mass of a block of iron','Volume of a balloon','Length of a copper wire','Number of moles in a sample','Total heat energy stored in a sample'];
+        const askInt=Math.random()>0.5;
+        const correct=shuffle(askInt?intensive:extensive)[0];
+        const {ans,q}=mcPick(correct,askInt?extensive:intensive);
+        return{question:`Which of the following is ${askInt?'an intensive':'an extensive'} property?${q}`,
+            given:`${askInt?'Intensive: does NOT depend on the amount of substance.':'Extensive: DOES depend on the amount of substance.'}`,
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`"${correct}" is ${askInt?'intensive — it is the same regardless of how much sample you have':'extensive — it changes depending on how much sample you have'}`],
+            hint:'Intensive: density, color, temperature, bp, mp — same for any sample size. Extensive: mass, volume, length, moles — depend on amount.'};
     }
     if(t==='percent_composition'){
         // From Gunk lab / sample questions
@@ -1677,25 +1622,31 @@ function genNomencl(){
             hint:`The subscript after each element symbol tells you how many atoms are present. No subscript = 1.`};
     }
     if(t==='classify_bond_type'){
+        const allTypes=['Ionic','Nonpolar covalent','Polar covalent','Metallic'];
         const pairs=[
-            {a:'NaCl',t:1,r:'Na is a metal, Cl is a nonmetal → ionic bond'},
-            {a:'CO₂',t:2,r:'C and O are both nonmetals → covalent bond'},
-            {a:'Fe',t:3,r:'Iron is a pure metal → metallic bonding'},
-            {a:'MgO',t:1,r:'Mg is a metal, O is a nonmetal → ionic bond'},
-            {a:'HCl',t:2,r:'H and Cl are both nonmetals → polar covalent bond'},
-            {a:'Cu',t:3,r:'Copper is a pure metal → metallic bonding'},
-            {a:'H₂O',t:2,r:'H and O are both nonmetals → covalent bond'},
-            {a:'CaCl₂',t:1,r:'Ca is a metal, Cl is a nonmetal → ionic bond'},
-            {a:'Na',t:3,r:'Sodium is a pure metal → metallic bonding'},
-            {a:'N₂',t:2,r:'Both N atoms are nonmetals → covalent bond'},
-            {a:'Al₂O₃',t:1,r:'Al is a metal, O is a nonmetal → ionic bond'},
-            {a:'NH₃',t:2,r:'N and H are both nonmetals → covalent bond'},
+            {a:'NaCl',type:'Ionic',r:'Na is a metal, Cl is a nonmetal → ionic bond (large EN difference)'},
+            {a:'CO₂',type:'Nonpolar covalent',r:'Linear symmetric molecule — C=O dipoles cancel → nonpolar covalent'},
+            {a:'Fe',type:'Metallic',r:'Iron is a pure metal → metallic bonding (sea of electrons)'},
+            {a:'MgO',type:'Ionic',r:'Mg is a metal, O is a nonmetal → ionic bond'},
+            {a:'HCl',type:'Polar covalent',r:'H and Cl are both nonmetals but differ in EN (ΔEN = 0.9) → polar covalent bond'},
+            {a:'Cu',type:'Metallic',r:'Copper is a pure metal → metallic bonding'},
+            {a:'H₂O',type:'Polar covalent',r:'H and O are both nonmetals; O is more electronegative → polar covalent bonds'},
+            {a:'CaCl₂',type:'Ionic',r:'Ca is a metal, Cl is a nonmetal → ionic bond'},
+            {a:'Na',type:'Metallic',r:'Sodium is a pure metal → metallic bonding'},
+            {a:'N₂',type:'Nonpolar covalent',r:'Both N atoms are identical → zero EN difference → nonpolar covalent (triple bond)'},
+            {a:'Al₂O₃',type:'Ionic',r:'Al is a metal, O is a nonmetal → ionic bond'},
+            {a:'NH₃',type:'Polar covalent',r:'N and H are both nonmetals; N is more electronegative → polar covalent bonds'},
+            {a:'Cl₂',type:'Nonpolar covalent',r:'Both atoms are identical Cl → zero EN difference → nonpolar covalent bond'},
+            {a:'KBr',type:'Ionic',r:'K is a metal, Br is a nonmetal → ionic bond'},
+            {a:'Al',type:'Metallic',r:'Aluminum is a pure metal → metallic bonding'},
+            {a:'CH₄',type:'Nonpolar covalent',r:'Symmetric tetrahedral molecule, small C-H EN difference → nonpolar covalent'},
         ];
         const p=pairs[Math.floor(Math.random()*pairs.length)];
-        return{question:`What type of bonding is present in ${p.a}?\n\n1 = Ionic\n2 = Covalent\n3 = Metallic\n\nEnter the number.`,
-            given:`Substance: ${p.a}`,answer:p.t,unit:'(1=Ionic, 2=Covalent, 3=Metallic)',
-            steps:[p.r,`Answer: ${p.t}`],
-            hint:`Ionic: metal + nonmetal. Metallic: metal only. Covalent: nonmetal + nonmetal.`};
+        const {ans,q}=mcPick(p.type,allTypes.filter(l=>l!==p.type));
+        return{question:`What type of bonding is present in ${p.a}?${q}`,
+            given:`Substance: ${p.a}`,answer:ans,unit:`(= ${p.type})`,
+            steps:[p.r],
+            hint:`Ionic: metal + nonmetal. Metallic: pure metal element. Polar covalent: different nonmetals. Nonpolar covalent: same atom or near-zero EN difference.`};
     }
     if(t==='ion_charge_basic'){
         const ic=ionicCpds[Math.floor(Math.random()*ionicCpds.length)];
@@ -1877,27 +1828,31 @@ function genBonding(){
     const t=pool[Math.floor(Math.random()*pool.length)];
 
     if(t==='bond_type_mc'){
+        const allTypes=['Ionic','Nonpolar covalent','Polar covalent','Metallic'];
         const pairs=[
-            {a:'NaCl',t:1,r:'Na is a metal, Cl is a nonmetal → ionic bond (large EN difference)'},
-            {a:'CO₂',t:2,r:'C and O are both nonmetals → covalent bond'},
-            {a:'Fe',t:3,r:'Iron is a pure metal → metallic bonding (sea of electrons)'},
-            {a:'MgO',t:1,r:'Mg is a metal, O is a nonmetal → ionic bond'},
-            {a:'HCl',t:2,r:'H and Cl are both nonmetals → polar covalent bond'},
-            {a:'Cu',t:3,r:'Copper is a pure metal → metallic bonding'},
-            {a:'H₂O',t:2,r:'H and O are both nonmetals → covalent bond'},
-            {a:'CaCl₂',t:1,r:'Ca is a metal, Cl is a nonmetal → ionic bond'},
-            {a:'Na',t:3,r:'Sodium is a pure metal → metallic bonding'},
-            {a:'N₂',t:2,r:'Both N atoms are nonmetals → covalent (triple) bond'},
-            {a:'Al₂O₃',t:1,r:'Al is a metal, O is a nonmetal → ionic bond'},
-            {a:'SO₂',t:2,r:'S and O are both nonmetals → covalent bond'},
-            {a:'KBr',t:1,r:'K is a metal, Br is a nonmetal → ionic bond'},
-            {a:'NH₃',t:2,r:'N and H are both nonmetals → covalent bond'},
+            {a:'NaCl',type:'Ionic',r:'Na is a metal, Cl is a nonmetal → ionic bond (large EN difference)'},
+            {a:'CO₂',type:'Nonpolar covalent',r:'Linear symmetric molecule — C=O dipoles cancel → nonpolar covalent'},
+            {a:'Fe',type:'Metallic',r:'Iron is a pure metal → metallic bonding (sea of electrons)'},
+            {a:'MgO',type:'Ionic',r:'Mg is a metal, O is a nonmetal → ionic bond'},
+            {a:'HCl',type:'Polar covalent',r:'H and Cl are both nonmetals; ΔEN = 0.9 → polar covalent bond'},
+            {a:'Cu',type:'Metallic',r:'Copper is a pure metal → metallic bonding'},
+            {a:'H₂O',type:'Polar covalent',r:'H and O are both nonmetals; O is more electronegative → polar covalent bonds'},
+            {a:'CaCl₂',type:'Ionic',r:'Ca is a metal, Cl is a nonmetal → ionic bond'},
+            {a:'Na',type:'Metallic',r:'Sodium is a pure metal → metallic bonding'},
+            {a:'N₂',type:'Nonpolar covalent',r:'Both N atoms are identical → zero EN difference → nonpolar covalent (triple bond)'},
+            {a:'Al₂O₃',type:'Ionic',r:'Al is a metal, O is a nonmetal → ionic bond'},
+            {a:'SO₂',type:'Polar covalent',r:'S and O are both nonmetals; bent shape with EN difference → polar covalent bonds'},
+            {a:'KBr',type:'Ionic',r:'K is a metal, Br is a nonmetal → ionic bond'},
+            {a:'NH₃',type:'Polar covalent',r:'N and H are both nonmetals; N is more electronegative → polar covalent bonds'},
+            {a:'CH₄',type:'Nonpolar covalent',r:'Symmetric tetrahedral; small C-H EN difference → nonpolar covalent'},
+            {a:'Au',type:'Metallic',r:'Gold is a pure metal → metallic bonding'},
         ];
         const p=pairs[Math.floor(Math.random()*pairs.length)];
-        return{question:`What type of bonding is present in ${p.a}?\n\n1 = Ionic\n2 = Covalent\n3 = Metallic\n\nEnter the number.`,
-            given:`Substance: ${p.a}`,answer:p.t,unit:'(1=Ionic, 2=Covalent, 3=Metallic)',
-            steps:[p.r,`Answer: ${p.t}`],
-            hint:`Ionic: metal + nonmetal. Metallic: metal elements only. Covalent: nonmetal + nonmetal.`};
+        const {ans,q}=mcPick(p.type,allTypes.filter(l=>l!==p.type));
+        return{question:`What type of bonding is present in ${p.a}?${q}`,
+            given:`Substance: ${p.a}`,answer:ans,unit:`(= ${p.type})`,
+            steps:[p.r],
+            hint:`Ionic: metal + nonmetal. Metallic: pure metal element. Polar covalent: different nonmetals (EN diff 0.4–3.3). Nonpolar covalent: same atoms or near-zero EN difference.`};
     }
     if(t==='en_diff'){
         const bonds=[
@@ -1934,40 +1889,77 @@ function genBonding(){
             hint:`VSEPR: linear=180°, trigonal planar=120°, tetrahedral=109.5°. Lone pairs compress angles.`};
     }
     if(t==='imf_type'){
-        const imfs=[
-            {mol:'Ar (noble gas)',t:1,r:'Noble gas — no permanent dipole, no H on F/O/N → London dispersion forces only'},
-            {mol:'HF',t:3,r:'H is bonded directly to F (highly electronegative) → hydrogen bonding'},
-            {mol:'H₂O',t:3,r:'H is bonded to O → water molecules form strong hydrogen bonds'},
-            {mol:'HCl',t:2,r:'HCl is polar but H is not on F, O, or N → dipole-dipole forces'},
-            {mol:'CH₄',t:1,r:'CH₄ is nonpolar (tetrahedral, symmetric) → London dispersion forces only'},
-            {mol:'NH₃',t:3,r:'H is bonded to N → hydrogen bonding between NH₃ molecules'},
-            {mol:'CO₂',t:1,r:'CO₂ is linear and nonpolar overall → London dispersion forces only'},
-            {mol:'SO₂',t:2,r:'SO₂ is bent and polar, but no H on F/O/N → dipole-dipole forces'},
-            {mol:'I₂',t:1,r:'I₂ is nonpolar diatomic → London dispersion forces (strong due to many electrons)'},
-            {mol:'HBr',t:2,r:'HBr is polar but H is on Br (not F, O, N) → dipole-dipole forces'},
-        ];
-        const m=imfs[Math.floor(Math.random()*imfs.length)];
-        return{question:`What is the strongest intermolecular force (IMF) in ${m.mol}?\n\n1 = London dispersion\n2 = Dipole-dipole\n3 = Hydrogen bonding\n\nEnter the number.`,
-            given:`Molecule: ${m.mol}`,answer:m.t,unit:'(1=London, 2=Dipole-dipole, 3=H-bonding)',
-            steps:[m.r,`Answer: ${m.t}`],
-            hint:`H-bonding: H directly bonded to F, O, or N. Dipole-dipole: polar molecules. London: all molecules (only force in nonpolar).`};
+        const byIMF={
+            london:['Ar','CH₄','CO₂','I₂','N₂','CCl₄','Xe','O₂'],
+            dipole:['HCl','SO₂','HBr','CH₃Cl','PH₃','H₂S'],
+            hbond:['HF','H₂O','NH₃','CH₃OH','C₂H₅OH'],
+        };
+        const reasons={
+            'Ar':'noble gas — no dipole, no H on F/O/N → London dispersion only',
+            'CH₄':'symmetric tetrahedral nonpolar molecule → London dispersion only',
+            'CO₂':'linear nonpolar molecule (dipoles cancel) → London dispersion only',
+            'I₂':'nonpolar diatomic, but many electrons → strong London dispersion',
+            'N₂':'nonpolar diatomic (identical atoms) → London dispersion only',
+            'CCl₄':'symmetric tetrahedral nonpolar molecule → London dispersion only',
+            'Xe':'noble gas with many electrons → London dispersion only',
+            'O₂':'nonpolar diatomic (identical atoms) → London dispersion only',
+            'HCl':'polar diatomic, but H not on F/O/N → dipole-dipole forces',
+            'SO₂':'bent polar molecule, no H on F/O/N → dipole-dipole forces',
+            'HBr':'polar diatomic, H on Br (not F/O/N) → dipole-dipole forces',
+            'CH₃Cl':'polar molecule, no H on F/O/N → dipole-dipole forces',
+            'PH₃':'polar molecule, H on P (not F/O/N) → dipole-dipole forces',
+            'H₂S':'polar molecule, H on S (not F/O/N) → dipole-dipole forces',
+            'HF':'H bonded directly to F (most electronegative) → hydrogen bonding',
+            'H₂O':'H bonded to O → strong hydrogen bonding',
+            'NH₃':'H bonded to N → hydrogen bonding',
+            'CH₃OH':'O-H group present → hydrogen bonding',
+            'C₂H₅OH':'O-H group present → hydrogen bonding',
+        };
+        const typeLabels={london:'London dispersion',dipole:'Dipole-dipole',hbond:'Hydrogen bonding'};
+        const types=Object.keys(byIMF);
+        const targetType=types[Math.floor(Math.random()*3)];
+        const correct=shuffle(byIMF[targetType])[0];
+        const wrongPool=types.filter(ty=>ty!==targetType).flatMap(ty=>byIMF[ty]);
+        const {ans,q}=mcPick(correct,wrongPool);
+        return{question:`Which molecule has ${typeLabels[targetType]} as its strongest intermolecular force?${q}`,
+            given:'Consider whether H is bonded to F, O, or N; whether the molecule is polar; and its size',
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`${correct}: ${reasons[correct]}`],
+            hint:`H-bonding: H directly on F, O, or N. Dipole-dipole: polar molecule without H-bonding. London dispersion: nonpolar or noble gas.`};
     }
     if(t==='polar_nonpolar'){
-        const mols=[
-            {mol:'CO₂',p:1,r:'Linear — two C=O dipoles point in opposite directions and cancel → nonpolar'},
-            {mol:'H₂O',p:2,r:'Bent — the two O−H dipoles do not cancel → polar molecule'},
-            {mol:'NH₃',p:2,r:'Trigonal pyramidal — dipoles do not cancel → polar molecule'},
-            {mol:'CH₄',p:1,r:'Tetrahedral with all identical bonds — dipoles cancel → nonpolar'},
-            {mol:'HCl',p:2,r:'Diatomic with two different atoms — always polar'},
-            {mol:'CCl₄',p:1,r:'Tetrahedral with identical bonds — dipoles cancel → nonpolar'},
-            {mol:'SO₂',p:2,r:'Bent shape — dipoles do not cancel → polar molecule'},
-            {mol:'BF₃',p:1,r:'Trigonal planar with identical bonds — dipoles cancel → nonpolar'},
-        ];
-        const m=mols[Math.floor(Math.random()*mols.length)];
-        return{question:`Is ${m.mol} a polar or nonpolar molecule?\n\n1 = Nonpolar\n2 = Polar\n\nEnter the number.`,
-            given:`Molecule: ${m.mol}`,answer:m.p,unit:'(1=Nonpolar, 2=Polar)',
-            steps:[m.r],
-            hint:`Nonpolar if symmetric and bond dipoles cancel. Polar if dipoles don't cancel or molecule is asymmetric.`};
+        const polar=['H₂O','NH₃','HCl','SO₂','HBr','CH₃Cl','H₂S','PCl₃','HF','NO'];
+        const nonpolar=['CO₂','CH₄','CCl₄','BF₃','N₂','O₂','SF₆','CS₂','Cl₂','BeF₂'];
+        const reasons={
+            'H₂O':'bent geometry — O-H dipoles do not cancel → polar',
+            'NH₃':'trigonal pyramidal — N-H dipoles do not cancel → polar',
+            'HCl':'diatomic with two different atoms (ΔEN = 0.9) → polar',
+            'SO₂':'bent shape — S=O dipoles do not cancel → polar',
+            'HBr':'diatomic with two different atoms (ΔEN = 0.7) → polar',
+            'CH₃Cl':'tetrahedral but asymmetric substituents → polar',
+            'H₂S':'bent geometry like water — S-H dipoles do not cancel → polar',
+            'PCl₃':'trigonal pyramidal — P-Cl dipoles do not cancel → polar',
+            'HF':'diatomic with large EN difference (ΔEN = 1.9) → very polar',
+            'NO':'diatomic with different atoms → polar',
+            'CO₂':'linear — two C=O dipoles cancel exactly → nonpolar',
+            'CH₄':'symmetric tetrahedral — four C-H dipoles cancel → nonpolar',
+            'CCl₄':'symmetric tetrahedral — four C-Cl dipoles cancel → nonpolar',
+            'BF₃':'trigonal planar — three B-F dipoles cancel → nonpolar',
+            'N₂':'diatomic with identical atoms — zero EN difference → nonpolar',
+            'O₂':'diatomic with identical atoms — zero EN difference → nonpolar',
+            'SF₆':'octahedral — all S-F dipoles cancel → nonpolar',
+            'CS₂':'linear — two C=S dipoles cancel → nonpolar',
+            'Cl₂':'diatomic with identical atoms → nonpolar',
+            'BeF₂':'linear — two Be-F dipoles cancel → nonpolar',
+        };
+        const askPolar=Math.random()>0.5;
+        const correct=shuffle(askPolar?polar:nonpolar)[0];
+        const {ans,q}=mcPick(correct,askPolar?nonpolar:polar);
+        return{question:`Which of the following molecules is ${askPolar?'polar':'nonpolar'}?${q}`,
+            given:'Consider molecular geometry and whether bond dipoles cancel',
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`${correct}: ${reasons[correct]}`],
+            hint:`Polar: asymmetric geometry or different atoms where dipoles don't cancel. Nonpolar: symmetric with identical bonds, or same atoms.`};
     }
     return{question:'What type of bond is in NaCl?\n\n1 = Ionic\n2 = Covalent\n3 = Metallic\n\nEnter the number.',
         given:'NaCl: Na is a metal, Cl is a nonmetal',answer:1,unit:'(1=Ionic)',
@@ -2030,29 +2022,51 @@ function genStates(){
             hint:`q = m × ΔHvap. Vaporization requires far more energy than melting.`};
     }
     if(t==='phase_direction'){
-        const trends=[
-            {prop:'vapor pressure',dir:2,r:'Stronger IMFs hold molecules in the liquid → fewer escape → lower vapor pressure'},
-            {prop:'boiling point',dir:1,r:'Stronger IMFs → more energy needed to overcome attractions → higher boiling point'},
-            {prop:'melting point',dir:1,r:'Stronger IMFs → more energy needed to break the solid structure → higher melting point'},
+        const questions=[
+            {q:'Which statement about IMF strength and boiling point is CORRECT?',
+             correct:'Stronger IMFs → higher boiling point (more energy needed to separate molecules)',
+             wrong:['Stronger IMFs → lower boiling point','IMF strength does not affect boiling point','Only molecular mass determines boiling point']},
+            {q:'Which statement about IMF strength and vapor pressure is CORRECT?',
+             correct:'Stronger IMFs → lower vapor pressure (molecules held in the liquid more tightly)',
+             wrong:['Stronger IMFs → higher vapor pressure','IMF strength does not affect vapor pressure','Only temperature determines vapor pressure']},
+            {q:'Which statement about IMF strength and melting point is CORRECT?',
+             correct:'Stronger IMFs → higher melting point (more energy needed to overcome attractions in the solid)',
+             wrong:['Stronger IMFs → lower melting point','Melting point is independent of IMF strength','Only ionic compounds have measurable melting points']},
+            {q:'Which change would INCREASE the boiling point of a substance?',
+             correct:'Increasing IMF strength (e.g., adding hydrogen bonding)',
+             wrong:['Decreasing molecular size','Removing all polar bonds','Switching from liquid to gas phase']},
         ];
-        const tr=trends[Math.floor(Math.random()*trends.length)];
-        return{question:`As intermolecular force (IMF) strength increases, what happens to the ${tr.prop} of a substance?\n\n1 = Increases\n2 = Decreases\n\nEnter the number.`,
-            given:`Property: ${tr.prop}`,answer:tr.dir,unit:'(1=Increases, 2=Decreases)',
-            steps:[tr.r],
+        const qObj=questions[Math.floor(Math.random()*questions.length)];
+        const {ans,q}=mcPick(qObj.correct,qObj.wrong);
+        return{question:`${qObj.q}${q}`,
+            given:'IMF hierarchy: hydrogen bonding > dipole-dipole > London dispersion',
+            answer:ans,unit:'',
+            steps:[`Correct: ${qObj.correct}`],
             hint:`Stronger IMFs → higher bp/mp, lower vapor pressure. Weaker IMFs → lower bp/mp, higher vapor pressure.`};
     }
     if(t==='imf_bp'){
-        const pairs=[
-            {a:'H₂O',b:'H₂S',hi:1,r:'H₂O has hydrogen bonding; H₂S has only dipole-dipole → H₂O has much higher boiling point'},
-            {a:'CH₄',b:'C₄H₁₀',hi:2,r:'Both nonpolar (London only); C₄H₁₀ is larger with more electrons → stronger London forces → higher bp'},
-            {a:'HF',b:'HCl',hi:1,r:'HF has hydrogen bonding (H on F); HCl has only dipole-dipole → HF has higher bp'},
-            {a:'NH₃',b:'PH₃',hi:1,r:'NH₃ has H-bonding (H on N); PH₃ has only dipole-dipole → NH₃ has higher bp'},
-            {a:'Ne',b:'Xe',hi:2,r:'Both noble gases (London only); Xe is larger with more electrons → stronger London forces → higher bp'},
+        const bpPool=[
+            {mol:'H₂O',bp:100,r:'H-bonding (H on O) → very high bp'},
+            {mol:'HF',bp:19,r:'H-bonding (H on F) → high bp'},
+            {mol:'NH₃',bp:-33,r:'H-bonding (H on N) → moderate-high bp'},
+            {mol:'SO₂',bp:-10,r:'dipole-dipole (bent, polar) → moderate bp'},
+            {mol:'HCl',bp:-85,r:'dipole-dipole (polar diatomic) → low bp'},
+            {mol:'HBr',bp:-67,r:'dipole-dipole, larger than HCl → slightly higher bp'},
+            {mol:'C₄H₁₀',bp:-1,r:'London dispersion (large molecule, many electrons) → moderate bp'},
+            {mol:'Xe',bp:-108,r:'London dispersion (large noble gas) → low bp'},
+            {mol:'CH₄',bp:-161,r:'London dispersion (small molecule) → very low bp'},
+            {mol:'Ne',bp:-246,r:'London dispersion (tiny noble gas) → extremely low bp'},
+            {mol:'I₂',bp:184,r:'London dispersion (very large, many electrons) → highest bp in pool'},
         ];
-        const cp=pairs[Math.floor(Math.random()*pairs.length)];
-        return{question:`Which substance has the higher boiling point?\n\n1 = ${cp.a}\n2 = ${cp.b}\n\nEnter the number.`,
-            given:`Compare: ${cp.a} vs ${cp.b}`,answer:cp.hi,unit:`(1=${cp.a}, 2=${cp.b})`,
-            steps:[cp.r],
+        const group4=shuffle(bpPool).slice(0,4);
+        group4.sort((a,b)=>b.bp-a.bp);
+        const correct=group4[0];
+        const {ans,q}=mcPick(correct.mol,group4.slice(1).map(x=>x.mol));
+        return{question:`Which substance has the highest boiling point?${q}`,
+            given:'Consider intermolecular forces: H-bonding > dipole-dipole > London dispersion',
+            answer:ans,unit:`(= ${correct.mol})`,
+            steps:[`${correct.mol}: ${correct.r}`,
+                   `Boiling points: ${group4.map(x=>`${x.mol} = ${x.bp}°C`).join(', ')}`],
             hint:`Higher IMF strength → higher boiling point. H-bonding > dipole-dipole > London. Larger molecules have stronger London forces.`};
     }
     if(t==='calorimetry_sense'){
@@ -2071,16 +2085,28 @@ function genStates(){
             hint:`q = mcΔT. Use the specific heat for the current phase (solid, liquid, or gas).`};
     }
     if(t==='vapor_pressure_compare'){
-        const pairs=[
-            {a:'ethanol',b:'water',hi:1,r:'Ethanol has weaker IMFs (dipole-dipole) vs water (H-bonding) → ethanol evaporates more easily → higher vapor pressure'},
-            {a:'H₂O at 20°C',b:'H₂O at 80°C',hi:2,r:'Higher temperature → more molecules have enough KE to escape → vapor pressure increases with temperature'},
-            {a:'CH₄',b:'C₄H₁₀',hi:1,r:'CH₄ is smaller with weaker London forces → evaporates more easily → higher vapor pressure'},
+        const vpPool=[
+            {mol:'Ne',bp:-246,r:'London dispersion (tiny noble gas) → weakest IMFs → highest VP'},
+            {mol:'CH₄',bp:-161,r:'London dispersion (small molecule) → very weak IMFs → very high VP'},
+            {mol:'Xe',bp:-108,r:'London dispersion (larger noble gas) → weak IMFs → high VP'},
+            {mol:'HCl',bp:-85,r:'dipole-dipole (polar diatomic) → moderate IMFs → moderate VP'},
+            {mol:'HBr',bp:-67,r:'dipole-dipole, slightly larger than HCl → moderate VP'},
+            {mol:'NH₃',bp:-33,r:'H-bonding (H on N) → stronger IMFs → lower VP'},
+            {mol:'SO₂',bp:-10,r:'dipole-dipole (bent, polar) → moderate IMFs → moderate VP'},
+            {mol:'HF',bp:19,r:'H-bonding (H on F) → strong IMFs → low VP'},
+            {mol:'H₂O',bp:100,r:'H-bonding (H on O) → very strong IMFs → very low VP'},
+            {mol:'I₂',bp:184,r:'London dispersion (large, many electrons) → strongest London → very low VP'},
         ];
-        const p=pairs[Math.floor(Math.random()*pairs.length)];
-        return{question:`Which has higher vapor pressure?\n\n1 = ${p.a}\n2 = ${p.b}\n\nEnter the number.`,
-            given:`Compare: ${p.a} vs ${p.b}`,answer:p.hi,unit:`(1=${p.a}, 2=${p.b})`,
-            steps:[p.r],
-            hint:`Higher vapor pressure = evaporates more easily. Weaker IMFs → higher VP. Higher temperature → higher VP.`};
+        const group4=shuffle(vpPool).slice(0,4);
+        group4.sort((a,b)=>a.bp-b.bp);
+        const correct=group4[0];
+        const {ans,q}=mcPick(correct.mol,group4.slice(1).map(x=>x.mol));
+        return{question:`Which substance has the highest vapor pressure at room temperature?${q}`,
+            given:'Higher vapor pressure = evaporates more easily = weaker IMFs = lower boiling point',
+            answer:ans,unit:`(= ${correct.mol})`,
+            steps:[`${correct.mol}: ${correct.r}`,
+                   `Boiling points (lower bp = higher VP): ${group4.map(x=>`${x.mol} = ${x.bp}°C`).join(', ')}`],
+            hint:`Higher vapor pressure = weaker IMFs = lower boiling point. Smaller/nonpolar molecules evaporate more easily.`};
     }
     return{question:'Liquid water freezes to solid ice. What phase change is this?\n\n1 = Melting\n2 = Freezing\n3 = Vaporization\n\nEnter the number.',
         given:'Liquid → Solid',answer:2,unit:'(= Freezing)',
@@ -2114,85 +2140,95 @@ function genPeriodic(){
     };
 
     if(t==='radius_compare'){
-        const pairs=[
-            {a:'Na',b:'Cl',lg:1,r:'Same period 3; atomic radius decreases left to right → Na (group 1) is larger than Cl (group 17)'},
-            {a:'Li',b:'Na',lg:2,r:'Same group 1; atomic radius increases going down → Na (row 3) is larger than Li (row 2)'},
-            {a:'F',b:'Cl',lg:2,r:'Same group 17; Cl has more electron shells (row 3 vs row 2) → Cl is larger'},
-            {a:'Na',b:'K',lg:2,r:'Same group 1; K is in row 4 vs Na row 3 → K is larger'},
-            {a:'O',b:'S',lg:2,r:'Same group 16; S (row 3) has more shells than O (row 2) → S is larger'},
-            {a:'Mg',b:'Ca',lg:2,r:'Same group 2; Ca (row 4) has more shells than Mg (row 3) → Ca is larger'},
-            {a:'Li',b:'F',lg:1,r:'Same period 2; Li (group 1) is much larger than F (group 17)'},
-            {a:'Be',b:'Mg',lg:2,r:'Same group 2; Mg (row 3) has more shells than Be (row 2) → Mg is larger'},
-            {a:'C',b:'Si',lg:2,r:'Same group 14; Si (row 3) has more shells than C (row 2) → Si is larger'},
-        ];
-        const p=pairs[Math.floor(Math.random()*pairs.length)];
-        return{question:`Which element has the larger atomic radius?\n\n1 = ${p.a}\n2 = ${p.b}\n\nEnter the number.`,
-            given:`${p.a}: period ${E[p.a].row}, group ${E[p.a].grp}\n${p.b}: period ${E[p.b].row}, group ${E[p.b].grp}`,
-            answer:p.lg,unit:`(1=${p.a}, 2=${p.b})`,
-            steps:[p.r],
-            hint:`Atomic radius increases going down a group (more shells) and increases going right to left across a period (fewer protons pulling electrons).`};
+        const keys=Object.keys(E);
+        const group4=shuffle(keys).slice(0,4);
+        group4.sort((a,b)=>E[b].r-E[a].r);
+        const correct=group4[0];
+        const {ans,q}=mcPick(correct,group4.slice(1));
+        return{question:`Which element has the largest atomic radius?${q}`,
+            given:group4.map(k=>`${k}: period ${E[k].row}, group ${E[k].grp}`).join('\n'),
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`Atomic radii (pm): ${group4.map(k=>`${k} = ${E[k].r}`).join(', ')}`,
+                   `${correct} is largest at ${E[correct].r} pm`,
+                   'Radius increases going down a group (more shells) and right to left across a period (fewer protons)'],
+            hint:`Atomic radius increases going down a group and from right to left across a period. More shells = larger; more protons = smaller.`};
     }
     if(t==='ie_compare'){
-        const pairs=[
-            {a:'Na',b:'Cl',hi:2,r:'Same period 3; IE increases left to right → Cl has higher first IE'},
-            {a:'Li',b:'Na',hi:1,r:'Same group 1; IE decreases going down → Li (row 2) has higher IE than Na (row 3)'},
-            {a:'F',b:'Cl',hi:1,r:'Same group 17; IE decreases going down → F has higher IE than Cl'},
-            {a:'Na',b:'Mg',hi:2,r:'Same period 3; IE generally increases left to right → Mg has slightly higher IE'},
-            {a:'K',b:'Na',hi:2,r:'Same group 1; IE decreases going down → Na (row 3) has higher IE than K (row 4)'},
-            {a:'O',b:'S',hi:1,r:'Same group 16; IE decreases going down → O has higher IE than S'},
-            {a:'Li',b:'F',hi:2,r:'Same period 2; IE increases left to right → F has much higher IE than Li'},
-        ];
-        const p=pairs[Math.floor(Math.random()*pairs.length)];
-        return{question:`Which element has the higher first ionization energy?\n\n1 = ${p.a}\n2 = ${p.b}\n\nEnter the number.`,
-            given:`${p.a}: period ${E[p.a]?.row||'?'}, group ${E[p.a]?.grp||'?'}\n${p.b}: period ${E[p.b]?.row||'?'}, group ${E[p.b]?.grp||'?'}`,
-            answer:p.hi,unit:`(1=${p.a}, 2=${p.b})`,
-            steps:[p.r],
-            hint:`Ionization energy: increases going up a group and increases left to right across a period.`};
+        const keys=Object.keys(E);
+        const group4=shuffle(keys).slice(0,4);
+        group4.sort((a,b)=>E[b].IE-E[a].IE);
+        const correct=group4[0];
+        const {ans,q}=mcPick(correct,group4.slice(1));
+        return{question:`Which element has the highest first ionization energy?${q}`,
+            given:group4.map(k=>`${k}: period ${E[k].row}, group ${E[k].grp}`).join('\n'),
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`IE (kJ/mol): ${group4.map(k=>`${k} = ${E[k].IE}`).join(', ')}`,
+                   `${correct} is highest at ${E[correct].IE} kJ/mol`,
+                   'IE increases going up a group and left to right across a period'],
+            hint:`Ionization energy increases going up a group and left to right across a period.`};
     }
     if(t==='en_compare'){
-        const pairs=[
-            {a:'Na',b:'Cl',hi:2,r:'Same period 3; EN increases left to right → Cl is more electronegative'},
-            {a:'F',b:'Cl',hi:1,r:'Same group 17; EN decreases going down → F is the most electronegative element'},
-            {a:'O',b:'S',hi:1,r:'Same group 16; EN decreases going down → O is more electronegative'},
-            {a:'Li',b:'F',hi:2,r:'Same period 2; EN increases left to right → F (group 17) is far more electronegative'},
-            {a:'N',b:'P',hi:1,r:'Same group 15; EN decreases going down → N is more electronegative than P'},
-            {a:'Cl',b:'Br',hi:1,r:'Same group 17; EN decreases going down → Cl is more electronegative than Br'},
-            {a:'K',b:'Ca',hi:2,r:'Same period 4; EN increases left to right → Ca is more electronegative than K'},
-        ];
-        const p=pairs[Math.floor(Math.random()*pairs.length)];
-        return{question:`Which element is more electronegative?\n\n1 = ${p.a}\n2 = ${p.b}\n\nEnter the number.`,
-            given:`EN(${p.a}) = ${E[p.a]?.EN||'?'}\nEN(${p.b}) = ${E[p.b]?.EN||'?'}`,
-            answer:p.hi,unit:`(1=${p.a}, 2=${p.b})`,
-            steps:[p.r],
+        const keys=Object.keys(E);
+        const group4=shuffle(keys).slice(0,4);
+        group4.sort((a,b)=>E[b].EN-E[a].EN);
+        const correct=group4[0];
+        const {ans,q}=mcPick(correct,group4.slice(1));
+        return{question:`Which element is most electronegative?${q}`,
+            given:group4.map(k=>`EN(${k}) = ${E[k].EN}`).join('\n'),
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`EN values: ${group4.map(k=>`${k} = ${E[k].EN}`).join(', ')}`,
+                   `${correct} is most electronegative at EN = ${E[correct].EN}`,
+                   'EN increases going up a group and left to right across a period'],
             hint:`Electronegativity increases going up a group and left to right across a period. F is the most electronegative element.`};
     }
     if(t==='trend_direction'){
-        const trends=[
-            {q:'Moving left to right across a period, atomic radius:',a:2,r:'More protons pull electrons in tighter → radius decreases across a period'},
-            {q:'Moving down a group, atomic radius:',a:1,r:'Each new period adds another electron shell → radius increases going down'},
-            {q:'Moving down a group, first ionization energy:',a:2,r:'Electrons are farther from the nucleus and more shielded → easier to remove → IE decreases going down'},
-            {q:'Moving left to right across a period, first ionization energy:',a:1,r:'More protons attract valence electrons more strongly → IE generally increases across a period'},
-            {q:'Moving left to right across a period, electronegativity:',a:1,r:'More protons attract bonding electrons more strongly → EN increases across a period'},
-            {q:'Moving down a group, electronegativity:',a:2,r:'Bonding electrons are farther from nucleus → EN decreases going down a group'},
+        const questions=[
+            {q:'Which statement correctly describes atomic radius trends?',
+             correct:'Increases going DOWN a group (each period adds another electron shell)',
+             wrong:['Increases going left to right across a period','Is largest for elements in the upper right of the periodic table','Is unaffected by the number of protons']},
+            {q:'Which statement correctly describes first ionization energy (IE) trends?',
+             correct:'Generally increases going left to RIGHT across a period (more protons attract electrons more strongly)',
+             wrong:['Increases going down a group','Is highest for alkali metals (group 1)','Decreases going from left to right across a period']},
+            {q:'Which statement correctly describes electronegativity (EN) trends?',
+             correct:'Increases going UP a group AND left to right across a period — F is highest',
+             wrong:['Increases going down a group','Is highest for noble gases','Decreases going from left to right across a period']},
+            {q:'Which statement correctly describes atomic radius trends across a period (left to right)?',
+             correct:'Decreases — increasing nuclear charge pulls electrons closer without adding new shells',
+             wrong:['Increases — more electrons spread the atom out','Stays constant — same number of shells','First increases then decreases']},
+            {q:'Which periodic property DECREASES going down a group?',
+             correct:'Electronegativity (bonding electrons are farther from the nucleus)',
+             wrong:['Atomic radius','Metallic character','Number of electron shells']},
         ];
-        const tr=trends[Math.floor(Math.random()*trends.length)];
-        return{question:`${tr.q}\n\n1 = Increases\n2 = Decreases\n\nEnter the number.`,
-            given:'Periodic table trends',answer:tr.a,unit:'(1=Increases, 2=Decreases)',
-            steps:[tr.r],
-            hint:`Atomic radius and metallic character increase going down/left. IE, EN increase going up/right.`};
+        const qObj=questions[Math.floor(Math.random()*questions.length)];
+        const {ans,q}=mcPick(qObj.correct,qObj.wrong);
+        return{question:`${qObj.q}${q}`,
+            given:'Periodic table trends',answer:ans,unit:'',
+            steps:[`Correct: ${qObj.correct}`],
+            hint:`Atomic radius & metallic character increase going down/left. IE, EN, and nonmetallic character increase going up/right.`};
     }
     if(t==='electron_affinity'){
-        const pairs=[
-            {a:'Na',b:'Cl',hi:2,r:'Cl (group 17) strongly attracts an extra electron to complete its octet; Na (group 1) has low EA → Cl has higher EA'},
-            {a:'O',b:'N',hi:1,r:'O needs only 1 more electron to complete its octet; N has a half-filled stable p sublevel → O has higher EA'},
-            {a:'F',b:'Ne',hi:1,r:'Ne (noble gas) has zero EA (stable octet); F has one of the highest EAs → F is much higher'},
+        const eaPool=[
+            {el:'Cl',ea:349,r:'Halogen (group 17) — one electron away from stable octet → highest EA of common elements'},
+            {el:'F',ea:328,r:'Halogen (group 17) — very high EA, though slightly less than Cl due to small size/electron repulsion'},
+            {el:'Br',ea:325,r:'Halogen (group 17) — one electron away from stable octet → very high EA'},
+            {el:'S',ea:200,r:'Chalcogen (group 16) — needs 2 electrons but first addition releases energy → high EA'},
+            {el:'O',ea:141,r:'Chalcogen (group 16) — high EA but small size causes some repulsion'},
+            {el:'N',ea:7,r:'Group 15 — half-filled p sublevel is unusually stable → very low EA'},
+            {el:'Na',ea:53,r:'Alkali metal (group 1) — gains electron to fill s sublevel, but low nuclear charge → low EA'},
+            {el:'K',ea:48,r:'Alkali metal (group 1) — even larger/lower nuclear charge than Na → very low EA'},
+            {el:'Ne',ea:-29,r:'Noble gas — completely filled valence shell → essentially no tendency to gain electrons'},
+            {el:'Mg',ea:-21,r:'Alkaline earth (filled s sublevel) — extra electron enters higher-energy p → negative EA'},
         ];
-        const p=pairs[Math.floor(Math.random()*pairs.length)];
-        return{question:`Which element has the higher electron affinity?\n\n1 = ${p.a}\n2 = ${p.b}\n\nEnter the number.`,
+        const group4=shuffle(eaPool).slice(0,4);
+        group4.sort((a,b)=>b.ea-a.ea);
+        const correct=group4[0];
+        const {ans,q}=mcPick(correct.el,group4.slice(1).map(x=>x.el));
+        return{question:`Which element has the highest electron affinity?${q}`,
             given:'Electron affinity = energy released when a neutral atom gains one electron',
-            answer:p.hi,unit:`(1=${p.a}, 2=${p.b})`,
-            steps:[p.r],
-            hint:`EA generally increases going up and to the right (like IE and EN). Halogens have very high EA; noble gases have ~0.`};
+            answer:ans,unit:`(= ${correct.el})`,
+            steps:[correct.r,
+                   `EA values (kJ/mol): ${group4.map(x=>`${x.el} = ${x.ea}`).join(', ')}`],
+            hint:`EA is highest for halogens (group 17). Increases going up and to the right. Noble gases and group 2 have very low or negative EA.`};
     }
     return{question:'Which element has a larger atomic radius: Na or Cl?\n\n1 = Na\n2 = Cl\n\nEnter the number.',
         given:'Na: group 1, Cl: group 17 (both in period 3)',answer:1,unit:'(1=Na)',
@@ -2277,23 +2313,18 @@ function genReactions(){
             hint:`Balance by inspection. Ensure atom counts are equal on both sides.`};
     }
     if(t==='activity_series'){
-        const qs=[
-            {q:'Can Zn displace Cu from CuSO₄ solution?\n\n1 = Yes\n2 = No',a:1,
-              r:'Zn is above Cu in the activity series → Zn is more reactive → Zn + CuSO₄ → ZnSO₄ + Cu ✓'},
-            {q:'Can Cu displace Zn from ZnSO₄ solution?\n\n1 = Yes\n2 = No',a:2,
-              r:'Cu is below Zn in the activity series → Cu is less reactive → reaction does NOT occur'},
-            {q:'Can Fe displace H₂ from HCl solution?\n\n1 = Yes\n2 = No',a:1,
-              r:'Fe is above H in the activity series → Fe + 2HCl → FeCl₂ + H₂ ✓'},
-            {q:'Can Ag displace H₂ from HCl solution?\n\n1 = Yes\n2 = No',a:2,
-              r:'Ag is below H in the activity series → Ag cannot displace H₂ from acids'},
-            {q:'Can Mg displace Fe from FeSO₄ solution?\n\n1 = Yes\n2 = No',a:1,
-              r:'Mg is above Fe in the activity series → Mg is more reactive → reaction occurs ✓'},
-        ];
-        const qp=qs[Math.floor(Math.random()*qs.length)];
-        return{question:qp.q,
-            given:'Activity series (most reactive first): K > Ca > Na > Mg > Al > Zn > Fe > Ni > Sn > Pb > H > Cu > Ag > Au',
-            answer:qp.a,unit:'(1=Yes, 2=No)',steps:[qp.r],
-            hint:'A metal displaces another metal (or H₂) only if it is HIGHER (more reactive) on the activity series.'};
+        const series=['K','Ca','Na','Mg','Al','Zn','Fe','Ni','Sn','Pb','H','Cu','Ag','Au'];
+        const targetIdx=Math.floor(Math.random()*8)+3;
+        const target=series[targetIdx];
+        const correct=series[Math.floor(Math.random()*targetIdx)];
+        const wrongPool=series.slice(targetIdx+1);
+        const {ans,q}=mcPick(correct,wrongPool);
+        return{question:`Which metal can displace ${target} from a solution of its salt?${q}`,
+            given:'Activity series (most reactive first):\nK > Ca > Na > Mg > Al > Zn > Fe > Ni > Sn > Pb > H > Cu > Ag > Au',
+            answer:ans,unit:`(= ${correct})`,
+            steps:[`${correct} is ABOVE ${target} in the activity series → more reactive → displacement occurs`,
+                   `Metals below ${target} (e.g. ${wrongPool.slice(0,3).join(', ')}) cannot displace it`],
+            hint:'A metal displaces another only if it appears HIGHER (more reactive) in the activity series.'};
     }
     if(t==='combustion_product'){
         const fuels=[
