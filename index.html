@@ -1668,7 +1668,7 @@ function genNomencl(){
     }
     if(t==='ion_charge_basic'){
         const ic=ionicCpds[Math.floor(Math.random()*ionicCpds.length)];
-        return{question:`In ${ic.f} (${ic.name}), what is the charge of the ${ic.cat} cation?`,
+        return{question:`In ${ic.f} (${ic.name}), what is the charge of the ${ic.name.split(' ')[0].toLowerCase()} cation?`,
             given:`Formula: ${ic.f}\nAnion: ${ic.an} (charge: ${ic.anChg})`,
             answer:ic.catChg,unit:'+ charge',
             steps:[`Ionic compounds are electrically neutral (sum of charges = 0)`,
