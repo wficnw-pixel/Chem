@@ -231,7 +231,7 @@
 const sc=document.getElementById('stars');
 for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';sc.appendChild(s);}
 
-let unit=null,diff='basic',prob=null,stats={a:0,c:0},hinted=false;
+let unit=null,diff='basic',prob=null,stats={a:0,c:0},hinted=false,lastProbKey='';
 const names={measurements:'Measurements',matter:'Matter',moles:'The Mole',stoichiometry:'Stoichiometry',gases:'Gases',solutions:'Solutions',thermochemistry:'Thermochemistry',equilibrium:'Equilibrium',acids:'Acids & Bases',redox:'Redox & Electrochem',nuclear:'Nuclear Chemistry',nomenclature:'Nomenclature',electrons:'Electrons & Light',bonding:'Bonding',states:'States of Matter',periodic:'Periodic Trends',reactions:'Reactions'};
 
 document.querySelectorAll('.unit-btn').forEach(b=>b.addEventListener('click',function(){
@@ -251,6 +251,7 @@ document.querySelectorAll('.diff-btn').forEach(b=>b.addEventListener('click',fun
     if(unit) generateProblem();
 }));
 
+function probKey(p){const i=p.question.search(/\n\s*\d+\s*=/);return i>=0?p.question.substring(0,i).trim():p.question.substring(0,120);}
 function r(a,b,d=0){const v=Math.random()*(b-a)+a;return d===0?Math.round(v):parseFloat(v.toFixed(d));}
 function shuffle(a){const s=a.slice();for(let i=s.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[s[i],s[j]]=[s[j],s[i]];}return s;}
 function mcPick(correct,wrongPool,n=3){const ws=shuffle(wrongPool).slice(0,n);const opts=shuffle([{lab:correct,c:true},...ws.map(w=>({lab:w,c:false}))]);const ans=opts.findIndex(o=>o.c)+1;const q=opts.map((o,i)=>`\n${i+1} = ${o.lab}`).join('');return{opts,ans,q};}
@@ -272,7 +273,9 @@ function generateProblem(){
     const _fb=document.getElementById('feedback');_fb.innerHTML='';_fb.className='feedback';
     document.getElementById('answerInput').value='';
     const gens={measurements:genMeasure,matter:genMatter,moles:genMoles,stoichiometry:genStoich,gases:genGases,solutions:genSolutions,thermochemistry:genThermo,equilibrium:genEquil,acids:genAcids,redox:genRedox,nuclear:genNuclear,nomenclature:genNomencl,electrons:genElectrons,bonding:genBonding,states:genStates,periodic:genPeriodic,reactions:genReactions};
-    prob=gens[unit]();
+    let attempts=0;
+    do{prob=gens[unit]();attempts++;}while(attempts<5&&probKey(prob)===lastProbKey);
+    lastProbKey=probKey(prob);
 
     const firstOpt=prob.question.search(/\n\s*\d+\s*=/);
     if(firstOpt>=0){
