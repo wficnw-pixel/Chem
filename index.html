@@ -251,7 +251,7 @@ document.querySelectorAll('.diff-btn').forEach(b=>b.addEventListener('click',fun
     if(unit){seenKeys[unit]=new Set();generateProblem();}
 }));
 
-function probKey(p){const i=p.question.search(/\n\s*\d+\s*=/);return i>=0?p.question.substring(0,i).trim():p.question.substring(0,120);}
+function probKey(p){const i=p.question.search(/\n\s*\d+\s*=/);const base=i>=0?p.question.substring(0,i).trim():p.question.substring(0,120);return base+'|'+p.unit;}
 function r(a,b,d=0){const v=Math.random()*(b-a)+a;return d===0?Math.round(v):parseFloat(v.toFixed(d));}
 function shuffle(a){const s=a.slice();for(let i=s.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[s[i],s[j]]=[s[j],s[i]];}return s;}
 function mcPick(correct,wrongPool,n=3){const ws=shuffle(wrongPool).slice(0,n);const opts=shuffle([{lab:correct,c:true},...ws.map(w=>({lab:w,c:false}))]);const ans=opts.findIndex(o=>o.c)+1;const q=opts.map((o,i)=>`\n${i+1} = ${o.lab}`).join('');return{opts,ans,q};}
@@ -1390,8 +1390,8 @@ function genMatter(){
             hint:'Pure: fixed composition (elements + compounds). Mixture: variable composition, can be physically separated.'};
     }
     if(t==='element_compound'){
-        const elements=['Lead (Pb)','Boron (B)','Magnesium (Mg)','Vanadium (V)','Zinc (Zn)','Oxygen (O₂)','Thallium (Tl)','Copper (Cu)','Iron (Fe)','Sodium (Na)','Argon (Ar)'];
-        const compounds=['Water (H₂O)','Sodium bicarbonate (NaHCO₃)','Mg₃(PO₄)₂','AlCl₃','Iron(III) oxide (Fe₂O₃)','Carbon dioxide (CO₂)','Sodium borohydride (NaBH₄)','Ammonia (NH₃)','Table salt (NaCl)','Glucose (C₆H₁₂O₆)'];
+        const elements=['Lead (Pb)','Boron (B)','Magnesium (Mg)','Vanadium (V)','Zinc (Zn)','Oxygen (O₂)','Thallium (Tl)','Copper (Cu)','Iron (Fe)','Sodium (Na)','Argon (Ar)','Nitrogen (N₂)','Fluorine (F₂)','Chlorine (Cl₂)','Sulfur (S)','Silicon (Si)','Gold (Au)','Aluminum (Al)','Nickel (Ni)','Titanium (Ti)','Carbon (C)','Phosphorus (P)','Neon (Ne)','Chromium (Cr)','Tin (Sn)'];
+        const compounds=['Water (H₂O)','Sodium bicarbonate (NaHCO₃)','Mg₃(PO₄)₂','AlCl₃','Iron(III) oxide (Fe₂O₃)','Carbon dioxide (CO₂)','Sodium borohydride (NaBH₄)','Ammonia (NH₃)','Table salt (NaCl)','Glucose (C₆H₁₂O₆)','Ethanol (C₂H₅OH)','Acetic acid (CH₃COOH)','Calcium carbonate (CaCO₃)','Quartz (SiO₂)','Bleach (NaOCl)','Aspirin (C₉H₈O₄)','Rust (Fe₂O₃)','Baking soda (NaHCO₃)','Lime (CaO)','Sucrose (C₁₂H₂₂O₁₁)','Hydrogen peroxide (H₂O₂)','Methane (CH₄)','Potassium nitrate (KNO₃)'];
         const askEl=Math.random()>0.5;
         const correct=shuffle(askEl?elements:compounds)[0];
         const {ans,q}=mcPick(correct,askEl?compounds:elements);
@@ -1461,6 +1461,19 @@ function genMatter(){
             {sym:'Helium (He)',ans:5,name:'Noble Gas',r:'He is in Group 18 → Noble Gas'},
             {sym:'Chlorine (Cl)',ans:4,name:'Halogen',r:'Cl is in Group 17 → Halogen'},
             {sym:'Sodium (Na)',ans:1,name:'Alkali Metal',r:'Na is in Group 1 → Alkali Metal'},
+            {sym:'Krypton (Kr)',ans:5,name:'Noble Gas',r:'Kr is in Group 18 → Noble Gas'},
+            {sym:'Strontium (Sr)',ans:2,name:'Alkaline Earth Metal',r:'Sr is in Group 2 → Alkaline Earth Metal'},
+            {sym:'Cesium (Cs)',ans:1,name:'Alkali Metal',r:'Cs is in Group 1 → Alkali Metal'},
+            {sym:'Astatine (At)',ans:4,name:'Halogen',r:'At is in Group 17 → Halogen'},
+            {sym:'Neon (Ne)',ans:5,name:'Noble Gas',r:'Ne is in Group 18 → Noble Gas'},
+            {sym:'Radium (Ra)',ans:2,name:'Alkaline Earth Metal',r:'Ra is in Group 2 → Alkaline Earth Metal'},
+            {sym:'Francium (Fr)',ans:1,name:'Alkali Metal',r:'Fr is in Group 1 → Alkali Metal'},
+            {sym:'Zinc (Zn)',ans:3,name:'Transition Metal',r:'Zn is in the d-block → Transition Metal'},
+            {sym:'Nickel (Ni)',ans:3,name:'Transition Metal',r:'Ni is in the d-block → Transition Metal'},
+            {sym:'Titanium (Ti)',ans:3,name:'Transition Metal',r:'Ti is in the d-block → Transition Metal'},
+            {sym:'Chromium (Cr)',ans:3,name:'Transition Metal',r:'Cr is in the d-block → Transition Metal'},
+            {sym:'Radon (Rn)',ans:5,name:'Noble Gas',r:'Rn is in Group 18 → Noble Gas'},
+            {sym:'Beryllium (Be)',ans:2,name:'Alkaline Earth Metal',r:'Be is in Group 2 → Alkaline Earth Metal'},
         ];
         const el=elements[Math.floor(Math.random()*elements.length)];
         return{question:`Classify the element into its periodic table family:\n"${el.sym}"\n\n1 = Alkali Metal\n2 = Alkaline Earth Metal\n3 = Transition Metal\n4 = Halogen\n5 = Noble Gas\n\nEnter the number.`,
@@ -1513,8 +1526,8 @@ function genMatter(){
             hint:'Physical: state changes, dissolving, shape changes — no new substance. Chemical: burning, rusting, reacting, souring — new substance forms.'};
     }
     if(t==='phys_chem_property'){
-        const phys=['Copper is reddish in color','Iron is magnetic','Magnesium ribbon is malleable','Fluorine is a gas at room temperature','Bromine is a liquid at room temperature','Sand is not magnetic','Sugar is soluble in water','Gold has a density of 19.3 g/mL','Water boils at 100°C','Aluminum is a good conductor of electricity'];
-        const chem=['HCl is a very strong acid','Sodium reacts violently with water','Manganese dioxide is a strong oxidizer','Iron can rust in moist air','Gasoline is highly flammable','Carbon dioxide does not support combustion','Zinc reacts with hydrochloric acid','Silver tarnishes in air'];
+        const phys=['Copper is reddish in color','Iron is magnetic','Magnesium ribbon is malleable','Fluorine is a gas at room temperature','Bromine is a liquid at room temperature','Sand is not magnetic','Sugar is soluble in water','Gold has a density of 19.3 g/mL','Water boils at 100°C','Aluminum is a good conductor of electricity','Ice melts at 0°C','Diamond is extremely hard','Copper is a good conductor of heat','Mercury is a liquid at room temperature','Sulfur is a yellow solid','Ethanol has a boiling point of 78°C','Glass is transparent','Rubber is flexible','Salt dissolves in water','Oxygen is a colorless gas'];
+        const chem=['HCl is a very strong acid','Sodium reacts violently with water','Manganese dioxide is a strong oxidizer','Iron can rust in moist air','Gasoline is highly flammable','Carbon dioxide does not support combustion','Zinc reacts with hydrochloric acid','Silver tarnishes in air','Wood burns in air to form CO₂ and H₂O','Baking soda neutralizes acids','Hydrogen peroxide decomposes into water and O₂','Magnesium burns brightly in air','Potassium explodes on contact with water','Vinegar reacts with baking soda to produce CO₂','Copper reacts with nitric acid'];
         const askPhys=Math.random()>0.5;
         const correct=shuffle(askPhys?phys:chem)[0];
         const {ans,q}=mcPick(correct,askPhys?chem:phys);
@@ -1525,8 +1538,8 @@ function genMatter(){
             hint:'Physical: color, density, mp, bp, magnetism, conductivity. Chemical: flammability, reactivity, acidity, ability to rust/corrode.'};
     }
     if(t==='intensive_extensive'){
-        const intensive=['Chlorine gas is yellow','Calcium is not magnetic','The density of water is 1.00 g/mL','Francium is the most reactive metal','The density of lead is 11.3 g/mL','Boiling point of ethanol (78.4°C)','Melting point of ice (0°C)','Color of gold (shiny yellow)','Temperature of boiling water (100°C)'];
-        const extensive=['250 mL of mercury in a flask','0.72 grams of carbon','A cup of water is 8 oz','Mass of a block of iron','Volume of a balloon','Length of a copper wire','Number of moles in a sample','Total heat energy stored in a sample'];
+        const intensive=['Chlorine gas is yellow','Calcium is not magnetic','The density of water is 1.00 g/mL','Francium is the most reactive metal','The density of lead is 11.3 g/mL','Boiling point of ethanol (78.4°C)','Melting point of ice (0°C)','Color of gold (shiny yellow)','Temperature of boiling water (100°C)','Specific heat of aluminum (0.900 J/g·°C)','Hardness of diamond (10 on Mohs scale)','Electrical resistivity of copper','Viscosity of honey','Refractive index of glass','Solubility of NaCl in water at 25°C','Electronegativity of fluorine (4.0)','Malleability of gold'];
+        const extensive=['250 mL of mercury in a flask','0.72 grams of carbon','A cup of water is 8 oz','Mass of a block of iron','Volume of a balloon','Length of a copper wire','Number of moles in a sample','Total heat energy stored in a sample','Total number of atoms in a sample','Weight of a gold bar','Amount of CO₂ produced in a reaction','Surface area of an aluminum sheet','Total pressure exerted by a gas sample','Number of molecules in a container'];
         const askInt=Math.random()>0.5;
         const correct=shuffle(askInt?intensive:extensive)[0];
         const {ans,q}=mcPick(correct,askInt?extensive:intensive);
@@ -2268,6 +2281,16 @@ function genReactions(){
             {eq:'Cl₂ + 2KBr → 2KCl + Br₂',type:3,name:'Single Replacement',r:'Cl₂ displaces Br from KBr → Single Replacement'},
             {eq:'BaCl₂ + Na₂SO₄ → BaSO₄ + 2NaCl',type:4,name:'Double Replacement',r:'Ba²⁺ pairs with SO₄²⁻; Na⁺ pairs with Cl⁻ → Double Replacement'},
             {eq:'2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O',type:5,name:'Combustion',r:'Ethane + O₂ → CO₂ + H₂O → Combustion'},
+            {eq:'S + O₂ → SO₂',type:1,name:'Synthesis',r:'Two elements combine into one compound → Synthesis'},
+            {eq:'2Al + 3Cl₂ → 2AlCl₃',type:1,name:'Synthesis',r:'Two elements combine into one compound → Synthesis'},
+            {eq:'2HgO → 2Hg + O₂',type:2,name:'Decomposition',r:'One compound breaks into simpler substances → Decomposition'},
+            {eq:'CaCO₃ → CaO + CO₂',type:2,name:'Decomposition',r:'Calcium carbonate breaks into two products → Decomposition'},
+            {eq:'Mg + 2HCl → MgCl₂ + H₂',type:3,name:'Single Replacement',r:'Mg displaces H from HCl → Single Replacement'},
+            {eq:'Al + Fe₂O₃ → Al₂O₃ + Fe',type:3,name:'Single Replacement',r:'Al displaces Fe from Fe₂O₃ (thermite reaction) → Single Replacement'},
+            {eq:'Pb(NO₃)₂ + 2KI → PbI₂ + 2KNO₃',type:4,name:'Double Replacement',r:'Pb²⁺ pairs with I⁻; K⁺ pairs with NO₃⁻ → Double Replacement'},
+            {eq:'H₂SO₄ + 2KOH → K₂SO₄ + 2H₂O',type:4,name:'Double Replacement (neutralization)',r:'Acid + base swap partners → Double Replacement'},
+            {eq:'2C₄H₁₀ + 13O₂ → 8CO₂ + 10H₂O',type:5,name:'Combustion',r:'Butane + O₂ → CO₂ + H₂O → Combustion'},
+            {eq:'C₂H₅OH + 3O₂ → 2CO₂ + 3H₂O',type:5,name:'Combustion',r:'Ethanol + O₂ → CO₂ + H₂O → Combustion'},
         ];
         const rx=rxns[Math.floor(Math.random()*rxns.length)];
         return{question:`Classify the following reaction:\n${rx.eq}\n\n1 = Synthesis\n2 = Decomposition\n3 = Single Replacement\n4 = Double Replacement\n5 = Combustion\n\nEnter the number.`,
