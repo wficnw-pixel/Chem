@@ -2476,6 +2476,8 @@ function genReactions(){
 // CHECK / FEEDBACK
 // ══════════════════════════════════════════════════════════════════════════════
 function checkAnswer(){
+    const fb=document.getElementById('feedback');
+    if(fb.classList.contains('correct')||fb.classList.contains('incorrect'))return;
     const ua=parseFloat(document.getElementById('answerInput').value);
     if(isNaN(ua)){alert('Please enter a number');return;}
     stats.a++;
