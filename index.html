@@ -165,8 +165,8 @@
     <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="sidebar-label">Units</div>
-        <div class="unit-btn" data-unit="measurements"><span class="icon">📏</span><span class="name">Measurements</span></div>
         <div class="unit-btn" data-unit="matter"><span class="icon">🧱</span><span class="name">Matter</span></div>
+        <div class="unit-btn" data-unit="measurements"><span class="icon">📏</span><span class="name">Measurements</span></div>
         <div class="unit-btn" data-unit="nuclear"><span class="icon">☢️</span><span class="name">Nuclear Chemistry</span></div>
         <div class="unit-btn" data-unit="electrons"><span class="icon">💡</span><span class="name">Electrons &amp; Light</span></div>
         <div class="unit-btn" data-unit="periodic"><span class="icon">📊</span><span class="name">Periodic Trends</span></div>
@@ -1322,133 +1322,266 @@ function genNuclear(){
 // MATTER
 // ══════════════════════════════════════════════════════════════════════════════
 function genMatter(){
-    const basic=['classify_matter','phys_chem_change','phys_chem_property'];
-    const inter=['classify_matter','phys_chem_change','phys_chem_property','intensive_extensive','density'];
-    const adv=['density','conservation_mass','intensive_extensive','classify_matter'];
+    const basic=['classify_pure_mixture','element_compound','phys_chem_change','phys_chem_property'];
+    const inter=['classify_pure_mixture','element_compound','phys_chem_change','phys_chem_property','intensive_extensive','metal_nonmetal_metalloid','periodic_family','count_atoms'];
+    const adv=['count_atoms','periodic_family','intensive_extensive','percent_composition','classify_detail'];
     const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
     const t=pool[Math.floor(Math.random()*pool.length)];
 
-    if(t==='classify_matter'){
+    if(t==='classify_pure_mixture'){
         const items=[
-            {sub:'Pure gold (Au)',ans:1,name:'Element',r:'Gold is a pure substance made of only one type of atom → Element'},
-            {sub:'Table salt (NaCl)',ans:2,name:'Compound',r:'NaCl is a pure substance made of two different elements chemically combined → Compound'},
-            {sub:'Air',ans:3,name:'Homogeneous mixture',r:'Air is a uniform mixture of gases (N₂, O₂, Ar, etc.) — same composition throughout → Homogeneous mixture'},
-            {sub:'Salad dressing (oil + vinegar)',ans:4,name:'Heterogeneous mixture',r:'Oil and vinegar do not mix uniformly — different composition in different parts → Heterogeneous mixture'},
-            {sub:'Distilled water (H₂O)',ans:2,name:'Compound',r:'Water is a pure substance made of H and O chemically bonded → Compound'},
-            {sub:'Iron (Fe)',ans:1,name:'Element',r:'Iron is a pure substance made of only Fe atoms → Element'},
-            {sub:'Salt water',ans:3,name:'Homogeneous mixture',r:'Salt dissolves uniformly in water — same composition throughout → Homogeneous mixture'},
-            {sub:'Granite',ans:4,name:'Heterogeneous mixture',r:'Granite contains visible grains of different minerals — not uniform → Heterogeneous mixture'},
-            {sub:'Carbon dioxide (CO₂)',ans:2,name:'Compound',r:'CO₂ is a pure substance with C and O chemically bonded in a fixed ratio → Compound'},
-            {sub:'Oxygen gas (O₂)',ans:1,name:'Element',r:'O₂ is made entirely of oxygen atoms → Element'},
-            {sub:'Brass (copper + zinc alloy)',ans:3,name:'Homogeneous mixture',r:'Alloys are uniform solid solutions — same composition throughout → Homogeneous mixture'},
-            {sub:'Sand and water',ans:4,name:'Heterogeneous mixture',r:'Sand does not dissolve — you can see distinct parts → Heterogeneous mixture'},
-            {sub:'Vinegar (acetic acid in water)',ans:3,name:'Homogeneous mixture',r:'Acetic acid dissolves uniformly in water → Homogeneous mixture'},
-            {sub:'Chocolate chip cookie',ans:4,name:'Heterogeneous mixture',r:'Chips are unevenly distributed — not uniform → Heterogeneous mixture'},
+            {sub:'Ocean water',ans:2,name:'Mixture',r:'Ocean water contains water plus dissolved salts and other substances → Mixture'},
+            {sub:'Graphite (C)',ans:1,name:'Pure substance',r:'Graphite is made entirely of carbon atoms — one type of substance → Pure substance'},
+            {sub:"Fool's gold (FeS₂)",ans:1,name:'Pure substance',r:'FeS₂ is a single compound with a fixed composition → Pure substance'},
+            {sub:'Chocolate',ans:2,name:'Mixture',r:'Chocolate contains cocoa, sugar, fat, etc. mixed together → Mixture'},
+            {sub:'Sulfur (S)',ans:1,name:'Pure substance',r:'Sulfur is a single element with fixed composition → Pure substance'},
+            {sub:'Carbon monoxide (CO)',ans:1,name:'Pure substance',r:'CO is a single compound — always 1 C to 1 O → Pure substance'},
+            {sub:'Pizza',ans:2,name:'Mixture',r:'Pizza contains many different substances → Mixture'},
+            {sub:'Diamond (C)',ans:1,name:'Pure substance',r:'Diamond is pure carbon — one type of atom → Pure substance'},
+            {sub:'Mud water',ans:2,name:'Mixture',r:'Mud in water is a mixture — not uniform throughout → Mixture'},
+            {sub:'Kool-Aid',ans:2,name:'Mixture',r:'Kool-Aid is a mixture of water, sugar, and flavoring → Mixture'},
+            {sub:'Chalk (CaCO₃)',ans:1,name:'Pure substance',r:'CaCO₃ is a pure compound with fixed composition → Pure substance'},
+            {sub:'Sand',ans:1,name:'Pure substance',r:'Sand (SiO₂) is a pure compound → Pure substance'},
         ];
         const it=items[Math.floor(Math.random()*items.length)];
-        return{question:`Classify the following substance:\n"${it.sub}"\n\n1 = Element\n2 = Compound\n3 = Homogeneous mixture\n4 = Heterogeneous mixture\n\nEnter the number.`,
+        return{question:`Classify as a Pure substance (P) or Mixture (M):\n"${it.sub}"\n\n1 = Pure substance\n2 = Mixture\n\nEnter the number.`,
             given:`Substance: ${it.sub}`,answer:it.ans,unit:`(= ${it.name})`,
             steps:[it.r],
-            hint:`Element: one type of atom. Compound: two+ elements chemically bonded (fixed ratio). Mixture: two+ substances physically combined. Homogeneous: uniform. Heterogeneous: not uniform.`};
+            hint:`Pure substance: fixed composition, cannot be separated by physical means (elements + compounds). Mixture: two or more substances physically combined, variable composition.`};
+    }
+    if(t==='element_compound'){
+        const items=[
+            {sub:'Lead (Pb)',ans:1,name:'Element',r:'Lead is a single element — only Pb atoms → Element'},
+            {sub:'Water (H₂O)',ans:2,name:'Compound',r:'Water contains H and O chemically bonded in a 2:1 ratio → Compound'},
+            {sub:'Boron (B)',ans:1,name:'Element',r:'Boron is a single element — only B atoms → Element'},
+            {sub:'Sodium bicarbonate (NaHCO₃)',ans:2,name:'Compound',r:'NaHCO₃ contains Na, H, C, and O chemically bonded → Compound'},
+            {sub:'Magnesium (Mg)',ans:1,name:'Element',r:'Mg is a single element → Element'},
+            {sub:'Vanadium (V)',ans:1,name:'Element',r:'Vanadium is a single element → Element'},
+            {sub:'Mg₃(PO₄)₂',ans:2,name:'Compound',r:'Mg₃(PO₄)₂ contains Mg, P, and O chemically bonded → Compound'},
+            {sub:'AlCl₃',ans:2,name:'Compound',r:'AlCl₃ contains Al and Cl chemically bonded → Compound'},
+            {sub:'Zinc (Zn)',ans:1,name:'Element',r:'Zinc is a single element → Element'},
+            {sub:'Iron(III) oxide (Fe₂O₃)',ans:2,name:'Compound',r:'Fe₂O₃ contains Fe and O chemically bonded → Compound'},
+            {sub:'Oxygen gas (O₂)',ans:1,name:'Element',r:'O₂ contains only oxygen atoms — it is a diatomic element → Element'},
+            {sub:'Carbon dioxide (CO₂)',ans:2,name:'Compound',r:'CO₂ contains C and O chemically bonded in a fixed ratio → Compound'},
+            {sub:'Sodium borohydride (NaBH₄)',ans:2,name:'Compound',r:'NaBH₄ contains Na, B, and H chemically bonded → Compound'},
+            {sub:'Thallium (Tl)',ans:1,name:'Element',r:'Thallium is a single element → Element'},
+        ];
+        const it=items[Math.floor(Math.random()*items.length)];
+        return{question:`Is the following an Element (E) or Compound (C)?\n"${it.sub}"\n\n1 = Element\n2 = Compound\n\nEnter the number.`,
+            given:`Substance: ${it.sub}`,answer:it.ans,unit:`(= ${it.name})`,
+            steps:[it.r],
+            hint:`Element: made of only ONE type of atom (check periodic table). Compound: two or more different elements chemically bonded in a fixed ratio.`};
+    }
+    if(t==='classify_detail'){
+        const items=[
+            {sub:'Carbon dioxide (CO₂)',ans:2,name:'Compound',r:'CO₂ is a pure substance with two different elements bonded → Compound'},
+            {sub:'Skim milk',ans:3,name:'Colloid',r:'Milk has particles that stay suspended but scatter light (Tyndall effect) → Colloid'},
+            {sub:'Copper wire',ans:1,name:'Element',r:'Copper is a single element → Element'},
+            {sub:'Baking soda (NaHCO₃)',ans:2,name:'Compound',r:'NaHCO₃ is a pure compound → Compound'},
+            {sub:'Shaving cream',ans:3,name:'Colloid',r:'Gas bubbles in liquid — a foam → Colloid'},
+            {sub:'Air',ans:4,name:'Solution (homogeneous mixture)',r:'Air is a uniform mixture of gases → Solution (homogeneous mixture)'},
+            {sub:'Glass (SiO₂)',ans:2,name:'Compound',r:'SiO₂ is a pure compound → Compound'},
+            {sub:'Chicken noodle soup',ans:5,name:'Suspension (heterogeneous mixture)',r:'Noodles and particles settle out → Suspension'},
+            {sub:'Milk',ans:3,name:'Colloid',r:'Milk has fat droplets dispersed in water — particles too small to settle → Colloid'},
+            {sub:'Whipped cream',ans:3,name:'Colloid',r:'Air bubbles in cream (foam) — a colloid → Colloid'},
+            {sub:'Oxygen (O₂)',ans:1,name:'Element',r:'O₂ is a diatomic element → Element'},
+            {sub:'Sand in water',ans:5,name:'Suspension',r:'Sand particles settle out over time → Suspension'},
+            {sub:'Salt water (NaCl in H₂O)',ans:4,name:'Solution',r:'NaCl dissolves uniformly — same throughout → Solution'},
+        ];
+        const it=items[Math.floor(Math.random()*items.length)];
+        return{question:`Classify:\n"${it.sub}"\n\n1 = Element\n2 = Compound\n3 = Colloid\n4 = Solution\n5 = Suspension\n\nEnter the number.`,
+            given:`Substance: ${it.sub}`,answer:it.ans,unit:`(= ${it.name})`,
+            steps:[it.r],
+            hint:`Element: 1 atom type. Compound: pure, 2+ elements bonded. Solution: uniform mixture (particles < 1nm). Colloid: particles 1–100nm (scatter light). Suspension: particles > 100nm (settle out).`};
+    }
+    if(t==='metal_nonmetal_metalloid'){
+        // Metalloids: B, Si, Ge, As, Sb, Te, Po
+        const elements=[
+            {sym:'Sodium (Na)',ans:1,name:'Metal'},{sym:'Hydrogen (H)',ans:2,name:'Nonmetal'},
+            {sym:'Calcium (Ca)',ans:1,name:'Metal'},{sym:'Silicon (Si)',ans:3,name:'Metalloid'},
+            {sym:'Aluminum (Al)',ans:1,name:'Metal'},{sym:'Mercury (Hg)',ans:1,name:'Metal'},
+            {sym:'Iodine (I)',ans:2,name:'Nonmetal'},{sym:'Xenon (Xe)',ans:2,name:'Nonmetal'},
+            {sym:'Carbon (C)',ans:2,name:'Nonmetal'},{sym:'Oxygen (O)',ans:2,name:'Nonmetal'},
+            {sym:'Bromine (Br)',ans:2,name:'Nonmetal'},{sym:'Nitrogen (N)',ans:2,name:'Nonmetal'},
+            {sym:'Gold (Au)',ans:1,name:'Metal'},{sym:'Boron (B)',ans:3,name:'Metalloid'},
+            {sym:'Cesium (Cs)',ans:1,name:'Metal'},{sym:'Uranium (U)',ans:1,name:'Metal'},
+            {sym:'Arsenic (As)',ans:3,name:'Metalloid'},{sym:'Germanium (Ge)',ans:3,name:'Metalloid'},
+            {sym:'Sulfur (S)',ans:2,name:'Nonmetal'},{sym:'Iron (Fe)',ans:1,name:'Metal'},
+            {sym:'Chlorine (Cl)',ans:2,name:'Nonmetal'},{sym:'Antimony (Sb)',ans:3,name:'Metalloid'},
+        ];
+        const el=elements[Math.floor(Math.random()*elements.length)];
+        return{question:`Classify the element:\n"${el.sym}"\n\n1 = Metal\n2 = Nonmetal\n3 = Metalloid\n\nEnter the number.`,
+            given:`Element: ${el.sym}`,answer:el.ans,unit:`(= ${el.name})`,
+            steps:[`${el.sym} is a ${el.name}`,
+                el.ans===3?`Metalloids (semimetals): B, Si, Ge, As, Sb, Te, Po — along the staircase on the periodic table`:
+                el.ans===1?`Metals: left side and center of the periodic table. Properties: shiny, malleable, conduct electricity`:
+                `Nonmetals: upper right of the periodic table. Properties: dull, brittle, poor conductors`],
+            hint:`Metalloids (staircase): B, Si, Ge, As, Sb, Te, Po. Metals: left/center. Nonmetals: upper right.`};
+    }
+    if(t==='periodic_family'){
+        const elements=[
+            {sym:'Bromine (Br)',ans:4,name:'Halogen',r:'Br is in Group 17 → Halogen'},
+            {sym:'Potassium (K)',ans:1,name:'Alkali Metal',r:'K is in Group 1 → Alkali Metal'},
+            {sym:'Argon (Ar)',ans:5,name:'Noble Gas',r:'Ar is in Group 18 → Noble Gas'},
+            {sym:'Tungsten (W)',ans:3,name:'Transition Metal',r:'W is in the d-block (Groups 3–12) → Transition Metal'},
+            {sym:'Barium (Ba)',ans:2,name:'Alkaline Earth Metal',r:'Ba is in Group 2 → Alkaline Earth Metal'},
+            {sym:'Fluorine (F)',ans:4,name:'Halogen',r:'F is in Group 17 → Halogen'},
+            {sym:'Gold (Au)',ans:3,name:'Transition Metal',r:'Au is in the d-block → Transition Metal'},
+            {sym:'Lithium (Li)',ans:1,name:'Alkali Metal',r:'Li is in Group 1 → Alkali Metal'},
+            {sym:'Copper (Cu)',ans:3,name:'Transition Metal',r:'Cu is in the d-block → Transition Metal'},
+            {sym:'Magnesium (Mg)',ans:2,name:'Alkaline Earth Metal',r:'Mg is in Group 2 → Alkaline Earth Metal'},
+            {sym:'Iodine (I)',ans:4,name:'Halogen',r:'I is in Group 17 → Halogen'},
+            {sym:'Rubidium (Rb)',ans:1,name:'Alkali Metal',r:'Rb is in Group 1 → Alkali Metal'},
+            {sym:'Xenon (Xe)',ans:5,name:'Noble Gas',r:'Xe is in Group 18 → Noble Gas'},
+            {sym:'Calcium (Ca)',ans:2,name:'Alkaline Earth Metal',r:'Ca is in Group 2 → Alkaline Earth Metal'},
+            {sym:'Helium (He)',ans:5,name:'Noble Gas',r:'He is in Group 18 → Noble Gas'},
+            {sym:'Chlorine (Cl)',ans:4,name:'Halogen',r:'Cl is in Group 17 → Halogen'},
+            {sym:'Sodium (Na)',ans:1,name:'Alkali Metal',r:'Na is in Group 1 → Alkali Metal'},
+        ];
+        const el=elements[Math.floor(Math.random()*elements.length)];
+        return{question:`Classify the element into its periodic table family:\n"${el.sym}"\n\n1 = Alkali Metal\n2 = Alkaline Earth Metal\n3 = Transition Metal\n4 = Halogen\n5 = Noble Gas\n\nEnter the number.`,
+            given:`Element: ${el.sym}`,answer:el.ans,unit:`(= ${el.name})`,
+            steps:[el.r],
+            hint:`Group 1=Alkali Metals, Group 2=Alkaline Earth Metals, Groups 3–12=Transition Metals, Group 17=Halogens, Group 18=Noble Gases.`};
+    }
+    if(t==='count_atoms'){
+        // From WS 3 worksheet problems
+        const formulas=[
+            {f:'Na',coeff:1,atoms:1,r:'1 Na atom = 1 atom total'},
+            {f:'LiCl',coeff:1,atoms:2,r:'Li + Cl = 2 atoms'},
+            {f:'AlBr₃',coeff:1,atoms:4,r:'Al + 3 Br = 4 atoms'},
+            {f:'F₂',coeff:1,atoms:2,r:'2 F = 2 atoms'},
+            {f:'Mg',coeff:2,atoms:2,r:'2 × 1 Mg = 2 atoms'},
+            {f:'I₂',coeff:4,atoms:8,r:'4 × 2 I = 8 atoms'},
+            {f:'AlCl₃',coeff:5,atoms:20,r:'5 × (1 Al + 3 Cl) = 5 × 4 = 20 atoms'},
+            {f:'H₂',coeff:3,atoms:6,r:'3 × 2 H = 6 atoms'},
+            {f:'NaOH',coeff:1,atoms:3,r:'Na + O + H = 3 atoms'},
+            {f:'K₂O',coeff:1,atoms:3,r:'2 K + 1 O = 3 atoms'},
+            {f:'CaF₂',coeff:3,atoms:9,r:'3 × (1 Ca + 2 F) = 3 × 3 = 9 atoms'},
+            {f:'CaSO₄',coeff:1,atoms:6,r:'1 Ca + 1 S + 4 O = 6 atoms'},
+            {f:'Ca(OH)₂',coeff:1,atoms:5,r:'1 Ca + 2 O + 2 H = 5 atoms'},
+            {f:'Al(CN)₃',coeff:1,atoms:7,r:'1 Al + 3 C + 3 N = 7 atoms'},
+            {f:'Ca₃(PO₄)₂',coeff:1,atoms:13,r:'3 Ca + 2 P + 8 O = 13 atoms'},
+            {f:'Ba(NO₃)₂',coeff:3,atoms:27,r:'3 × (1 Ba + 2 N + 6 O) = 3 × 9 = 27 atoms'},
+            {f:'Sr₃(PO₄)₂',coeff:2,atoms:26,r:'2 × (3 Sr + 2 P + 8 O) = 2 × 13 = 26 atoms'},
+            {f:'Fr₃N',coeff:2,atoms:8,r:'2 × (3 Fr + 1 N) = 2 × 4 = 8 atoms'},
+            {f:'PCl₃',coeff:2,atoms:8,r:'2 × (1 P + 3 Cl) = 2 × 4 = 8 atoms'},
+            {f:'Li₂SO₄',coeff:2,atoms:14,r:'2 × (2 Li + 1 S + 4 O) = 2 × 7 = 14 atoms'},
+            {f:'Al₂(SO₄)₃',coeff:4,atoms:68,r:'4 × (2 Al + 3 S + 12 O) = 4 × 17 = 68 atoms'},
+        ];
+        const fm=formulas[Math.floor(Math.random()*formulas.length)];
+        const prefix=fm.coeff>1?`${fm.coeff} `:'';
+        return{question:`How many total atoms are in: ${prefix}${fm.f}?`,
+            given:`Formula: ${prefix}${fm.f}`,answer:fm.atoms,unit:'atoms',
+            steps:[fm.r,`Total = ${fm.atoms} atoms`],
+            hint:`Multiply the coefficient × (sum of all subscripts in the formula). Subscripts inside parentheses multiply by the number outside.`};
     }
     if(t==='phys_chem_change'){
         const changes=[
-            {desc:'Ice melting into liquid water',ans:1,name:'Physical change',r:'The water molecules are unchanged — only the state changes (solid→liquid) → Physical change'},
-            {desc:'Wood burning in a fire',ans:2,name:'Chemical change',r:'New substances form (CO₂, H₂O, ash) — this cannot be easily reversed → Chemical change'},
-            {desc:'Cutting paper into pieces',ans:1,name:'Physical change',r:'The paper is still paper — just smaller pieces. No new substance is formed → Physical change'},
-            {desc:'Iron rusting',ans:2,name:'Chemical change',r:'Fe reacts with O₂ and H₂O to form iron oxide (Fe₂O₃) — a new substance → Chemical change'},
-            {desc:'Sugar dissolving in water',ans:1,name:'Physical change',r:'Sugar molecules are unchanged — they can be recovered by evaporation → Physical change'},
-            {desc:'Milk souring',ans:2,name:'Chemical change',r:'Bacteria convert lactose to lactic acid — new substances form → Chemical change'},
-            {desc:'Boiling water',ans:1,name:'Physical change',r:'Water molecules are unchanged — only the state changes (liquid→gas) → Physical change'},
-            {desc:'An egg frying',ans:2,name:'Chemical change',r:'Proteins denature and new substances form — irreversible → Chemical change'},
-            {desc:'Tearing aluminum foil',ans:1,name:'Physical change',r:'Aluminum atoms are unchanged — just rearranged in shape → Physical change'},
-            {desc:'Baking soda reacting with vinegar (bubbles form)',ans:2,name:'Chemical change',r:'CO₂ gas is produced — a new substance forms → Chemical change'},
-            {desc:'Crushing a can',ans:1,name:'Physical change',r:'The aluminum is unchanged chemically — only shape changes → Physical change'},
-            {desc:'Fireworks exploding',ans:2,name:'Chemical change',r:'New substances and energy are released — irreversible chemical reaction → Chemical change'},
+            {desc:'Mothballs gradually vaporize in a closet',ans:1,name:'Physical change',r:'Mothballs sublimate (solid→gas) but the substance is chemically unchanged → Physical change'},
+            {desc:"Chemistry students get holes in clothes from lab acids",ans:2,name:'Chemical change',r:'Acid reacts with fabric to destroy it chemically — new substances form → Chemical change'},
+            {desc:'An antacid tablet fizzes and releases CO₂ gas when dissolved in water',ans:2,name:'Chemical change',r:'A gas (CO₂) is produced — a new substance forms → Chemical change'},
+            {desc:'Magnesium added to HCl produces MgCl₂ and H₂ gas',ans:2,name:'Chemical change',r:'New substances (MgCl₂ and H₂) are produced → Chemical change'},
+            {desc:'Opening a soda can releases CO₂ gas',ans:1,name:'Physical change',r:'CO₂ was already dissolved — releasing it is a physical process, no new substance forms → Physical change'},
+            {desc:'Acetone is used to dissolve and remove nail polish',ans:1,name:'Physical change',r:'Dissolving is a physical process — the nail polish molecules are not changed chemically → Physical change'},
+            {desc:'You burn propane when you grill',ans:2,name:'Chemical change',r:'Combustion produces CO₂ and H₂O — new substances → Chemical change'},
+            {desc:'A flashlight battery corrodes on prolonged storage',ans:2,name:'Chemical change',r:'Corrosion is a chemical reaction — new substances form → Chemical change'},
+            {desc:'You make Kool-Aid by mixing it with water',ans:1,name:'Physical change',r:'Dissolving is a physical process — no new substances form → Physical change'},
+            {desc:'Whole milk curdles when you add vinegar',ans:2,name:'Chemical change',r:'Proteins change structure irreversibly — new substance forms → Chemical change'},
+            {desc:'When copper rusts, it turns green',ans:2,name:'Chemical change',r:'Copper reacts with O₂/CO₂ to form malachite — new substance → Chemical change'},
+            {desc:'A piece of rubber stretches when you pull it',ans:1,name:'Physical change',r:'Shape changes but the rubber is chemically unchanged → Physical change'},
+            {desc:'Calcium chloride lowers the freezing point of water',ans:1,name:'Physical change',r:'CaCl₂ dissolves (physical process) and lowers freezing point — no new substance forms → Physical change'},
+            {desc:'A Hoffman apparatus separates water into H₂ and O₂ gases',ans:2,name:'Chemical change',r:'Electrolysis breaks water into its elements — new substances (H₂, O₂) → Chemical change'},
+            {desc:'Filtration separates a mixture of sand and water',ans:1,name:'Physical change',r:'Filtration separates by physical means — no new substances form → Physical change'},
+            {desc:'Ice melting into liquid water',ans:1,name:'Physical change',r:'Only the state changes — H₂O molecules are unchanged → Physical change'},
+            {desc:'Wood burning in a fire',ans:2,name:'Chemical change',r:'New substances form (CO₂, H₂O, ash) — irreversible → Chemical change'},
+            {desc:'Dry ice (solid CO₂) subliming',ans:1,name:'Physical change',r:'CO₂ changes state (solid→gas) but is chemically unchanged → Physical change'},
+            {desc:'Baking a cake',ans:2,name:'Chemical change',r:'Irreversible reactions occur — new substances and textures form → Chemical change'},
+            {desc:'Dissolving salt in water',ans:1,name:'Physical change',r:'NaCl ions separate into water but no new substance forms → Physical change'},
+            {desc:'Burning your chemistry book',ans:2,name:'Chemical change',r:'Combustion produces CO₂, H₂O, and ash — new substances → Chemical change'},
         ];
         const ch=changes[Math.floor(Math.random()*changes.length)];
-        return{question:`Is the following a physical or chemical change?\n"${ch.desc}"\n\n1 = Physical change\n2 = Chemical change\n\nEnter the number.`,
+        return{question:`Physical or chemical change?\n"${ch.desc}"\n\n1 = Physical change\n2 = Chemical change\n\nEnter the number.`,
             given:`Observation: ${ch.desc}`,answer:ch.ans,unit:`(= ${ch.name})`,
             steps:[ch.r],
-            hint:`Physical: no new substance forms, usually reversible (state changes, shape changes). Chemical: new substance(s) form, often irreversible (burning, rusting, reacting).`};
+            hint:`Physical: no new substance, usually reversible (dissolving, melting, boiling, cutting). Chemical: new substance(s) form, often irreversible (burning, rusting, reacting, souring).`};
     }
     if(t==='phys_chem_property'){
         const props=[
-            {prop:'Boiling point of water (100°C)',ans:1,name:'Physical property',r:'Boiling point can be measured without changing the chemical identity of water → Physical property'},
-            {prop:'Flammability of gasoline',ans:2,name:'Chemical property',r:'Flammability describes how a substance reacts with oxygen — you must burn it to observe this → Chemical property'},
-            {prop:'Density of iron (7.87 g/cm³)',ans:1,name:'Physical property',r:'Density can be measured without changing iron into a new substance → Physical property'},
-            {prop:'Reactivity of sodium with water',ans:2,name:'Chemical property',r:'This describes how Na reacts to form NaOH and H₂ — a chemical change → Chemical property'},
-            {prop:'Color of copper (reddish-orange)',ans:1,name:'Physical property',r:'Color is observed without changing copper into a new substance → Physical property'},
-            {prop:'Ability of iron to rust',ans:2,name:'Chemical property',r:'Rusting is a chemical reaction (Fe + O₂ → Fe₂O₃) — a chemical property → Chemical property'},
-            {prop:'Melting point of gold (1064°C)',ans:1,name:'Physical property',r:'Melting changes state but not chemical identity → Physical property'},
-            {prop:'Acidity of vinegar',ans:2,name:'Chemical property',r:'Acidity describes how vinegar reacts with other substances — a chemical property → Chemical property'},
-            {prop:'Electrical conductivity of copper',ans:1,name:'Physical property',r:'Conductivity is measured without changing the copper into a new substance → Physical property'},
-            {prop:'Toxicity of carbon monoxide',ans:2,name:'Chemical property',r:'Toxicity describes how CO reacts with hemoglobin — a chemical property → Chemical property'},
+            {prop:'Copper is reddish in color',ans:1,name:'Physical property',r:'Color is observed without chemically changing copper → Physical property'},
+            {prop:'HCl is a very strong acid',ans:2,name:'Chemical property',r:'Acidity describes how HCl reacts with other substances → Chemical property'},
+            {prop:'Iron is magnetic',ans:1,name:'Physical property',r:'Magnetism is measured without changing iron chemically → Physical property'},
+            {prop:'Sodium reacts violently with water',ans:2,name:'Chemical property',r:'Reactivity with water describes a chemical change → Chemical property'},
+            {prop:'Magnesium ribbon is malleable',ans:1,name:'Physical property',r:'Malleability is a physical property — shape changes without new substance forming → Physical property'},
+            {prop:'Fluorine is a gas at room temperature',ans:1,name:'Physical property',r:'Physical state at room temperature is a physical property → Physical property'},
+            {prop:'Bromine is a liquid at room temperature',ans:1,name:'Physical property',r:'Physical state is observable without chemical change → Physical property'},
+            {prop:'Manganese dioxide is a strong oxidizer',ans:2,name:'Chemical property',r:'Oxidizing ability describes how MnO₂ reacts chemically → Chemical property'},
+            {prop:'Sand is not magnetic',ans:1,name:'Physical property',r:'Magnetism (or lack thereof) is measured without chemical change → Physical property'},
+            {prop:'Sugar is soluble in water',ans:1,name:'Physical property',r:'Solubility involves a physical process — sugar molecules are unchanged → Physical property'},
         ];
         const p=props[Math.floor(Math.random()*props.length)];
-        return{question:`Is the following a physical or chemical property?\n"${p.prop}"\n\n1 = Physical property\n2 = Chemical property\n\nEnter the number.`,
+        return{question:`Physical or chemical property?\n"${p.prop}"\n\n1 = Physical property\n2 = Chemical property\n\nEnter the number.`,
             given:`Property: ${p.prop}`,answer:p.ans,unit:`(= ${p.name})`,
             steps:[p.r],
-            hint:`Physical: observed/measured without changing the substance's identity (color, density, mp, bp). Chemical: describes how a substance reacts or changes into something new.`};
+            hint:`Physical: observed/measured without changing chemical identity (color, density, mp, bp, magnetism). Chemical: describes ability to react or change into a new substance.`};
     }
     if(t==='intensive_extensive'){
         const props=[
-            {prop:'Mass of a sample of water',ans:2,name:'Extensive',r:'Mass depends on how much sample you have — it doubles if you double the amount → Extensive'},
-            {prop:'Temperature of boiling water',ans:1,name:'Intensive',r:'Boiling point is the same no matter how much water you have → Intensive'},
-            {prop:'Volume of a gas',ans:2,name:'Extensive',r:'Volume depends on the amount of gas present → Extensive'},
-            {prop:'Density of aluminum',ans:1,name:'Intensive',r:'Density is the same for any sample of aluminum regardless of size → Intensive'},
-            {prop:'Color of gold',ans:1,name:'Intensive',r:'Color does not change with sample size → Intensive'},
-            {prop:'Number of moles in a sample',ans:2,name:'Extensive',r:'The amount of substance (moles) depends on sample size → Extensive'},
-            {prop:'Melting point of iron',ans:1,name:'Intensive',r:'Melting point is the same for any amount of iron → Intensive'},
-            {prop:'Heat content (enthalpy) of a reaction',ans:2,name:'Extensive',r:'Total heat depends on how many moles react → Extensive'},
+            {prop:'Chlorine gas is yellow',ans:1,name:'Intensive',r:'Color does not change with sample size → Intensive'},
+            {prop:'Calcium is not magnetic',ans:1,name:'Intensive',r:'Magnetic behavior is the same regardless of amount → Intensive'},
+            {prop:'There are 250 mL of mercury in this flask',ans:2,name:'Extensive',r:'Volume depends on how much mercury is present → Extensive'},
+            {prop:'The density of water is 1.00 g/mL',ans:1,name:'Intensive',r:'Density is the same for any sample of water → Intensive'},
+            {prop:'Francium is the most reactive metal',ans:1,name:'Intensive',r:'Reactivity is an intrinsic property, not dependent on amount → Intensive'},
+            {prop:'I massed out 0.72 grams of carbon',ans:2,name:'Extensive',r:'Mass depends on how much sample you have → Extensive'},
+            {prop:'The density of lead is 11.3 g/mL',ans:1,name:'Intensive',r:'Density is the same for any size sample of lead → Intensive'},
+            {prop:'A cup of water is 8 oz',ans:2,name:'Extensive',r:'Volume (8 oz) depends on the amount of water → Extensive'},
+            {prop:'Chlorine gas is yellow',ans:1,name:'Intensive',r:'Color is the same regardless of amount → Intensive'},
+            {prop:'Mass of a block of iron',ans:2,name:'Extensive',r:'Mass depends on the size of the block → Extensive'},
+            {prop:'Boiling point of ethanol (78.4°C)',ans:1,name:'Intensive',r:'Boiling point is the same no matter how much ethanol you have → Intensive'},
         ];
         const p=props[Math.floor(Math.random()*props.length)];
-        return{question:`Is the following property intensive or extensive?\n"${p.prop}"\n\n1 = Intensive\n2 = Extensive\n\nEnter the number.`,
+        return{question:`Intensive or extensive property?\n"${p.prop}"\n\n1 = Intensive\n2 = Extensive\n\nEnter the number.`,
             given:`Property: ${p.prop}`,answer:p.ans,unit:`(= ${p.name})`,
             steps:[p.r],
-            hint:`Intensive: does NOT depend on sample size (density, temperature, color, mp). Extensive: DOES depend on sample size (mass, volume, moles).`};
+            hint:`Intensive: does NOT depend on amount (density, color, temperature, bp, mp). Extensive: DOES depend on amount (mass, volume, length).`};
     }
-    if(t==='density'){
-        const choice=r(0,2);
+    if(t==='percent_composition'){
+        // From Gunk lab / sample questions
+        const choice=Math.floor(Math.random()*3);
         if(choice===0){
-            // find density
-            const mass=r(10,500,1),vol=r(5,200,1),dens=parseFloat((mass/vol).toFixed(3));
-            return{question:`A sample has a mass of ${mass} g and a volume of ${vol} mL. What is its density?`,
-                given:`m = ${mass} g\nV = ${vol} mL`,answer:dens,unit:'g/mL',
-                steps:[`d = m / V`,`d = ${mass} / ${vol} = ${dens} g/mL`],
-                hint:`d = m/V. Density = mass divided by volume.`};
+            // percent composition of a component in a mixture
+            const comps=[
+                {mix:'a gunk mixture',comp:'sand',m1:44,m2:32.6,m3:22.1,target:1,targetName:'sand'},
+                {mix:'a gunk mixture',comp:'salt',m1:44,m2:32.6,m3:22.1,target:2,targetName:'salt'},
+                {mix:'a gunk mixture',comp:'iron',m1:44,m2:32.6,m3:22.1,target:3,targetName:'iron'},
+            ];
+            const c=comps[Math.floor(Math.random()*comps.length)];
+            const total=c.m1+c.m2+c.m3;
+            const mass=c.target===1?c.m1:c.target===2?c.m2:c.m3;
+            const pct=parseFloat((mass/total*100).toFixed(1));
+            return{question:`A gunk mixture contains ${c.m1} g of sand, ${c.m2} g of salt, and ${c.m3} g of iron. What is the percent composition of ${c.targetName}?`,
+                given:`Mass of ${c.targetName} = ${mass} g\nTotal mass = ${c.m1} + ${c.m2} + ${c.m3} = ${total.toFixed(1)} g`,
+                answer:pct,unit:'%',
+                steps:[`% composition = (mass of component / total mass) × 100`,`= (${mass} / ${total.toFixed(1)}) × 100 = ${pct}%`],
+                hint:`% composition = (mass of component ÷ total mass) × 100%`};
         } else if(choice===1){
-            // find mass
-            const dens=parseFloat(r(0.5,20,2)),vol=r(5,200,1),mass=parseFloat((dens*vol).toFixed(2));
-            return{question:`A substance has a density of ${dens} g/mL and a volume of ${vol} mL. What is its mass?`,
-                given:`d = ${dens} g/mL\nV = ${vol} mL`,answer:mass,unit:'g',
-                steps:[`d = m / V → m = d × V`,`m = ${dens} × ${vol} = ${mass} g`],
-                hint:`Rearrange d = m/V → m = d × V.`};
+            // percent error
+            const obs=parseFloat(r(20,50,1)),tru=parseFloat(r(20,50,1));
+            const pe=parseFloat(((obs-tru)/tru*100).toFixed(1));
+            return{question:`A student measured a volume of ${obs} mL. The true value is ${tru} mL. What is the percent error?`,
+                given:`Observed = ${obs} mL\nAccepted = ${tru} mL\n% error = (observed − accepted) / accepted × 100%`,
+                answer:pe,unit:'%',
+                steps:[`% error = (${obs} − ${tru}) / ${tru} × 100`,`= ${(obs-tru).toFixed(1)} / ${tru} × 100 = ${pe}%`],
+                hint:`% error = (observed − accepted) / accepted × 100%. Can be negative if your measurement was too low.`};
         } else {
-            // find volume
-            const dens=parseFloat(r(0.5,20,2)),mass=r(10,500,1),vol=parseFloat((mass/dens).toFixed(3));
-            return{question:`A substance has a density of ${dens} g/mL and a mass of ${mass} g. What is its volume?`,
-                given:`d = ${dens} g/mL\nm = ${mass} g`,answer:vol,unit:'mL',
-                steps:[`d = m / V → V = m / d`,`V = ${mass} / ${dens} = ${vol} mL`],
-                hint:`Rearrange d = m/V → V = m/d.`};
+            // percent yield (from sugar water example)
+            const actual=parseFloat(r(60,95,1)),theoretical=100;
+            return{question:`A mixture of sugar water contained 100 g of sugar. After separation, a student recovered ${actual} g of sugar. What is the percent yield?`,
+                given:`Actual yield = ${actual} g\nTheoretical yield = ${theoretical} g`,
+                answer:actual,unit:'%',
+                steps:[`% yield = (actual / theoretical) × 100`,`= (${actual} / ${theoretical}) × 100 = ${actual}%`],
+                hint:`% yield = (actual yield / theoretical yield) × 100%.`};
         }
-    }
-    if(t==='conservation_mass'){
-        const rxns=[
-            {r:'2H₂ + O₂ → 2H₂O',reactants:'H₂ and O₂'},
-            {r:'C + O₂ → CO₂',reactants:'C and O₂'},
-            {r:'2Mg + O₂ → 2MgO',reactants:'Mg and O₂'},
-        ];
-        const rx=rxns[Math.floor(Math.random()*rxns.length)];
-        const mReact1=r(10,200,1),mReact2=r(5,100,1),mProd1=r(5,mReact1+mReact2-1,1);
-        const mProd2=parseFloat((mReact1+mReact2-mProd1).toFixed(1));
-        return{question:`In the reaction ${rx.r}, ${mReact1} g of ${rx.reactants.split(' and ')[0]} reacts with ${mReact2} g of ${rx.reactants.split(' and ')[1]}, producing ${mProd1} g of one product. What is the mass of the other product formed?`,
-            given:`Mass of reactant 1 = ${mReact1} g\nMass of reactant 2 = ${mReact2} g\nMass of product 1 = ${mProd1} g\nLaw of Conservation of Mass: total mass reactants = total mass products`,
-            answer:mProd2,unit:'g',
-            steps:[`Total mass of reactants = ${mReact1} + ${mReact2} = ${mReact1+mReact2} g`,
-                `Total mass of products must equal ${mReact1+mReact2} g`,
-                `Mass of other product = ${mReact1+mReact2} − ${mProd1} = ${mProd2} g`],
-            hint:`Law of Conservation of Mass: mass of reactants = mass of products. Subtract the known product mass from the total.`};
     }
     return{question:'Is ice melting a physical or chemical change?\n\n1 = Physical\n2 = Chemical\n\nEnter the number.',
         given:'Ice (solid H₂O) → Liquid water (H₂O)',answer:1,unit:'(= Physical)',
