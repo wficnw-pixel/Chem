@@ -403,115 +403,380 @@ function genMoles(){
 // STOICHIOMETRY
 // ══════════════════════════════════════════════════════════════════════════════
 function genStoich(){
+    // Reactions from the worksheet (Module 10)
     const rxns=[
-        {eq:'2H₂ + O₂ → 2H₂O',desc:'hydrogen reacts with oxygen to form water',r:[{n:'H₂',d:'hydrogen',mm:2.02,c:2},{n:'O₂',d:'oxygen',mm:32.00,c:1}],p:[{n:'H₂O',d:'water',mm:18.02,c:2}]},
-        {eq:'N₂ + 3H₂ → 2NH₃',desc:'nitrogen and hydrogen form ammonia',r:[{n:'N₂',d:'nitrogen',mm:28.02,c:1},{n:'H₂',d:'hydrogen',mm:2.02,c:3}],p:[{n:'NH₃',d:'ammonia',mm:17.03,c:2}]},
-        {eq:'CH₄ + 2O₂ → CO₂ + 2H₂O',desc:'methane combusts in oxygen',r:[{n:'CH₄',d:'methane',mm:16.04,c:1},{n:'O₂',d:'oxygen',mm:32.00,c:2}],p:[{n:'CO₂',d:'CO₂',mm:44.01,c:1}]},
-        {eq:'2Na + Cl₂ → 2NaCl',desc:'sodium reacts with chlorine',r:[{n:'Na',d:'sodium',mm:22.99,c:2},{n:'Cl₂',d:'chlorine',mm:70.90,c:1}],p:[{n:'NaCl',d:'NaCl',mm:58.44,c:2}]},
-        {eq:'C₃H₈ + 5O₂ → 3CO₂ + 4H₂O',desc:'propane combusts in oxygen',r:[{n:'C₃H₈',d:'propane',mm:44.10,c:1},{n:'O₂',d:'oxygen',mm:32.00,c:5}],p:[{n:'CO₂',d:'CO₂',mm:44.01,c:3}]}
+        {eq:'Pb + 2HCl → PbCl₂ + H₂',desc:'lead reacts with hydrochloric acid to produce lead(II) chloride and hydrogen',
+         r:[{n:'Pb',d:'lead',mm:207.2,c:1},{n:'HCl',d:'hydrochloric acid',mm:36.46,c:2}],
+         p:[{n:'PbCl₂',d:'lead(II) chloride',mm:278.1,c:1},{n:'H₂',d:'hydrogen gas',mm:2.02,c:1,gas:true}]},
+        {eq:'N₂O₅ + H₂O → 2HNO₃',desc:'dinitrogen pentoxide reacts with water to form nitric acid',
+         r:[{n:'N₂O₅',d:'dinitrogen pentoxide',mm:108.01,c:1},{n:'H₂O',d:'water',mm:18.02,c:1}],
+         p:[{n:'HNO₃',d:'nitric acid',mm:63.01,c:2}]},
+        {eq:'C + ZnO → Zn + CO₂',desc:'carbon reacts with zinc oxide to produce zinc and carbon dioxide',
+         r:[{n:'C',d:'carbon',mm:12.01,c:1},{n:'ZnO',d:'zinc oxide',mm:81.38,c:1}],
+         p:[{n:'Zn',d:'zinc',mm:65.38,c:1},{n:'CO₂',d:'carbon dioxide',mm:44.01,c:1}]},
+        {eq:'Br₂ + 2NaI → 2NaBr + I₂',desc:'bromine reacts with sodium iodide',
+         r:[{n:'Br₂',d:'bromine',mm:159.80,c:1},{n:'NaI',d:'sodium iodide',mm:149.89,c:2}],
+         p:[{n:'NaBr',d:'sodium bromide',mm:102.89,c:2}]},
+        {eq:'2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O',desc:'ethane combusts in oxygen',
+         r:[{n:'C₂H₆',d:'ethane',mm:30.07,c:2},{n:'O₂',d:'oxygen',mm:32.00,c:7}],
+         p:[{n:'CO₂',d:'carbon dioxide',mm:44.01,c:4}]},
+        {eq:'4Fe + 3O₂ → 2Fe₂O₃',desc:'iron reacts with oxygen to form iron(III) oxide (rust)',
+         r:[{n:'Fe',d:'iron',mm:55.85,c:4},{n:'O₂',d:'oxygen',mm:32.00,c:3}],
+         p:[{n:'Fe₂O₃',d:'iron(III) oxide',mm:159.69,c:2}]},
+        {eq:'N₂ + 3H₂ → 2NH₃',desc:'nitrogen and hydrogen form ammonia',
+         r:[{n:'N₂',d:'nitrogen',mm:28.02,c:1},{n:'H₂',d:'hydrogen',mm:2.02,c:3}],
+         p:[{n:'NH₃',d:'ammonia',mm:17.03,c:2}]},
+        {eq:'2Na + 2H₂O → 2NaOH + H₂',desc:'sodium reacts with water to produce sodium hydroxide and hydrogen',
+         r:[{n:'Na',d:'sodium',mm:22.99,c:2},{n:'H₂O',d:'water',mm:18.02,c:2}],
+         p:[{n:'NaOH',d:'sodium hydroxide',mm:40.00,c:2},{n:'H₂',d:'hydrogen gas',mm:2.02,c:1,gas:true}]},
+        {eq:'2Mg + O₂ → 2MgO',desc:'magnesium reacts with oxygen',
+         r:[{n:'Mg',d:'magnesium',mm:24.31,c:2},{n:'O₂',d:'oxygen',mm:32.00,c:1}],
+         p:[{n:'MgO',d:'magnesium oxide',mm:40.30,c:2}]}
     ];
     const rxn=rxns[Math.floor(Math.random()*rxns.length)];
-    const basic=['m2m'],inter=['m2m','lr'],adv=['lr_yield'];
+    const basic=['mole_ratio','m2m'],inter=['m2m','lr','percent_yield'],adv=['lr_yield','mass_vol_stp'];
     const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
     const t=pool[Math.floor(Math.random()*pool.length)];
 
+    if(t==='mole_ratio'){
+        const re=rxn.r[0],pr=rxn.p[0],molR=r(0.1,5,2);
+        const molP=molR*(pr.c/re.c);
+        return{question:`${rxn.desc[0].toUpperCase()+rxn.desc.slice(1)}.\nHow many moles of ${pr.n} will be produced when ${molR} mol of ${re.n} reacts completely?`,
+            given:`Equation: ${rxn.eq}\nRatio: ${re.c} mol ${re.n} : ${pr.c} mol ${pr.n}`,
+            answer:molP,unit:'mol',
+            steps:[`Mole ratio: ${re.c} mol ${re.n} → ${pr.c} mol ${pr.n}`,
+                `mol ${pr.n} = ${molR} × (${pr.c}/${re.c}) = ${molP.toFixed(4)} mol`],
+            hint:`Use the mole ratio from the balanced equation as a conversion factor.`};
+    }
     if(t==='m2m'){
-        const re=rxn.r[0],pr=rxn.p[0],m=diff==='basic'?r(5,25):r(10,80,2);
+        const re=rxn.r[0],pr=rxn.p[0],m=r(10,80,2);
         const mol=m/re.mm,pmol=mol*(pr.c/re.c),pm=pmol*pr.mm;
-        return{question:`When ${rxn.desc}, how many grams of ${pr.d} are produced from ${m} g of ${re.d}?`,given:`Equation: ${rxn.eq}\nMM: ${re.n}=${re.mm}, ${pr.n}=${pr.mm} g/mol\nRatio: ${re.c} mol ${re.n} : ${pr.c} mol ${pr.n}`,answer:pm,unit:'g',steps:[`mol ${re.n}: ${m}/${re.mm}=${mol.toFixed(4)}`,`mol ${pr.n}: ×(${pr.c}/${re.c})=${pmol.toFixed(4)}`,`g ${pr.n}: ×${pr.mm}=${pm.toFixed(3)} g`],hint:`g→mol→mole ratio→mol→g`};
+        return{question:`${rxn.desc[0].toUpperCase()+rxn.desc.slice(1)}.\nHow many grams of ${pr.d} are produced from ${m} g of ${re.d}?`,
+            given:`Equation: ${rxn.eq}\nMolar mass: ${re.n} = ${re.mm} g/mol, ${pr.n} = ${pr.mm} g/mol`,
+            answer:pm,unit:'g',
+            steps:[`mol ${re.n} = ${m} ÷ ${re.mm} = ${mol.toFixed(4)} mol`,
+                `mol ${pr.n} = ${mol.toFixed(4)} × (${pr.c}/${re.c}) = ${pmol.toFixed(4)} mol`,
+                `g ${pr.n} = ${pmol.toFixed(4)} × ${pr.mm} = ${pm.toFixed(3)} g`],
+            hint:`g → mol (÷MM) → mole ratio → mol → g (×MM)`};
+    }
+    if(t==='percent_yield'){
+        const re=rxn.r[0],pr=rxn.p[0],m=r(10,50,2);
+        const theo=m/re.mm*(pr.c/re.c)*pr.mm;
+        const pct=r(70,98,1),actual=theo*pct/100;
+        return{question:`${rxn.desc[0].toUpperCase()+rxn.desc.slice(1)}.\nIf ${m} g of ${re.d} is used and ${actual.toFixed(2)} g of ${pr.d} is recovered, what is the percent yield?`,
+            given:`Mass of ${re.n} = ${m} g\nActual yield of ${pr.n} = ${actual.toFixed(2)} g\nMM: ${re.n}=${re.mm}, ${pr.n}=${pr.mm} g/mol`,
+            answer:pct,unit:'%',
+            steps:[`Theoretical yield: ${m}÷${re.mm} × (${pr.c}/${re.c}) × ${pr.mm} = ${theo.toFixed(3)} g`,
+                `% yield = (actual/theoretical) × 100 = (${actual.toFixed(2)}/${theo.toFixed(3)}) × 100 = ${pct.toFixed(1)}%`],
+            hint:`% yield = (actual yield ÷ theoretical yield) × 100. Find theoretical yield via stoichiometry first.`};
     }
     if(t==='lr'){
-        const r1=rxn.r[0],r2=rxn.r[1],pr=rxn.p[0];
+        const r1=rxn.r[0],r2=rxn.r.length>1?rxn.r[1]:rxn.r[0],pr=rxn.p[0];
         const m1=r(10,40,2),m2=r(10,40,2),n1=m1/r1.mm,n2=m2/r2.mm;
         const rat1=n1/r1.c,rat2=n2/r2.c,lim=rat1<rat2?r1:r2,limN=rat1<rat2?n1:n2;
         const pm=limN*(pr.c/lim.c)*pr.mm;
-        return{question:`When ${rxn.desc}, given ${m1} g of ${r1.d} and ${m2} g of ${r2.d}, how many grams of ${pr.d} are produced?`,given:`${r1.n}: ${m1} g (MM=${r1.mm})\n${r2.n}: ${m2} g (MM=${r2.mm})\nMM ${pr.n}=${pr.mm}`,answer:pm,unit:'g',steps:[`mol ${r1.n}=${n1.toFixed(4)} ÷${r1.c}=${rat1.toFixed(4)}`,`mol ${r2.n}=${n2.toFixed(4)} ÷${r2.c}=${rat2.toFixed(4)}`,`${lim.n} is limiting`,`Product: ${pm.toFixed(3)} g`],hint:`Divide moles by coefficient — smaller ratio = limiting reactant.`};
+        return{question:`${rxn.desc[0].toUpperCase()+rxn.desc.slice(1)}.\nIdentify the limiting reactant if ${m1} g of ${r1.d} reacts with ${m2} g of ${r2.d}. What mass of ${pr.d} is produced?`,
+            given:`${r1.n}: ${m1} g (MM=${r1.mm} g/mol)\n${r2.n}: ${m2} g (MM=${r2.mm} g/mol)\nMM ${pr.n} = ${pr.mm} g/mol`,
+            answer:pm,unit:'g',
+            steps:[`mol ${r1.n} = ${m1}÷${r1.mm} = ${n1.toFixed(4)}; ÷${r1.c} = ${rat1.toFixed(4)}`,
+                `mol ${r2.n} = ${m2}÷${r2.mm} = ${n2.toFixed(4)}; ÷${r2.c} = ${rat2.toFixed(4)}`,
+                `${lim.n} is limiting (smaller ratio = ${Math.min(rat1,rat2).toFixed(4)})`,
+                `g ${pr.n} = ${limN.toFixed(4)} × (${pr.c}/${lim.c}) × ${pr.mm} = ${pm.toFixed(3)} g`],
+            hint:`Divide moles of each reactant by its coefficient. The smaller result is the limiting reactant.`};
     }
-    // ADVANCED: limiting reactant + percent yield combined (3 steps)
-    const r1=rxn.r[0],r2=rxn.r.length>1?rxn.r[1]:rxn.r[0],pr=rxn.p[0];
-    const m1=r(15,50,2),m2=r(15,50,2),n1=m1/r1.mm,n2=m2/r2.mm;
-    const rat1=n1/r1.c,rat2=n2/r2.c;
-    const lim=rat1<rat2?r1:r2,limN=rat1<rat2?n1:n2;
-    const theo=limN*(pr.c/lim.c)*pr.mm;
-    const actual=theo*(0.70+Math.random()*0.20),py=(actual/theo)*100;
-    return{question:`When ${rxn.desc}, ${m1} g of ${r1.d} reacts with ${m2} g of ${r2.d}. If the actual yield of ${pr.d} is ${actual.toFixed(2)} g, what is the percent yield?`,given:`${r1.n}: ${m1} g (MM=${r1.mm})\n${r2.n}: ${m2} g (MM=${r2.mm})\nActual yield of ${pr.n}: ${actual.toFixed(2)} g`,answer:py,unit:'%',steps:[`Step 1 — find LR: ${r1.n} ratio=${rat1.toFixed(4)}, ${r2.n} ratio=${rat2.toFixed(4)} → ${lim.n} limits`,`Step 2 — theoretical yield: ${limN.toFixed(4)} × (${pr.c}/${lim.c}) × ${pr.mm} = ${theo.toFixed(3)} g`,`Step 3 — % yield: (${actual.toFixed(2)}/${theo.toFixed(3)}) × 100 = ${py.toFixed(2)}%`],hint:`Three steps: (1) find limiting reactant, (2) calculate theoretical yield, (3) % yield = actual/theoretical × 100.`};
+    if(t==='mass_vol_stp'){
+        // gas product or reactant - find volume at STP
+        const gasRxns=[
+            {eq:'Mg + 2HCl → MgCl₂ + H₂',re:{n:'Mg',d:'magnesium',mm:24.31,c:1},gas:{n:'H₂',c:1}},
+            {eq:'2KClO₃ → 2KCl + 3O₂',re:{n:'KClO₃',d:'potassium chlorate',mm:122.55,c:2},gas:{n:'O₂',c:3}},
+            {eq:'CaCO₃ → CaO + CO₂',re:{n:'CaCO₃',d:'calcium carbonate',mm:100.09,c:1},gas:{n:'CO₂',c:1}},
+            {eq:'2Na + 2H₂O → 2NaOH + H₂',re:{n:'Na',d:'sodium',mm:22.99,c:2},gas:{n:'H₂',c:1}}
+        ];
+        const gr=gasRxns[Math.floor(Math.random()*gasRxns.length)];
+        const mass=r(5,40,2),molRe=mass/gr.re.mm,molGas=molRe*(gr.gas.c/gr.re.c),vol=molGas*22.4;
+        return{question:`${gr.eq}\nWhat volume of ${gr.gas.n} gas at STP is produced from ${mass} g of ${gr.re.d}?`,
+            given:`Mass of ${gr.re.n} = ${mass} g\nMM(${gr.re.n}) = ${gr.re.mm} g/mol\nAt STP: 1 mol gas = 22.4 L`,
+            answer:vol,unit:'L',
+            steps:[`mol ${gr.re.n} = ${mass} ÷ ${gr.re.mm} = ${molRe.toFixed(4)} mol`,
+                `mol ${gr.gas.n} = ${molRe.toFixed(4)} × (${gr.gas.c}/${gr.re.c}) = ${molGas.toFixed(4)} mol`,
+                `Volume at STP = ${molGas.toFixed(4)} × 22.4 L/mol = ${vol.toFixed(3)} L`],
+            hint:`g → mol (÷MM) → mole ratio → mol gas → volume (× 22.4 L/mol at STP).`};
+    }
+    // ADVANCED: limiting reactant + percent yield combined
+    const r1a=rxn.r[0],r2a=rxn.r.length>1?rxn.r[1]:rxn.r[0],pra=rxn.p[0];
+    const m1a=r(15,50,2),m2a=r(15,50,2),n1a=m1a/r1a.mm,n2a=m2a/r2a.mm;
+    const rat1a=n1a/r1a.c,rat2a=n2a/r2a.c;
+    const lima=rat1a<rat2a?r1a:r2a,limNa=rat1a<rat2a?n1a:n2a;
+    const theoa=limNa*(pra.c/lima.c)*pra.mm;
+    const actuala=theoa*(0.70+Math.random()*0.20),pya=(actuala/theoa)*100;
+    return{question:`When ${rxn.desc}, ${m1a} g of ${r1a.d} reacts with ${m2a} g of ${r2a.d}. If the actual yield of ${pra.d} is ${actuala.toFixed(2)} g, what is the percent yield?`,
+        given:`${r1a.n}: ${m1a} g (MM=${r1a.mm})\n${r2a.n}: ${m2a} g (MM=${r2a.mm})\nActual yield of ${pra.n}: ${actuala.toFixed(2)} g`,
+        answer:pya,unit:'%',
+        steps:[`Step 1: ${r1a.n} ratio=${rat1a.toFixed(4)}, ${r2a.n} ratio=${rat2a.toFixed(4)} → ${lima.n} limits`,
+            `Step 2: theoretical yield = ${limNa.toFixed(4)} × (${pra.c}/${lima.c}) × ${pra.mm} = ${theoa.toFixed(3)} g`,
+            `Step 3: % yield = (${actuala.toFixed(2)}/${theoa.toFixed(3)}) × 100 = ${pya.toFixed(2)}%`],
+        hint:`Three steps: (1) find limiting reactant, (2) calculate theoretical yield, (3) % yield = actual/theoretical × 100.`};
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
 // GASES
 // ══════════════════════════════════════════════════════════════════════════════
 function genGases(){
-    const basic=['boyle','charles','gay_lussac'];
-    const inter=['boyle','charles','gay_lussac','combined','ideal'];
-    const adv=['ideal_stoich','combined_celsius','dalton_partial'];
+    const basic=['boyle','charles','gay_lussac','avogadro'];
+    const inter=['boyle','charles','gay_lussac','combined','ideal','dalton_partial'];
+    const adv=['ideal_stoich','combined_celsius','dalton_partial','graham'];
     const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
     const t=pool[Math.floor(Math.random()*pool.length)];
 
-    if(t==='boyle'){const P1=r(1,5,2),V1=r(1,10,2),P2=r(1,8,2),V2=P1*V1/P2;return{question:`A gas is at ${P1} atm and ${V1} L. What volume does it occupy at ${P2} atm (constant T)?`,given:`P₁=${P1} atm, V₁=${V1} L, P₂=${P2} atm`,answer:V2,unit:'L',steps:[`P₁V₁=P₂V₂ → V₂=${P1}×${V1}/${P2}=${V2.toFixed(3)} L`],hint:`Boyle's Law: P₁V₁ = P₂V₂`};}
-    if(t==='charles'){const V1=r(1,10,2),T1=r(250,400,1),T2=r(200,500,1),V2=V1*T2/T1;return{question:`A gas occupies ${V1} L at ${T1} K. What volume at ${T2} K (constant P)?`,given:`V₁=${V1} L, T₁=${T1} K, T₂=${T2} K`,answer:V2,unit:'L',steps:[`V₁/T₁=V₂/T₂ → V₂=${V1}×${T2}/${T1}=${V2.toFixed(3)} L`],hint:`Charles's Law: V₁/T₁ = V₂/T₂ (K required!)`};}
-    if(t==='gay_lussac'){const P1=r(1,5,2),T1=r(250,400,1),T2=r(200,500,1),P2=P1*T2/T1;return{question:`A gas has pressure ${P1} atm at ${T1} K. What is its pressure at ${T2} K (constant V)?`,given:`P₁=${P1} atm, T₁=${T1} K, T₂=${T2} K`,answer:P2,unit:'atm',steps:[`P₁/T₁=P₂/T₂ → P₂=${P1}×${T2}/${T1}=${P2.toFixed(3)} atm`],hint:`Gay-Lussac's Law: P₁/T₁ = P₂/T₂`};}
-    if(t==='combined'){const P1=r(1,4,2),V1=r(1,8,2),T1=r(250,400,1),P2=r(1,5,2),T2=r(200,500,1),V2=P1*V1*T2/(T1*P2);return{question:`Gas: P₁=${P1} atm, V₁=${V1} L, T₁=${T1} K. Find V₂ when P₂=${P2} atm, T₂=${T2} K.`,given:`P₁=${P1},V₁=${V1},T₁=${T1},P₂=${P2},T₂=${T2}`,answer:V2,unit:'L',steps:[`P₁V₁/T₁=P₂V₂/T₂ → V₂=${V2.toFixed(3)} L`],hint:`Combined Gas Law: P₁V₁/T₁ = P₂V₂/T₂`};}
+    if(t==='boyle'){
+        const scenarios=[
+            {V1u:'mL',V2u:'mL',scale:1},{V1u:'L',V2u:'L',scale:1},{V1u:'mL',V2u:'L',scale:0.001}
+        ];
+        const sc=scenarios[Math.floor(Math.random()*scenarios.length)];
+        const P1=r(1,5,2),V1=r(1,sc.V1u==='mL'?1000:10,sc.V1u==='mL'?0:2),P2=r(1,8,2);
+        const V2=P1*V1/P2;
+        return{question:`A gas occupies ${V1} ${sc.V1u} at a pressure of ${P1} atm. When the pressure is changed to ${P2} atm, what is the new volume? (Constant temperature)`,
+            given:`P₁ = ${P1} atm, V₁ = ${V1} ${sc.V1u}\nP₂ = ${P2} atm`,
+            answer:V2,unit:sc.V1u,steps:[`Boyle's Law: P₁V₁ = P₂V₂`,`V₂ = P₁V₁/P₂ = (${P1} × ${V1})/${P2} = ${V2.toFixed(3)} ${sc.V1u}`],hint:`Boyle's Law: P₁V₁ = P₂V₂ (solve for V₂)`};
+    }
+    if(t==='charles'){
+        const T1c=r(0,100),T2c=r(-50,200),V1=r(1,15,2);
+        const T1=T1c+273,T2=T2c+273,V2=V1*T2/T1;
+        return{question:`A gas occupies ${V1} L at ${T1c}°C. What volume will it occupy at ${T2c}°C? (Constant pressure)`,
+            given:`V₁ = ${V1} L, T₁ = ${T1c}°C = ${T1} K\nT₂ = ${T2c}°C`,
+            answer:V2,unit:'L',
+            steps:[`Convert: T₂ = ${T2c} + 273 = ${T2} K`,`Charles's Law: V₁/T₁ = V₂/T₂`,`V₂ = V₁×T₂/T₁ = ${V1}×${T2}/${T1} = ${V2.toFixed(3)} L`],
+            hint:`Charles's Law: V₁/T₁ = V₂/T₂. Always use Kelvin (°C + 273)!`};
+    }
+    if(t==='gay_lussac'){
+        const P1=r(1,5,2),T1c=r(20,100),T2c=r(100,300),P2=P1*(T2c+273)/(T1c+273);
+        return{question:`A gas has a pressure of ${P1} atm at ${T1c}°C. What is the new pressure if the temperature is changed to ${T2c}°C? (Constant volume)`,
+            given:`P₁ = ${P1} atm, T₁ = ${T1c}°C = ${T1c+273} K\nT₂ = ${T2c}°C`,
+            answer:P2,unit:'atm',
+            steps:[`T₁ = ${T1c}+273 = ${T1c+273} K, T₂ = ${T2c}+273 = ${T2c+273} K`,`Gay-Lussac's Law: P₁/T₁ = P₂/T₂`,`P₂ = P₁×T₂/T₁ = ${P1}×${T2c+273}/${T1c+273} = ${P2.toFixed(3)} atm`],
+            hint:`Gay-Lussac's Law: P₁/T₁ = P₂/T₂. Convert °C to K first.`};
+    }
+    if(t==='avogadro'){
+        const n1=parseFloat(r(0.5,3,2)),V1=parseFloat(r(0.5,8,2)),V2=parseFloat(r(0.5,8,2));
+        const n2=n1*V2/V1;
+        const askV=Math.random()<0.5;
+        if(askV){
+            const n2b=parseFloat(r(0.5,3,2)),V2b=V1*n2b/n1;
+            return{question:`A balloon contains ${n1} mol of a gas and has a volume of ${V1} L. If the amount is changed to ${n2b} mol at constant temperature and pressure, what is the new volume?`,
+                given:`n₁ = ${n1} mol, V₁ = ${V1} L\nn₂ = ${n2b} mol`,
+                answer:V2b,unit:'L',
+                steps:[`Avogadro's Law: V₁/n₁ = V₂/n₂`,`V₂ = V₁×n₂/n₁ = ${V1}×${n2b}/${n1} = ${V2b.toFixed(3)} L`],
+                hint:`Avogadro's Law: V₁/n₁ = V₂/n₂ (V and n are directly proportional at constant T and P).`};
+        }
+        return{question:`A balloon contains ${n1} mol of a gas and has a volume of ${V1} L. Some gas was let out to give a volume of ${V2} L. What is the amount of gas left in the balloon?`,
+            given:`n₁ = ${n1} mol, V₁ = ${V1} L\nV₂ = ${V2} L`,
+            answer:n2,unit:'mol',
+            steps:[`Avogadro's Law: V₁/n₁ = V₂/n₂`,`n₂ = n₁×V₂/V₁ = ${n1}×${V2}/${V1} = ${n2.toFixed(4)} mol`],
+            hint:`Avogadro's Law: V₁/n₁ = V₂/n₂. Volume and moles are directly proportional.`};
+    }
+    if(t==='combined'){
+        const P1=r(1,4,2),V1=r(1,8,2),T1c=r(0,100),P2=r(1,5,2),T2c=r(50,300);
+        const T1=T1c+273,T2=T2c+273,V2=P1*V1*T2/(T1*P2);
+        return{question:`A gas occupies ${V1} L at ${T1c}°C and ${P1} atm. What volume will it occupy at ${T2c}°C and ${P2} atm?`,
+            given:`P₁=${P1} atm, V₁=${V1} L, T₁=${T1c}°C\nP₂=${P2} atm, T₂=${T2c}°C`,
+            answer:V2,unit:'L',
+            steps:[`T₁=${T1c}+273=${T1} K, T₂=${T2c}+273=${T2} K`,`Combined law: P₁V₁/T₁ = P₂V₂/T₂`,`V₂ = P₁V₁T₂/(T₁P₂) = ${P1}×${V1}×${T2}/(${T1}×${P2}) = ${V2.toFixed(3)} L`],
+            hint:`Combined Gas Law: P₁V₁/T₁ = P₂V₂/T₂. Convert °C to K!`};
+    }
     if(t==='ideal'){
         const R=0.08206,sf=['P','V','n','T'][Math.floor(Math.random()*4)];
-        if(sf==='P'){const n=r(0.5,3,2),V=r(1,10,2),T=r(250,400,1),P=n*R*T/V;return{question:`Find pressure: ${n} mol gas, ${V} L, ${T} K.`,given:`n=${n},V=${V},T=${T},R=0.08206`,answer:P,unit:'atm',steps:[`P=nRT/V=(${n}×0.08206×${T})/${V}=${P.toFixed(3)} atm`],hint:`PV=nRT → P=nRT/V`};}
-        if(sf==='V'){const n=r(0.5,3,2),P=r(1,4,2),T=r(250,400,1),V=n*R*T/P;return{question:`Find volume: ${n} mol, ${P} atm, ${T} K.`,given:`n=${n},P=${P},T=${T},R=0.08206`,answer:V,unit:'L',steps:[`V=nRT/P=(${n}×0.08206×${T})/${P}=${V.toFixed(3)} L`],hint:`PV=nRT → V=nRT/P`};}
-        if(sf==='n'){const P=r(1,4,2),V=r(2,10,2),T=r(280,400,1),n=P*V/(R*T);return{question:`Find moles: ${P} atm, ${V} L, ${T} K.`,given:`P=${P},V=${V},T=${T},R=0.08206`,answer:n,unit:'mol',steps:[`n=PV/(RT)=(${P}×${V})/(0.08206×${T})=${n.toFixed(4)} mol`],hint:`PV=nRT → n=PV/RT`};}
-        const P=r(1,4,2),V=r(2,10,2),n=r(0.5,3,2),T=P*V/(n*R);return{question:`Find temperature: ${P} atm, ${V} L, ${n} mol.`,given:`P=${P},V=${V},n=${n},R=0.08206`,answer:T,unit:'K',steps:[`T=PV/(nR)=(${P}×${V})/(${n}×0.08206)=${T.toFixed(2)} K`],hint:`PV=nRT → T=PV/(nR)`};
+        if(sf==='P'){const n=r(0.5,3,2),V=r(1,10,2),T=r(280,400,1),P=n*R*T/V;return{question:`How many moles of a gas at ${T-273}°C fill a ${V} L container at a pressure of ${P.toFixed(3)} atm?\n(Rearrange and solve for n first, then verify with P = nRT/V)`,given:`V=${V} L, T=${T-273}°C = ${T} K, P=${P.toFixed(3)} atm\nR = 0.08206 L·atm/mol·K`,answer:n,unit:'mol',steps:[`T = ${T-273}+273 = ${T} K`,`n = PV/(RT) = (${P.toFixed(3)}×${V})/(0.08206×${T}) = ${n.toFixed(4)} mol`],hint:`PV=nRT → n = PV/(RT). Don't forget to convert °C to K.`};}
+        if(sf==='V'){const n=r(0.5,3,2),P=r(1,4,2),Tc=r(0,150),T=Tc+273,V=n*R*T/P;return{question:`What volume does ${n} mol of gas occupy at ${P} atm and ${Tc}°C?`,given:`n=${n} mol, P=${P} atm, T=${Tc}°C = ${T} K\nR=0.08206 L·atm/mol·K`,answer:V,unit:'L',steps:[`T=${Tc}+273=${T} K`,`V=nRT/P=(${n}×0.08206×${T})/${P}=${V.toFixed(3)} L`],hint:`PV=nRT → V=nRT/P`};}
+        if(sf==='n'){const P=r(1,4,2),V=r(2,10,2),Tc=r(0,150),T=Tc+273,n=P*V/(R*T);return{question:`A ${V} L flask is filled to ${P} atm at ${Tc}°C. How many moles of gas are in the flask?`,given:`P=${P} atm, V=${V} L, T=${Tc}°C = ${T} K\nR=0.08206 L·atm/mol·K`,answer:n,unit:'mol',steps:[`T=${Tc}+273=${T} K`,`n=PV/(RT)=(${P}×${V})/(0.08206×${T})=${n.toFixed(4)} mol`],hint:`PV=nRT → n=PV/(RT)`};}
+        const P=r(1,4,2),V=r(2,10,2),n=r(0.5,3,2),T=P*V/(n*R);
+        return{question:`${n} mol of gas occupies ${V} L at ${P} atm. What is the temperature in Kelvin?`,given:`P=${P} atm, V=${V} L, n=${n} mol\nR=0.08206 L·atm/mol·K`,answer:T,unit:'K',steps:[`T=PV/(nR)=(${P}×${V})/(${n}×0.08206)=${T.toFixed(2)} K`],hint:`PV=nRT → T=PV/(nR)`};
     }
-    // ADVANCED MULTI-STEP
-    if(t==='ideal_stoich'){
-        // Given mass of compound, find volume of gas produced at given T and P
-        const R=0.08206;
-        const rxns2=[{eq:'CaCO₃ → CaO + CO₂',mm:100.09,gasN:'CO₂',ratio:1},{eq:'2H₂O₂ → 2H₂O + O₂',mm:34.01,gasN:'O₂',ratio:0.5}];
-        const rxn2=rxns2[Math.floor(Math.random()*rxns2.length)];
-        const mass=r(5,30,2),T=r(290,400,1),P=r(0.9,1.5,2);
-        const molCompound=mass/rxn2.mm,molGas=molCompound*rxn2.ratio,V=molGas*R*T/P;
-        return{question:`${mass} g of reactant decomposes: ${rxn2.eq}. What volume of ${rxn2.gasN} gas is produced at ${T} K and ${P} atm?`,given:`Mass=${mass} g, MM=${rxn2.mm} g/mol\nT=${T} K, P=${P} atm, R=0.08206 L·atm/mol·K`,answer:V,unit:'L',steps:[`Step 1: mol compound = ${mass}/${rxn2.mm} = ${molCompound.toFixed(4)} mol`,`Step 2: mol ${rxn2.gasN} = ${molCompound.toFixed(4)} × ${rxn2.ratio} = ${molGas.toFixed(4)} mol`,`Step 3: V = nRT/P = ${molGas.toFixed(4)}×0.08206×${T}/${P} = ${V.toFixed(3)} L`],hint:`Stoich first to get moles of gas, then use PV=nRT to find volume.`};
+    if(t==='dalton_partial'){
+        const gasNames=['hydrogen','oxygen','water vapor','nitrogen','helium','argon'];
+        const g=gasNames.slice().sort(()=>Math.random()-0.5).slice(0,3);
+        const Pa=r(50,400,1),Pb=r(50,400,1),Ptot=r(600,900,1);
+        const Pc=Ptot-Pa-Pb;
+        if(Pc<=0)return genGases();
+        return{question:`A flask contains a mixture of ${g[0]}, ${g[1]}, and ${g[2]}. The total pressure is ${Ptot} mmHg. If the partial pressure of ${g[0]} is ${Pa} mmHg and ${g[1]} is ${Pb} mmHg, what is the partial pressure of ${g[2]}?`,
+            given:`P_total = ${Ptot} mmHg\nP(${g[0]}) = ${Pa} mmHg\nP(${g[1]}) = ${Pb} mmHg`,
+            answer:Pc,unit:'mmHg',
+            steps:[`Dalton's Law: P_total = P₁ + P₂ + P₃`,`P(${g[2]}) = ${Ptot} − ${Pa} − ${Pb} = ${Pc.toFixed(1)} mmHg`],
+            hint:`P_total = sum of all partial pressures. Solve for the unknown partial pressure.`};
     }
-    if(t==='combined_celsius'){
-        // Give temps in °C, students must convert to K first
-        const P1=r(1,4,2),V1=r(2,8,2),T1c=r(20,100),P2=r(1,5,2),T2c=r(100,300);
-        const T1=T1c+273,T2=T2c+273,V2=P1*V1*T2/(T1*P2);
-        return{question:`A gas is at ${P1} atm, ${V1} L, ${T1c}°C. Find V₂ when P₂=${P2} atm and T₂=${T2c}°C. Remember to convert °C to K!`,given:`P₁=${P1} atm, V₁=${V1} L, T₁=${T1c}°C\nP₂=${P2} atm, T₂=${T2c}°C`,answer:V2,unit:'L',steps:[`Step 1: T₁=${T1c}+273=${T1} K, T₂=${T2c}+273=${T2} K`,`Step 2: V₂=P₁V₁T₂/(T₁P₂)=${P1}×${V1}×${T2}/(${T1}×${P2})=${V2.toFixed(3)} L`],hint:`ALWAYS convert °C to K before using gas laws (add 273).`};
+    if(t==='graham'){
+        const gases=[
+            {n:'hydrogen',f:'H₂',mm:2.02},{n:'helium',f:'He',mm:4.00},{n:'nitrogen',f:'N₂',mm:28.02},
+            {n:'oxygen',f:'O₂',mm:32.00},{n:'argon',f:'Ar',mm:39.95},{n:'chlorine',f:'Cl₂',mm:70.90},
+            {n:'carbon dioxide',f:'CO₂',mm:44.01},{n:'krypton',f:'Kr',mm:83.80},{n:'bromine',f:'Br₂',mm:159.8},
+            {n:'radon',f:'Rn',mm:222.0}
+        ];
+        const idx1=Math.floor(Math.random()*gases.length);
+        let idx2=idx1;while(idx2===idx1)idx2=Math.floor(Math.random()*gases.length);
+        const g1=gases[idx1],g2=gases[idx2],ratio=Math.sqrt(g2.mm/g1.mm);
+        return{question:`Compute the relative rate of diffusion of ${g1.n} (${g1.f}) to ${g2.n} (${g2.f}).`,
+            given:`M(${g1.f}) = ${g1.mm} g/mol\nM(${g2.f}) = ${g2.mm} g/mol\nGraham's Law: r₁/r₂ = √(M₂/M₁)`,
+            answer:ratio,unit:'(ratio)',
+            steps:[`r(${g1.f})/r(${g2.f}) = √(M(${g2.f})/M(${g1.f}))`,`= √(${g2.mm}/${g1.mm}) = √${(g2.mm/g1.mm).toFixed(4)} = ${ratio.toFixed(3)}`],
+            hint:`Graham's Law: lighter gases diffuse faster. Rate ratio = √(M_heavier/M_lighter).`};
     }
-    // dalton_partial: given total P and two partial P, find the third
-    const Pa=r(0.15,0.40,3),Pb=r(0.10,0.35,3),Ptot=r(0.80,1.20,2),Pc=Ptot-Pa-Pb;
-    return{question:`A gas mixture has total pressure ${Ptot} atm. Gas A has partial pressure ${Pa} atm and Gas B has ${Pb} atm. What is the partial pressure of Gas C?`,given:`P_total=${Ptot} atm, P_A=${Pa} atm, P_B=${Pb} atm`,answer:Pc,unit:'atm',steps:[`Dalton: P_total = P_A+P_B+P_C`,`P_C = ${Ptot}−${Pa}−${Pb} = ${Pc.toFixed(3)} atm`],hint:`P_total = sum of all partial pressures → isolate P_C.`};
+    // ideal_stoich: mass of solid → moles → moles of gas → volume via PV=nRT
+    const R=0.08206;
+    const gasRxns=[
+        {eq:'CaCO₃ → CaO + CO₂',re:'CaCO₃',mm:100.09,gasN:'CO₂',ratio:1,desc:'calcium carbonate decomposes'},
+        {eq:'2H₂O₂ → 2H₂O + O₂',re:'H₂O₂',mm:34.01,gasN:'O₂',ratio:0.5,desc:'hydrogen peroxide decomposes'},
+        {eq:'2KClO₃ → 2KCl + 3O₂',re:'KClO₃',mm:122.55,gasN:'O₂',ratio:1.5,desc:'potassium chlorate decomposes'}
+    ];
+    const gr=gasRxns[Math.floor(Math.random()*gasRxns.length)];
+    const mass=r(5,30,2),Tc=r(20,100),P=r(0.90,1.10,2),T=Tc+273;
+    const molRe=mass/gr.mm,molGas=molRe*gr.ratio,V=molGas*R*T/P;
+    return{question:`${gr.desc[0].toUpperCase()+gr.desc.slice(1)}: ${gr.eq}\nWhat volume of ${gr.gasN} gas is produced at ${Tc}°C and ${P} atm if ${mass} g of ${gr.re} reacts?`,
+        given:`Mass of ${gr.re} = ${mass} g, MM = ${gr.mm} g/mol\nT = ${Tc}°C, P = ${P} atm, R = 0.08206 L·atm/mol·K`,
+        answer:V,unit:'L',
+        steps:[`Step 1: mol ${gr.re} = ${mass}÷${gr.mm} = ${molRe.toFixed(4)} mol`,
+            `Step 2: mol ${gr.gasN} = ${molRe.toFixed(4)} × ${gr.ratio} = ${molGas.toFixed(4)} mol`,
+            `Step 3: T = ${Tc}+273 = ${T} K`,
+            `Step 4: V = nRT/P = ${molGas.toFixed(4)}×0.08206×${T}÷${P} = ${V.toFixed(3)} L`],
+        hint:`Stoichiometry first to find moles of gas, then use PV=nRT to find volume.`};
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
 // SOLUTIONS
 // ══════════════════════════════════════════════════════════════════════════════
 function genSolutions(){
-    const basic=['molarity','dilution'];
-    const inter=['molarity','dilution','mass_percent','find_vol'];
-    const adv=['solid_then_dilute','mass_to_molarity','molality_chain'];
+    const basic=['molarity','dilution','molality'];
+    const inter=['molarity','dilution','molality','mole_fraction','soln_stoich'];
+    const adv=['solid_then_dilute','bp_elevation','fp_depression','vapor_pressure','soln_stoich'];
     const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
     const t=pool[Math.floor(Math.random()*pool.length)];
-    const sols=[{n:'NaCl',mm:58.44},{n:'KCl',mm:74.55},{n:'NaOH',mm:40.00},{n:'HCl',mm:36.46},{n:'CaCl₂',mm:110.98}];
+    const sols=[
+        {n:'NaCl',mm:58.44,ionic:true,i:2},{n:'KCl',mm:74.55,ionic:true,i:2},
+        {n:'NaOH',mm:40.00,ionic:true,i:2},{n:'KI',mm:166.00,ionic:true,i:2},
+        {n:'CaCl₂',mm:110.98,ionic:true,i:3},{n:'Na₂SO₄',mm:142.04,ionic:true,i:3},
+        {n:'glucose (C₆H₁₂O₆)',mm:180.16,ionic:false,i:1},
+        {n:'sucrose (C₁₂H₂₂O₁₁)',mm:342.30,ionic:false,i:1},
+        {n:'urea (CH₄N₂O)',mm:60.06,ionic:false,i:1}
+    ];
     const s=sols[Math.floor(Math.random()*sols.length)];
+    const sSimple=sols.filter(x=>!x.ionic)[Math.floor(Math.random()*sols.filter(x=>!x.ionic).length)];
 
-    if(t==='molarity'){const mol=r(0.1,2,3),vol=r(100,1000)/1000,M=mol/vol;return{question:`What is the molarity of ${mol} mol of ${s.n} in ${vol*1000} mL of solution?`,given:`mol=${mol}, V=${vol*1000} mL`,answer:M,unit:'M',steps:[`M=n/V=${mol}/${vol}=${M.toFixed(4)} M`],hint:`M = mol ÷ L`};}
-    if(t==='dilution'){const M1=r(1,6,2),V1=r(10,100,1),M2=r(0.1,1,2),V2=M1*V1/M2;return{question:`How many mL of ${M2} M can be prepared by diluting ${V1} mL of ${M1} M ${s.n}?`,given:`M₁=${M1}, V₁=${V1} mL, M₂=${M2}`,answer:V2,unit:'mL',steps:[`M₁V₁=M₂V₂ → V₂=${M1}×${V1}/${M2}=${V2.toFixed(2)} mL`],hint:`M₁V₁ = M₂V₂`};}
-    if(t==='mass_percent'){const mSol=r(5,50,2),mSoln=r(100,500,1),mp=mSol/mSoln*100;return{question:`What is the mass percent of ${mSol} g ${s.n} in ${mSoln} g of solution?`,given:`m_solute=${mSol} g, m_solution=${mSoln} g`,answer:mp,unit:'%',steps:[`mass% = ${mSol}/${mSoln}×100=${mp.toFixed(3)}%`],hint:`mass% = (m_solute/m_solution)×100`};}
-    if(t==='find_vol'){const M=r(0.5,3,2),mol=r(0.05,0.5,3),V=mol/M;return{question:`What volume (mL) of ${M} M ${s.n} contains ${mol} mol?`,given:`M=${M}, n=${mol}`,answer:V*1000,unit:'mL',steps:[`V=n/M=${mol}/${M}=${V.toFixed(4)} L = ${(V*1000).toFixed(2)} mL`],hint:`V=n/M, then × 1000 for mL`};}
-    // ADVANCED MULTI-STEP
+    if(t==='molarity'){
+        const mass=r(5,50,2),vol=r(100,2000)/1000,mol=mass/s.mm,M=mol/vol;
+        return{question:`What is the molarity of a solution produced when ${mass} g of ${s.n} is dissolved in sufficient water to prepare ${(vol*1000).toFixed(0)} mL of solution?`,
+            given:`mass = ${mass} g, MM = ${s.mm} g/mol\nV = ${(vol*1000).toFixed(0)} mL = ${vol.toFixed(4)} L`,
+            answer:M,unit:'M',
+            steps:[`mol ${s.n} = ${mass} ÷ ${s.mm} = ${mol.toFixed(4)} mol`,`M = n/V = ${mol.toFixed(4)} ÷ ${vol.toFixed(4)} = ${M.toFixed(4)} M`],
+            hint:`M = mol ÷ L. Convert mL to L first (÷ 1000).`};
+    }
+    if(t==='dilution'){
+        const M1=r(1,6,2),V1=r(5,20,1),M2=r(0.05,0.5,3),V2=M1*V1/M2;
+        const askV=Math.random()<0.5;
+        if(askV){
+            return{question:`To prepare ${V2.toFixed(1)} mL of a ${M2} M solution of ${s.n}, how many mL of a ${M1} M stock solution should be used?`,
+                given:`M₁ = ${M1} M, M₂ = ${M2} M\nV₂ = ${V2.toFixed(1)} mL`,
+                answer:V1,unit:'mL',
+                steps:[`Dilution formula: M₁V₁ = M₂V₂`,`V₁ = M₂V₂/M₁ = (${M2}×${V2.toFixed(1)})/${M1} = ${V1.toFixed(2)} mL`],
+                hint:`M₁V₁ = M₂V₂ — solve for the unknown volume.`};
+        }
+        return{question:`If ${V1} mL of ${M1} M ${s.n} is added to water to make a ${M2} M solution, what is the final volume?`,
+            given:`M₁ = ${M1} M, V₁ = ${V1} mL\nM₂ = ${M2} M`,
+            answer:V2,unit:'mL',
+            steps:[`Dilution formula: M₁V₁ = M₂V₂`,`V₂ = M₁V₁/M₂ = (${M1}×${V1})/${M2} = ${V2.toFixed(2)} mL`],
+            hint:`M₁V₁ = M₂V₂. Diluting decreases concentration.`};
+    }
+    if(t==='molality'){
+        const mass=r(5,30,2),massSolv=r(50,500,1),mol=mass/s.mm,m=mol/(massSolv/1000);
+        return{question:`What is the molality of a solution made by dissolving ${mass} g of ${s.n} in ${massSolv} g of water?`,
+            given:`mass solute = ${mass} g, MM = ${s.mm} g/mol\nmass solvent = ${massSolv} g = ${massSolv/1000} kg`,
+            answer:m,unit:'m',
+            steps:[`mol ${s.n} = ${mass} ÷ ${s.mm} = ${mol.toFixed(4)} mol`,`molality = mol ÷ kg solvent = ${mol.toFixed(4)} ÷ ${massSolv/1000} = ${m.toFixed(4)} m`],
+            hint:`Molality = moles of solute ÷ kilograms of SOLVENT (not solution!).`};
+    }
+    if(t==='mole_fraction'){
+        const mSol=r(10,100,1),mSolv=r(100,1000,1);
+        const molSol=mSol/sSimple.mm,molSolv=mSolv/18.015,X=molSol/(molSol+molSolv);
+        return{question:`What is the mole fraction of ${sSimple.n} in a solution containing ${mSol} g of ${sSimple.n} dissolved in ${mSolv} g of water?`,
+            given:`mass ${sSimple.n} = ${mSol} g (MM = ${sSimple.mm} g/mol)\nmass water = ${mSolv} g (MM = 18.015 g/mol)`,
+            answer:X,unit:'',
+            steps:[`mol ${sSimple.n} = ${mSol} ÷ ${sSimple.mm} = ${molSol.toFixed(4)} mol`,
+                `mol H₂O = ${mSolv} ÷ 18.015 = ${molSolv.toFixed(4)} mol`,
+                `X = mol solute / (mol solute + mol solvent) = ${molSol.toFixed(4)} / (${molSol.toFixed(4)} + ${molSolv.toFixed(4)}) = ${X.toFixed(4)}`],
+            hint:`Mole fraction = moles of component ÷ total moles in the mixture.`};
+    }
+    if(t==='soln_stoich'){
+        const rxnPairs=[
+            {a:'AgNO₃',b:'NaCl',p:'AgCl',mmA:169.87,mmB:58.44,mmP:143.32,eq:'AgNO₃ + NaCl → AgCl↓ + NaNO₃'},
+            {a:'Ba(NO₃)₂',b:'Na₂SO₄',p:'BaSO₄',mmA:261.34,mmB:142.04,mmP:233.39,eq:'Ba(NO₃)₂ + Na₂SO₄ → BaSO₄↓ + 2NaNO₃'},
+            {a:'BaCl₂',b:'H₂SO₄',p:'BaSO₄',mmA:208.23,mmB:98.08,mmP:233.39,eq:'BaCl₂ + H₂SO₄ → BaSO₄↓ + 2HCl'},
+            {a:'K₂CrO₄',b:'Pb(NO₃)₂',p:'PbCrO₄',mmA:194.19,mmB:331.2,mmP:323.2,eq:'K₂CrO₄ + Pb(NO₃)₂ → PbCrO₄↓ + 2KNO₃'}
+        ];
+        const rp=rxnPairs[Math.floor(Math.random()*rxnPairs.length)];
+        const Ma=r(0.10,1.00,3),Va=r(10,100,1),molA=Ma*Va/1000,molP=molA,gP=molP*rp.mmP;
+        return{question:`What mass of ${rp.p} will be formed by the addition of excess ${rp.b} to ${Va} mL of ${Ma} M ${rp.a}?\n(${rp.eq})`,
+            given:`V(${rp.a}) = ${Va} mL, M(${rp.a}) = ${Ma} M\nMM(${rp.p}) = ${rp.mmP} g/mol`,
+            answer:gP,unit:'g',
+            steps:[`mol ${rp.a} = ${Ma} M × ${Va}/1000 L = ${molA.toFixed(5)} mol`,
+                `mol ${rp.p} = mol ${rp.a} = ${molA.toFixed(5)} mol (1:1 ratio)`,
+                `g ${rp.p} = ${molA.toFixed(5)} × ${rp.mmP} = ${gP.toFixed(3)} g`],
+            hint:`mol = M × V(L), then use mole ratio from balanced equation, then × molar mass.`};
+    }
+    // ADVANCED: solid → dissolve → dilute
     if(t==='solid_then_dilute'){
-        // Dissolve solid → initial solution → dilute to final volume
         const mass=r(5,30,2),V1=r(100,300)/1000,V2=r(500,2000)/1000;
         const mol=mass/s.mm,M1=mol/V1,M2=M1*V1/V2;
-        return{question:`${mass} g of ${s.n} is dissolved in ${V1*1000} mL of water, then diluted to a total volume of ${V2*1000} mL. What is the final molarity?`,given:`Mass=${mass} g, MM=${s.mm} g/mol\nInitial volume=${V1*1000} mL, Final volume=${V2*1000} mL`,answer:M2,unit:'M',steps:[`Step 1: mol ${s.n} = ${mass}/${s.mm} = ${mol.toFixed(4)} mol`,`Step 2: M₁ = ${mol.toFixed(4)}/${V1} = ${M1.toFixed(4)} M`,`Step 3: M₁V₁=M₂V₂ → M₂ = ${M1.toFixed(4)}×${V1}/${V2} = ${M2.toFixed(4)} M`],hint:`Three steps: (1) grams→moles, (2) molarity of stock, (3) dilution formula M₁V₁=M₂V₂.`};
+        return{question:`${mass} g of ${s.n} is dissolved in ${(V1*1000).toFixed(0)} mL of water to make an initial solution. This is then diluted to a total volume of ${(V2*1000).toFixed(0)} mL. What is the final molarity?`,
+            given:`Mass = ${mass} g, MM = ${s.mm} g/mol\nInitial volume = ${(V1*1000).toFixed(0)} mL, Final volume = ${(V2*1000).toFixed(0)} mL`,
+            answer:M2,unit:'M',
+            steps:[`Step 1: mol ${s.n} = ${mass}/${s.mm} = ${mol.toFixed(4)} mol`,
+                `Step 2: M₁ = ${mol.toFixed(4)}/${V1} = ${M1.toFixed(4)} M`,
+                `Step 3: M₁V₁=M₂V₂ → M₂ = ${M1.toFixed(4)}×${V1}/${V2} = ${M2.toFixed(4)} M`],
+            hint:`Three steps: (1) g→mol, (2) first molarity, (3) dilution M₁V₁=M₂V₂.`};
     }
-    if(t==='mass_to_molarity'){
-        // Given mass% and density, find molarity
-        const mp=r(5,20,1),dens=r(1.0,1.3,3),mm=s.mm;
-        // molarity = (mass% × density × 10) / molar mass
-        const M=(mp*dens*10)/mm;
-        return{question:`A ${s.n} solution is ${mp}% by mass with a density of ${dens} g/mL. What is its molarity?`,given:`Mass% = ${mp}%, Density = ${dens} g/mL, MM = ${mm} g/mol`,answer:M,unit:'M',steps:[`Assume 1 L of solution: mass = ${dens} g/mL × 1000 mL = ${dens*1000} g`,`Mass of ${s.n} = ${mp/100} × ${dens*1000} = ${(mp/100*dens*1000).toFixed(2)} g`,`mol = ${(mp/100*dens*1000).toFixed(2)}/${mm} = ${((mp/100*dens*1000)/mm).toFixed(4)} mol`,`M = mol/1 L = ${M.toFixed(4)} M`],hint:`Assume 1 L solution. Use density to find total mass, then mass% to find solute mass, then ÷MM.`};
+    // Colligative property constants for solvents
+    const solvents=[
+        {n:'water',Kb:0.52,Kf:1.86,Pvap:23.8,Tb:100,Tf:0},
+        {n:'benzene',Kb:2.67,Kf:5.12,Pvap:null,Tb:80.1,Tf:5.5},
+        {n:'chloroform',Kb:3.85,Kf:null,Pvap:null,Tb:61.2,Tf:null},
+        {n:'ethanol',Kb:1.20,Kf:1.99,Pvap:null,Tb:78.4,Tf:-114.1}
+    ];
+    if(t==='bp_elevation'){
+        const sv=solvents.filter(x=>x.Kb)[Math.floor(Math.random()*solvents.filter(x=>x.Kb).length)];
+        const massSol=r(5,100,2),massSolv=r(50,500,1);
+        const mol=massSol/sSimple.mm,m=mol/(massSolv/1000),dTb=sv.Kb*m;
+        return{question:`By how much will the boiling point of ${massSolv} g of ${sv.n} be elevated if ${massSol} g of ${sSimple.n} is dissolved in it? (Kb for ${sv.n} = ${sv.Kb} °C/m)`,
+            given:`mass solute = ${massSol} g (MM = ${sSimple.mm} g/mol)\nmass solvent = ${massSolv} g\nKb(${sv.n}) = ${sv.Kb} °C/m`,
+            answer:dTb,unit:'°C',
+            steps:[`mol solute = ${massSol} ÷ ${sSimple.mm} = ${mol.toFixed(4)} mol`,
+                `molality = ${mol.toFixed(4)} ÷ ${massSolv/1000} kg = ${m.toFixed(4)} m`,
+                `ΔTb = Kb × m = ${sv.Kb} × ${m.toFixed(4)} = ${dTb.toFixed(3)}°C`],
+            hint:`ΔTb = Kb × m. First find molality (mol solute ÷ kg SOLVENT), then multiply by Kb.`};
     }
-    // molality_chain: given mass solute and mass solvent, find molality then boiling point elevation
-    const massS=r(5,30,2),massSolv=r(100,400,1),mol2=massS/s.mm,m2=mol2/(massSolv/1000);
-    return{question:`${massS} g of ${s.n} is dissolved in ${massSolv} g of water. What is the molality of the solution?`,given:`m_solute=${massS} g, MM=${s.mm} g/mol\nm_solvent=${massSolv} g`,answer:m2,unit:'m',steps:[`Step 1: mol = ${massS}/${s.mm} = ${mol2.toFixed(4)} mol`,`Step 2: molality = ${mol2.toFixed(4)}/${massSolv/1000} kg = ${m2.toFixed(4)} m`],hint:`molality = moles of solute ÷ kilograms of SOLVENT (not solution).`};
+    if(t==='fp_depression'){
+        const sv=solvents.filter(x=>x.Kf)[Math.floor(Math.random()*solvents.filter(x=>x.Kf).length)];
+        const useIonic=Math.random()<0.4;
+        const sol2=useIonic?sols.filter(x=>x.ionic)[Math.floor(Math.random()*sols.filter(x=>x.ionic).length)]:sSimple;
+        const massSol=r(5,50,2),massSolv=r(50,500,1);
+        const mol=massSol/sol2.mm,m=mol/(massSolv/1000),dTf=sv.Kf*m*(useIonic?sol2.i:1);
+        const iFactor=useIonic?sol2.i:1;
+        return{question:`Calculate the freezing point depression of ${massSolv} g of ${sv.n} when ${massSol} g of ${sol2.n} is dissolved in it. (Kf for ${sv.n} = ${sv.Kf} °C/m${useIonic?`, i = ${iFactor}`:''})`,
+            given:`mass solute = ${massSol} g (MM = ${sol2.mm} g/mol)\nmass solvent = ${massSolv} g\nKf(${sv.n}) = ${sv.Kf} °C/m${useIonic?`\ni = ${iFactor} (ionic compound, dissociates into ${iFactor} particles)`:''}`,
+            answer:dTf,unit:'°C',
+            steps:[`mol solute = ${massSol} ÷ ${sol2.mm} = ${mol.toFixed(4)} mol`,
+                `molality = ${mol.toFixed(4)} ÷ ${massSolv/1000} kg = ${m.toFixed(4)} m`,
+                `ΔTf = Kf × m${useIonic?' × i':''} = ${sv.Kf} × ${m.toFixed(4)}${useIonic?' × '+iFactor:''} = ${dTf.toFixed(3)}°C`],
+            hint:`ΔTf = Kf × m${useIonic?' × i (van\'t Hoff factor for ionic compounds)':''}. Freezing point decreases by ΔTf.`};
+    }
+    // vapor_pressure (Raoult's Law): ΔP = X_solute × P°
+    const massSol=r(5,50,2),massSolv=r(50,200,1),P_pure=23.8;
+    const molSol2=massSol/sSimple.mm,molSolv2=massSolv/18.015;
+    const Xsolute=molSol2/(molSol2+molSolv2),dP=Xsolute*P_pure;
+    return{question:`Calculate the vapor pressure depression at 25°C of a solution made by adding ${massSol} g of ${sSimple.n} to ${massSolv} mL of water. (Vapor pressure of pure water at 25°C = 23.8 mmHg)`,
+        given:`mass ${sSimple.n} = ${massSol} g (MM = ${sSimple.mm} g/mol)\nmass H₂O = ${massSolv} g (MM = 18.015 g/mol)\nP°(H₂O) = 23.8 mmHg`,
+        answer:dP,unit:'mmHg',
+        steps:[`mol solute = ${massSol} ÷ ${sSimple.mm} = ${molSol2.toFixed(4)} mol`,
+            `mol H₂O = ${massSolv} ÷ 18.015 = ${molSolv2.toFixed(4)} mol`,
+            `X_solute = ${molSol2.toFixed(4)} / (${molSol2.toFixed(4)} + ${molSolv2.toFixed(4)}) = ${Xsolute.toFixed(4)}`,
+            `ΔP = X_solute × P° = ${Xsolute.toFixed(4)} × 23.8 = ${dP.toFixed(3)} mmHg`],
+        hint:`Raoult's Law: ΔP = X_solute × P°. Find mole fraction of solute, then multiply by vapor pressure of pure solvent.`};
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -843,9 +1108,46 @@ function genAcids(){
 // ══════════════════════════════════════════════════════════════════════════════
 // REDOX
 // ══════════════════════════════════════════════════════════════════════════════
-const RT=[{ion:'Ag⁺',metal:'Ag',E:+0.80,n:1},{ion:'Hg²⁺',metal:'Hg',E:+0.85,n:2},{ion:'Cu²⁺',metal:'Cu',E:+0.34,n:2},{ion:'Fe³⁺',metal:'Fe',E:-0.04,n:3},{ion:'Pb²⁺',metal:'Pb',E:-0.13,n:2},{ion:'Ni²⁺',metal:'Ni',E:-0.25,n:2},{ion:'Co²⁺',metal:'Co',E:-0.29,n:2},{ion:'Cd²⁺',metal:'Cd',E:-0.40,n:2},{ion:'Fe²⁺',metal:'Fe',E:-0.41,n:2},{ion:'Cr³⁺',metal:'Cr',E:-0.74,n:3},{ion:'Zn²⁺',metal:'Zn',E:-0.76,n:2},{ion:'Mn²⁺',metal:'Mn',E:-1.18,n:2},{ion:'Al³⁺',metal:'Al',E:-1.66,n:3},{ion:'Mg²⁺',metal:'Mg',E:-2.37,n:2}];
-const oxCpds=[{f:'LiBr',el:'Br',ans:-1,w:'Li=+1, neutral: Br=−1'},{f:'MgI₂',el:'I',ans:-1,w:'Mg=+2, neutral: I=−1'},{f:'H₂O',el:'O',ans:-2,w:'H=+1, neutral: O=−2'},{f:'H₂SO₄',el:'S',ans:+6,w:'H=+1,O=−2: S=+6'},{f:'Fe₂O₃',el:'Fe',ans:+3,w:'O=−2: Fe=+3'},{f:'KMnO₄',el:'Mn',ans:+7,w:'K=+1,O=−2: Mn=+7'},{f:'CuF',el:'Cu',ans:+1,w:'F=−1: Cu=+1'},{f:'WO₂',el:'W',ans:+4,w:'O=−2: W=+4'},{f:'CF₄',el:'C',ans:+4,w:'F=−1: C=+4'},{f:'CrF₃',el:'Cr',ans:+3,w:'F=−1: Cr=+3'},{f:'MnO₂',el:'Mn',ans:+4,w:'O=−2: Mn=+4'},{f:'N₂O₅',el:'N',ans:+5,w:'O=−2: N=+5'},{f:'Cr₂O₃',el:'Cr',ans:+3,w:'O=−2: Cr=+3'}];
-const oxIons=[{f:'NO₃⁻',el:'N',ch:-1,ans:+5,w:'O=−2,charge=−1: N=+5'},{f:'SO₄²⁻',el:'S',ch:-2,ans:+6,w:'O=−2,charge=−2: S=+6'},{f:'MnO₄⁻',el:'Mn',ch:-1,ans:+7,w:'O=−2,charge=−1: Mn=+7'},{f:'CrO₄²⁻',el:'Cr',ch:-2,ans:+6,w:'O=−2,charge=−2: Cr=+6'},{f:'Cr₂O₇²⁻',el:'Cr',ch:-2,ans:+6,w:'O=−2,charge=−2: Cr=+6'},{f:'PO₄³⁻',el:'P',ch:-3,ans:+5,w:'O=−2,charge=−3: P=+5'},{f:'ClO₄⁻',el:'Cl',ch:-1,ans:+7,w:'O=−2,charge=−1: Cl=+7'}];
+// Reduction potential table — matches the worksheet table exactly
+const RT=[
+    {ion:'Ag⁺',metal:'Ag',E:+0.80,n:1},{ion:'Hg²⁺',metal:'Hg',E:+0.85,n:2},
+    {ion:'Cu²⁺',metal:'Cu',E:+0.34,n:2},{ion:'Cu⁺',metal:'Cu',E:+0.52,n:1},
+    {ion:'Fe³⁺',metal:'Fe',E:-0.04,n:3},{ion:'Pb²⁺',metal:'Pb',E:-0.13,n:2},
+    {ion:'Sn²⁺',metal:'Sn',E:-0.14,n:2},{ion:'Ni²⁺',metal:'Ni',E:-0.25,n:2},
+    {ion:'Co²⁺',metal:'Co',E:-0.29,n:2},{ion:'Cd²⁺',metal:'Cd',E:-0.40,n:2},
+    {ion:'Fe²⁺',metal:'Fe',E:-0.41,n:2},{ion:'Cr³⁺',metal:'Cr',E:-0.74,n:3},
+    {ion:'Zn²⁺',metal:'Zn',E:-0.76,n:2},{ion:'Mn²⁺',metal:'Mn',E:-1.18,n:2},
+    {ion:'Al³⁺',metal:'Al',E:-1.66,n:3},{ion:'Mg²⁺',metal:'Mg',E:-2.37,n:2}
+];
+// Oxidation state — neutral compounds from the worksheet
+const oxCpds=[
+    {f:'LiBr',el:'Br',ans:-1,w:'Li=+1 (alkali metal), sum=0: Br=−1'},
+    {f:'MgI₂',el:'I',ans:-1,w:'Mg=+2 (alkaline earth), sum=0: I=−1'},
+    {f:'H₂O',el:'O',ans:-2,w:'H=+1, sum=0: O=−2'},
+    {f:'H₂SO₄',el:'S',ans:+6,w:'H=+1, O=−2: 2(+1)+S+4(−2)=0 → S=+6'},
+    {f:'Fe₂O₃',el:'Fe',ans:+3,w:'O=−2: 2Fe+3(−2)=0 → Fe=+3'},
+    {f:'KMnO₄',el:'Mn',ans:+7,w:'K=+1, O=−2: +1+Mn+4(−2)=0 → Mn=+7'},
+    {f:'CuF',el:'Cu',ans:+1,w:'F=−1: Cu+(−1)=0 → Cu=+1'},
+    {f:'WO₂',el:'W',ans:+4,w:'O=−2: W+2(−2)=0 → W=+4'},
+    {f:'CF₄',el:'C',ans:+4,w:'F=−1: C+4(−1)=0 → C=+4'},
+    {f:'CrF₃',el:'Cr',ans:+3,w:'F=−1: Cr+3(−1)=0 → Cr=+3'},
+    {f:'MnO₂',el:'Mn',ans:+4,w:'O=−2: Mn+2(−2)=0 → Mn=+4'},
+    {f:'N₂O₅',el:'N',ans:+5,w:'O=−2: 2N+5(−2)=0 → N=+5'},
+    {f:'Cr₂O₃',el:'Cr',ans:+3,w:'O=−2: 2Cr+3(−2)=0 → Cr=+3'},
+    {f:'Na₂HPO₄',el:'P',ans:+5,w:'Na=+1, H=+1, O=−2: 2(+1)+(+1)+P+4(−2)=0 → P=+5'},
+    {f:'Mg₃(PO₄)₂',el:'P',ans:+5,w:'Mg=+2, O=−2: 3(+2)+2(P+4(−2))=0 → P=+5'}
+];
+// Oxidation state — polyatomic ions from the worksheet
+const oxIons=[
+    {f:'NO₃⁻',el:'N',ch:-1,ans:+5,w:'O=−2, charge=−1: N+3(−2)=−1 → N=+5'},
+    {f:'SO₄²⁻',el:'S',ch:-2,ans:+6,w:'O=−2, charge=−2: S+4(−2)=−2 → S=+6'},
+    {f:'MnO₄⁻',el:'Mn',ch:-1,ans:+7,w:'O=−2, charge=−1: Mn+4(−2)=−1 → Mn=+7'},
+    {f:'CrO₄²⁻',el:'Cr',ch:-2,ans:+6,w:'O=−2, charge=−2: Cr+4(−2)=−2 → Cr=+6'},
+    {f:'Cr₂O₇²⁻',el:'Cr',ch:-2,ans:+6,w:'O=−2, charge=−2: 2Cr+7(−2)=−2 → Cr=+6'},
+    {f:'PO₄³⁻',el:'P',ch:-3,ans:+5,w:'O=−2, charge=−3: P+4(−2)=−3 → P=+5'},
+    {f:'ClO₄⁻',el:'Cl',ch:-1,ans:+7,w:'O=−2, charge=−1: Cl+4(−2)=−1 → Cl=+7'},
+    {f:'HSO₄⁻',el:'S',ch:-1,ans:+6,w:'H=+1, O=−2, charge=−1: +1+S+4(−2)=−1 → S=+6'}
+];
 
 function pick2(){let i=Math.floor(Math.random()*RT.length),j=Math.floor(Math.random()*RT.length);while(j===i)j=Math.floor(Math.random()*RT.length);return[RT[i],RT[j]];}
 const gcd=(a,b)=>b===0?a:gcd(b,a%b);
@@ -873,28 +1175,140 @@ function genRedox(){
 // NUCLEAR
 // ══════════════════════════════════════════════════════════════════════════════
 function genNuclear(){
-    const basic=['remain_n','remain_time'];
-    const inter=['remain_n','remain_time','count_halflives','fraction'];
-    const adv=['decay_constant','find_age','remain_then_lambda'];
+    const basic=['remain_n','remain_time','alpha_decay','beta_decay','isotope_id'];
+    const inter=['remain_n','remain_time','count_halflives','alpha_decay','beta_decay','find_halflife'];
+    const adv=['find_age','remain_then_lambda','alpha_beta_chain'];
     const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
     const t=pool[Math.floor(Math.random()*pool.length)];
-    const isos=[{n:'C-14',t:5730,u:'years'},{n:'I-131',t:8.02,u:'days'},{n:'Ra-226',t:1600,u:'years'},{n:'Po-210',t:138.4,u:'days'},{n:'Sr-90',t:28.8,u:'years'},{n:'Tc-99m',t:6.01,u:'hours'}];
+    const isos=[
+        {n:'C-14',sym:'C',A:14,Z:6,t:5730,u:'years'},
+        {n:'I-131',sym:'I',A:131,Z:53,t:8.02,u:'days'},
+        {n:'Ra-226',sym:'Ra',A:226,Z:88,t:1600,u:'years'},
+        {n:'Po-210',sym:'Po',A:210,Z:84,t:138.4,u:'days'},
+        {n:'Sr-90',sym:'Sr',A:90,Z:38,t:28.8,u:'years'},
+        {n:'U-235',sym:'U',A:235,Z:92,t:703800000,u:'years'},
+        {n:'U-238',sym:'U',A:238,Z:92,t:4470000000,u:'years'},
+        {n:'Pb-210',sym:'Pb',A:210,Z:82,t:22,u:'years'},
+        {n:'Bi-212',sym:'Bi',A:212,Z:83,t:60.6,u:'minutes'},
+        {n:'Rn-222',sym:'Rn',A:222,Z:86,t:3.82,u:'days'}
+    ];
+    // Element name lookup (Z → symbol) for decay products
+    const elSym={1:'H',2:'He',4:'Be',5:'B',6:'C',7:'N',8:'O',9:'F',10:'Ne',
+        11:'Na',12:'Mg',13:'Al',14:'Si',15:'P',16:'S',17:'Cl',18:'Ar',
+        19:'K',20:'Ca',22:'Ti',24:'Cr',26:'Fe',28:'Ni',30:'Zn',32:'Ge',
+        34:'Se',36:'Kr',38:'Sr',40:'Zr',50:'Sn',52:'Te',54:'Xe',56:'Ba',
+        80:'Hg',81:'Tl',82:'Pb',83:'Bi',84:'Po',85:'At',86:'Rn',87:'Fr',
+        88:'Ra',89:'Ac',90:'Th',91:'Pa',92:'U',93:'Np',94:'Pu'};
     const iso=isos[Math.floor(Math.random()*isos.length)];
 
-    if(t==='remain_n'){const n=r(1,5),m0=r(100,1000,1),rem=m0*Math.pow(0.5,n);return{question:`A ${m0} g sample of ${iso.n} undergoes ${n} half-lives. How much remains?`,given:`m₀=${m0} g, n=${n} half-lives`,answer:rem,unit:'g',steps:[`remaining=m₀×(½)^n=${m0}×(0.5)^${n}=${rem.toFixed(4)} g`],hint:`remaining = initial × (½)^n`};}
-    if(t==='remain_time'){const n=r(1,5),time=n*iso.t,m0=r(100,800,1),rem=m0*Math.pow(0.5,n);return{question:`How much of a ${m0} g sample of ${iso.n} remains after ${time} ${iso.u}? (t½=${iso.t} ${iso.u})`,given:`m₀=${m0} g, t=${time} ${iso.u}, t½=${iso.t} ${iso.u}`,answer:rem,unit:'g',steps:[`n=t/t½=${time}/${iso.t}=${n} half-lives`,`remaining=${m0}×(0.5)^${n}=${rem.toFixed(4)} g`],hint:`First find n = t/t½, then remaining = m₀×(½)^n`};}
-    if(t==='count_halflives'){const n=r(2,5),m0=r(200,1000,1),rem=m0*Math.pow(0.5,n);return{question:`A ${m0} g sample of ${iso.n} decays to ${rem.toFixed(2)} g. How many half-lives have passed?`,given:`m₀=${m0} g, remaining=${rem.toFixed(2)} g`,answer:n,unit:'half-lives',steps:[`fraction=${rem.toFixed(2)}/${m0}=(½)^n → n=${n}`],hint:`n = log(remaining/initial) / log(0.5)`};}
-    if(t==='fraction'){const n=r(1,5),f=Math.pow(0.5,n);return{question:`What fraction of a sample remains after ${n} half-lives?`,given:`n=${n}`,answer:f,unit:'',steps:[`fraction=(½)^${n}=${f}`],hint:`After each half-life, exactly half remains.`};}
-    // ADVANCED MULTI-STEP
-    if(t==='decay_constant'){const lambda=Math.log(2)/iso.t;return{question:`Calculate the decay constant λ for ${iso.n} (t½=${iso.t} ${iso.u}). Then confirm: what fraction remains after 1 half-life using e^(−λt)? Enter λ as your answer.`,given:`t½=${iso.t} ${iso.u}`,answer:lambda,unit:iso.u+'⁻¹',steps:[`λ=ln(2)/t½=0.6931/${iso.t}=${lambda.toExponential(4)} ${iso.u}⁻¹`,`Check: e^(−λ×t½)=e^(−0.6931)=0.5 ✓`],hint:`λ = ln(2)/t½ = 0.6931/t½`};}
-    if(t==='find_age'){
-        // Given remaining fraction, find age
-        const frac=r(0.05,0.8,3),age=-Math.log(frac)/Math.log(2)*iso.t;
-        return{question:`A sample of ${iso.n} (t½=${iso.t} ${iso.u}) has decayed to ${(frac*100).toFixed(1)}% of its original amount. How old is the sample?`,given:`Fraction remaining=${frac}, t½=${iso.t} ${iso.u}`,answer:age,unit:iso.u,steps:[`n=log(${frac})/log(0.5)=${(-Math.log(frac)/Math.log(2)).toFixed(4)} half-lives`,`Age=n×t½=${(-Math.log(frac)/Math.log(2)).toFixed(4)}×${iso.t}=${age.toFixed(2)} ${iso.u}`],hint:`n = log(fraction)/log(0.5), then age = n × t½.`};
+    if(t==='isotope_id'){
+        const isotopes=[
+            {name:'oxygen-16',sym:'O',A:16,Z:8,charge:0},{name:'oxygen-17',sym:'O',A:17,Z:8,charge:0},
+            {name:'sulfur-34',sym:'S',A:34,Z:16,charge:0},{name:'nitrogen-14',sym:'N',A:14,Z:7,charge:0},
+            {name:'nitrogen-15',sym:'N',A:15,Z:7,charge:0},{name:'chlorine-37',sym:'Cl',A:37,Z:17,charge:0},
+            {name:'uranium-238',sym:'U',A:238,Z:92,charge:0},{name:'carbon-12',sym:'C',A:12,Z:6,charge:0},
+            {name:'calcium ion (Ca²⁺)',sym:'Ca',A:40,Z:20,charge:+2},{name:'fluoride ion (F⁻)',sym:'F',A:19,Z:9,charge:-1},
+            {name:'oxide ion (O²⁻)',sym:'O',A:16,Z:8,charge:-2},{name:'sodium ion (Na⁺)',sym:'Na',A:23,Z:11,charge:+1},
+            {name:'phosphide ion (P³⁻)',sym:'P',A:31,Z:15,charge:-3},{name:'magnesium ion (Mg²⁺)',sym:'Mg',A:24,Z:12,charge:+2}
+        ];
+        const it=isotopes[Math.floor(Math.random()*isotopes.length)];
+        const protons=it.Z,electrons=it.Z-it.charge,neutrons=it.A-it.Z;
+        const ask=['protons','electrons','neutrons'][Math.floor(Math.random()*3)];
+        const answers={protons,electrons,neutrons};
+        return{question:`How many ${ask} does ${it.name} have?`,
+            given:`Symbol: ${it.sym}, Atomic number = ${it.Z}, Mass number = ${it.A}${it.charge!==0?`, Charge = ${it.charge>0?'+'+it.charge:it.charge}`:''}`,
+            answer:answers[ask],unit:ask,
+            steps:[`Protons = atomic number = ${protons}`,
+                `Neutrons = mass number − atomic number = ${it.A} − ${it.Z} = ${neutrons}`,
+                `Electrons = protons − charge = ${protons} − (${it.charge}) = ${electrons}`,
+                `${ask[0].toUpperCase()+ask.slice(1)} = ${answers[ask]}`],
+            hint:`Protons = atomic number. Neutrons = mass # − atomic #. Electrons = protons − charge (ions have unequal p and e).`};
     }
-    // remain_then_lambda: given m₀ and t, find remaining mass then λ
-    const t_elapsed=r(1,4)*iso.t,m0=r(100,500,1),n_hl=t_elapsed/iso.t,rem=m0*Math.pow(0.5,n_hl),lambda=Math.log(2)/iso.t;
-    return{question:`A ${m0} g sample of ${iso.n} (t½=${iso.t} ${iso.u}) has been decaying for ${t_elapsed} ${iso.u}. (1) How much remains? (2) What is λ? Enter the remaining mass as your answer.`,given:`m₀=${m0} g, t=${t_elapsed} ${iso.u}, t½=${iso.t} ${iso.u}`,answer:rem,unit:'g',steps:[`Step 1: n=${t_elapsed}/${iso.t}=${n_hl} half-lives`,`Step 2: remaining=${m0}×(0.5)^${n_hl}=${rem.toFixed(3)} g`,`Step 3: λ=ln(2)/t½=${lambda.toExponential(4)} ${iso.u}⁻¹`],hint:`n=t/t½ first, then remaining=m₀×(½)^n. Advanced: also know λ=ln2/t½.`};
+    if(t==='alpha_decay'){
+        const alphaIsos=isos.filter(x=>(x.Z-2)>=1&&elSym[x.Z-2]);
+        const ai=alphaIsos[Math.floor(Math.random()*alphaIsos.length)];
+        const prodZ=ai.Z-2,prodA=ai.A-4,prodSym=elSym[prodZ]||'?';
+        return{question:`${ai.sym}-${ai.A} (atomic number ${ai.Z}) undergoes alpha decay. What is the resulting element? Give the mass number and atomic number of the product.`,
+            given:`Parent: ²⁴³${ai.sym} (A=${ai.A}, Z=${ai.Z})\nAlpha particle: ⁴₂He (A=4, Z=2)`,
+            answer:prodA,unit:`(mass number; symbol: ${prodSym}-${prodA}, Z=${prodZ})`,
+            steps:[`Alpha decay: parent → ⁴₂He + product`,
+                `Product mass number: ${ai.A} − 4 = ${prodA}`,
+                `Product atomic number: ${ai.Z} − 2 = ${prodZ}`,
+                `Product: ${prodA}${prodSym} (${prodSym}-${prodA})`],
+            hint:`Alpha (α) decay: loses ⁴₂He. Subtract 4 from mass number, subtract 2 from atomic number.`};
+    }
+    if(t==='beta_decay'){
+        const betaIsos=isos.filter(x=>elSym[x.Z+1]);
+        const bi=betaIsos[Math.floor(Math.random()*betaIsos.length)];
+        const prodZ=bi.Z+1,prodA=bi.A,prodSym=elSym[prodZ]||'?';
+        return{question:`${bi.sym}-${bi.A} (atomic number ${bi.Z}) undergoes beta decay. What is the resulting element? Give the mass number and atomic number of the product.`,
+            given:`Parent: ${bi.A}${bi.sym} (A=${bi.A}, Z=${bi.Z})\nBeta particle: ⁰₋₁e (a neutron converts to a proton + electron)`,
+            answer:prodA,unit:`(mass number unchanged; symbol: ${prodSym}-${prodA}, Z=${prodZ})`,
+            steps:[`Beta (β) decay: a neutron → proton + β⁻ particle`,
+                `Product mass number: ${bi.A} (unchanged)`,
+                `Product atomic number: ${bi.Z} + 1 = ${prodZ}`,
+                `Product: ${prodA}${prodSym} (${prodSym}-${prodA})`],
+            hint:`Beta (β) decay: a neutron converts to a proton. Mass number stays the same; atomic number increases by 1.`};
+    }
+    if(t==='remain_n'){
+        const n=r(1,5),m0=[8,16,24,32,64,100,200,400,512,800][Math.floor(Math.random()*10)],rem=m0*Math.pow(0.5,n);
+        return{question:`A ${m0} g sample of ${iso.n} undergoes ${n} half-lives. How much remains?`,
+            given:`m₀ = ${m0} g, n = ${n} half-lives`,answer:rem,unit:'g',
+            steps:[`remaining = m₀ × (½)ⁿ = ${m0} × (0.5)^${n} = ${rem.toFixed(4)} g`],
+            hint:`remaining = initial × (½)ⁿ`};
+    }
+    if(t==='remain_time'){
+        const n=r(1,5),time=parseFloat((n*iso.t).toFixed(2)),m0=[16,32,64,128,256,512][Math.floor(Math.random()*6)];
+        const rem=m0*Math.pow(0.5,n);
+        return{question:`How much of a ${m0} g sample of ${iso.n} remains after ${time} ${iso.u}? (t½ = ${iso.t} ${iso.u})`,
+            given:`m₀ = ${m0} g, t = ${time} ${iso.u}, t½ = ${iso.t} ${iso.u}`,
+            answer:rem,unit:'g',
+            steps:[`n = t / t½ = ${time} / ${iso.t} = ${n} half-lives`,`remaining = ${m0} × (0.5)^${n} = ${rem.toFixed(4)} g`],
+            hint:`First find n = t ÷ t½, then remaining = m₀ × (½)ⁿ.`};
+    }
+    if(t==='count_halflives'){
+        const n=r(2,5),m0=[32,64,128,256,512,1000][Math.floor(Math.random()*6)],rem=m0*Math.pow(0.5,n);
+        return{question:`A ${m0} g sample of ${iso.n} decays to ${rem.toFixed(2)} g. How many half-lives have passed?`,
+            given:`m₀ = ${m0} g, remaining = ${rem.toFixed(2)} g`,
+            answer:n,unit:'half-lives',
+            steps:[`fraction = ${rem.toFixed(2)} / ${m0} = ${(rem/m0).toFixed(4)} = (½)ⁿ`,`n = log(${rem.toFixed(2)}/${m0}) / log(0.5) = ${n}`],
+            hint:`n = log(remaining/initial) / log(0.5). Or simply count: how many times can you divide ${m0} by 2 to get ${rem.toFixed(2)}?`};
+    }
+    if(t==='find_halflife'){
+        const n=r(2,5),m0=[32,64,128,256,400,512][Math.floor(Math.random()*6)],rem=m0*Math.pow(0.5,n);
+        const totalTime=r(10,120,1),t_half=totalTime/n;
+        return{question:`You have ${m0} g of a radioactive isotope. After ${totalTime} minutes, you are left with only ${rem.toFixed(2)} g. What is the half-life?`,
+            given:`m₀ = ${m0} g, remaining = ${rem.toFixed(2)} g, total time = ${totalTime} min`,
+            answer:t_half,unit:'min',
+            steps:[`Find n: ${m0} → ${m0/2} → ... → ${rem.toFixed(2)} g takes ${n} halvings → n = ${n}`,`t½ = total time / n = ${totalTime} / ${n} = ${t_half.toFixed(2)} min`],
+            hint:`First figure out how many half-lives it took (how many times was the mass halved?). Then t½ = total time ÷ n.`};
+    }
+    if(t==='find_age'){
+        const frac=parseFloat(r(0.05,0.8,3)),age=-Math.log(frac)/Math.log(2)*iso.t;
+        return{question:`A sample of ${iso.n} (t½ = ${iso.t} ${iso.u}) has decayed to ${(frac*100).toFixed(1)}% of its original amount. How old is the sample?`,
+            given:`Fraction remaining = ${frac}, t½ = ${iso.t} ${iso.u}`,
+            answer:age,unit:iso.u,
+            steps:[`n = log(${frac}) / log(0.5) = ${(-Math.log(frac)/Math.log(2)).toFixed(4)} half-lives`,`Age = n × t½ = ${(-Math.log(frac)/Math.log(2)).toFixed(4)} × ${iso.t} = ${age.toFixed(2)} ${iso.u}`],
+            hint:`n = log(fraction remaining) / log(0.5), then age = n × t½.`};
+    }
+    if(t==='alpha_beta_chain'){
+        const chainIsos=isos.filter(x=>x.Z>=84&&elSym[x.Z-2]&&elSym[x.Z-1]);
+        const ci=chainIsos.length?chainIsos[Math.floor(Math.random()*chainIsos.length)]:isos.find(x=>x.sym==='U'&&x.A===238);
+        const afterAlpha={Z:ci.Z-2,A:ci.A-4,sym:elSym[ci.Z-2]||'?'};
+        const afterBeta={Z:afterAlpha.Z+1,A:afterAlpha.A,sym:elSym[afterAlpha.Z+1]||'?'};
+        return{question:`${ci.sym}-${ci.A} undergoes alpha decay, then the product undergoes beta decay. What is the final element?`,
+            given:`Start: ${ci.A}${ci.sym} (Z=${ci.Z})\nStep 1: alpha decay (loses ⁴He)\nStep 2: beta decay (neutron→proton)`,
+            answer:afterBeta.A,unit:`(mass number; symbol: ${afterBeta.sym}-${afterBeta.A})`,
+            steps:[`Alpha decay: A=${ci.A}−4=${afterAlpha.A}, Z=${ci.Z}−2=${afterAlpha.Z} → ${afterAlpha.A}${afterAlpha.sym}`,
+                `Beta decay: A=${afterAlpha.A} (unchanged), Z=${afterAlpha.Z}+1=${afterBeta.Z} → ${afterBeta.A}${afterBeta.sym}`],
+            hint:`Alpha: −4 mass, −2 atomic number. Beta: same mass, +1 atomic number. Apply in sequence.`};
+    }
+    const t_el=r(1,4)*iso.t,m0=r(100,500,1),n_hl=t_el/iso.t,rem2=m0*Math.pow(0.5,n_hl),lam=Math.log(2)/iso.t;
+    return{question:`A ${m0} g sample of ${iso.n} (t½ = ${iso.t} ${iso.u}) has been decaying for ${t_el} ${iso.u}. How much remains?`,
+        given:`m₀ = ${m0} g, t = ${t_el} ${iso.u}, t½ = ${iso.t} ${iso.u}`,
+        answer:rem2,unit:'g',
+        steps:[`n = ${t_el} / ${iso.t} = ${n_hl} half-lives`,`remaining = ${m0} × (0.5)^${n_hl} = ${rem2.toFixed(3)} g`],
+        hint:`n = t/t½, then remaining = m₀ × (½)ⁿ.`};
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
