@@ -148,6 +148,46 @@
         .mc-btn.mc-correct { border-color:var(--ok); background:rgba(0,255,136,.12); color:var(--ok); }
         .mc-btn.mc-wrong { border-color:var(--err); background:rgba(255,68,102,.12); color:var(--err); }
 
+        /* ── UNIT ACCURACY BADGES ── */
+        .unit-badge { font-family:'JetBrains Mono',monospace; font-size:0.65rem; font-weight:700; margin-left:auto; min-width:32px; text-align:right; }
+
+        /* ── I DON'T KNOW BUTTON ── */
+        .btn-idk { background:transparent; border:2px dashed var(--border); color:var(--muted); }
+        .btn-idk:hover { border-color:var(--err); color:var(--err); box-shadow:none; transform:none; }
+
+        /* ── QUIZ PROGRESS ── */
+        .quiz-wrap { display:none; flex-direction:column; gap:6px; }
+        .quiz-info { display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--muted); }
+        .quiz-bar-bg { background:var(--card); border-radius:4px; height:6px; overflow:hidden; }
+        .quiz-bar-fill { height:100%; background:linear-gradient(90deg,var(--blue),var(--cyan)); transition:width .3s ease; width:0%; }
+
+        /* ── DIFFICULTY SUGGESTION ── */
+        .diff-suggest { display:none; align-items:center; justify-content:space-between; gap:12px; background:rgba(255,215,0,.08); border:2px solid var(--yellow); border-radius:10px; padding:12px 16px; font-family:'JetBrains Mono',monospace; font-size:.82rem; animation:fadeIn .3s ease; }
+        .diff-suggest .ds-btns { display:flex; gap:8px; flex-shrink:0; }
+        .diff-suggest button { padding:6px 14px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:700; cursor:pointer; }
+        .ds-yes { background:var(--yellow); border:none; color:var(--bg); }
+        .ds-no { background:transparent; border:1px solid var(--border); color:var(--muted); }
+
+        /* ── REVIEW TAG ── */
+        .review-tag { display:inline-block; background:rgba(255,215,0,.12); border:1px solid var(--yellow); color:var(--yellow); border-radius:6px; padding:2px 9px; font-family:'JetBrains Mono',monospace; font-size:0.7rem; font-weight:700; margin-bottom:10px; letter-spacing:1px; }
+
+        /* ── MODAL ── */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:100; display:flex; align-items:center; justify-content:center; }
+        .modal { background:var(--bg2); border:2px solid var(--border); border-radius:16px; padding:30px; max-width:400px; width:90%; animation:fadeIn .25s ease; }
+        .modal h2 { font-family:'JetBrains Mono',monospace; font-size:1.1rem; color:var(--cyan); margin-bottom:6px; }
+        .modal .sub { color:var(--muted); font-size:.88rem; margin-bottom:20px; }
+        .modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+        .modal-opt { padding:16px; background:var(--card); border:2px solid var(--border); border-radius:10px; cursor:pointer; text-align:center; font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--text); transition:all .2s; }
+        .modal-opt:hover { border-color:var(--cyan); color:var(--cyan); transform:translateY(-2px); }
+        .modal-opt span { display:block; font-size:0.68rem; color:var(--muted); font-weight:400; margin-top:3px; }
+        .modal-close { padding:10px 20px; background:var(--card); border:2px solid var(--border); border-radius:8px; color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:0.8rem; cursor:pointer; transition:all .2s; }
+        .modal-close:hover { border-color:var(--blue); color:var(--text); }
+        .quiz-score-big { font-family:'JetBrains Mono',monospace; font-size:3.5rem; font-weight:700; text-align:center; margin:12px 0 4px; background:linear-gradient(135deg,var(--cyan),var(--blue)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .quiz-grade { text-align:center; color:var(--muted); font-size:.9rem; margin-bottom:16px; }
+        .missed-list { max-height:140px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; margin-bottom:16px; }
+        .missed-item { background:var(--card); border-radius:7px; padding:7px 12px; font-size:.8rem; color:var(--muted); border-left:3px solid var(--err); }
+        .modal-actions { display:flex; gap:10px; flex-wrap:wrap; }
+
         /* ── MOBILE ── */
         @media(max-width:700px){
             html,body{ overflow:auto; }
@@ -165,6 +205,7 @@
 <!-- TOP BAR -->
 <div class="topbar">
     <div class="logo">⚗ Chem Practice</div>
+    <button class="btn btn-sec" onclick="startQuiz()" style="padding:8px 18px;font-size:.8rem;">🎯 Quiz</button>
     <div class="stats">
         <div class="stat"><div class="stat-val" id="sAttempted">0</div><div class="stat-lbl">Attempted</div></div>
         <div class="stat"><div class="stat-val" id="sCorrect">0</div><div class="stat-lbl">Correct</div></div>
@@ -211,6 +252,17 @@
                     <button class="diff-btn" data-diff="advanced">Advanced ★</button>
                 </div>
             </div>
+            <div class="quiz-wrap" id="quizWrap">
+                <div class="quiz-info"><span id="quizLabel">Question 1 / 0</span><span id="quizScore">0 correct</span></div>
+                <div class="quiz-bar-bg"><div class="quiz-bar-fill" id="quizFill"></div></div>
+            </div>
+            <div class="diff-suggest" id="diffSuggest">
+                <span>🔥 5 in a row! Ready for a harder difficulty?</span>
+                <div class="ds-btns">
+                    <button class="ds-yes" onclick="bumpDiff()">Level Up</button>
+                    <button class="ds-no" onclick="dismissDiffSuggest()">Not now</button>
+                </div>
+            </div>
             <div class="problem-box" id="problemBox"></div>
             <div class="mc-options" id="mcOptions" style="display:none"></div>
             <div class="answer-row" id="answerRow">
@@ -220,9 +272,24 @@
             <div class="action-row">
                 <button class="btn btn-sec" onclick="generateProblem()">New Problem</button>
                 <button class="btn btn-hint" onclick="showHint()">💡 Hint</button>
+                <button class="btn btn-idk" onclick="dontKnow()">📖 I don't know</button>
             </div>
             <div id="feedback"></div>
         </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="quizModal" style="display:none" onclick="if(event.target===this&&!quiz.active)closeQuizModal()">
+    <div class="modal" id="quizModalInner">
+        <h2>🎯 Quiz Mode</h2>
+        <p class="sub">Choose a question count to start a scored session.</p>
+        <div class="modal-grid">
+            <div class="modal-opt" onclick="beginQuiz(10)">10<span>Quick</span></div>
+            <div class="modal-opt" onclick="beginQuiz(20)">20<span>Standard</span></div>
+            <div class="modal-opt" onclick="beginQuiz(30)">30<span>Full</span></div>
+            <div class="modal-opt" onclick="beginQuiz(50)">50<span>Challenge</span></div>
+        </div>
+        <button class="modal-close" onclick="closeQuizModal()">Cancel</button>
     </div>
 </div>
 
@@ -231,18 +298,29 @@
 const sc=document.getElementById('stars');
 for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';sc.appendChild(s);}
 
-let unit=null,diff='basic',prob=null,stats={a:0,c:0},hinted=false,seenKeys={};
+let unit=null,diff='basic',prob=null,hinted=false,seenKeys={},isReview=false;
+let stats={a:0,c:0,byUnit:{}};
+let wrongProbs={};
+let quiz={active:false,target:0,count:0,correct:0,wrongs:[]};
+let streak={unit:null,count:0};
+try{const _s=JSON.parse(localStorage.getItem('chemStats'));if(_s)stats=_s;}catch(e){}
 const names={measurements:'Measurements',matter:'Matter',moles:'The Mole',stoichiometry:'Stoichiometry',gases:'Gases',solutions:'Solutions',thermochemistry:'Thermochemistry',equilibrium:'Equilibrium',acids:'Acids & Bases',redox:'Redox & Electrochem',nuclear:'Nuclear Chemistry',nomenclature:'Nomenclature',electrons:'Electrons & Light',bonding:'Bonding',states:'States of Matter',periodic:'Periodic Trends',reactions:'Reactions'};
 
-document.querySelectorAll('.unit-btn').forEach(b=>b.addEventListener('click',function(){
-    document.querySelectorAll('.unit-btn').forEach(x=>x.classList.remove('active'));
-    this.classList.add('active');
-    unit=this.dataset.unit;
-    document.getElementById('placeholder').style.display='none';
-    document.getElementById('problemUI').style.display='flex';
-    document.getElementById('unitLbl').textContent='// '+names[unit];
-    generateProblem();
-}));
+// Add accuracy badges to sidebar buttons
+document.querySelectorAll('.unit-btn').forEach(b=>{
+    const badge=document.createElement('span');badge.className='unit-badge';badge.id='badge-'+b.dataset.unit;b.appendChild(badge);
+    b.addEventListener('click',function(){
+        document.querySelectorAll('.unit-btn').forEach(x=>x.classList.remove('active'));
+        this.classList.add('active');
+        unit=this.dataset.unit;
+        streak={unit,count:0};
+        document.getElementById('placeholder').style.display='none';
+        document.getElementById('problemUI').style.display='flex';
+        document.getElementById('unitLbl').textContent='// '+names[unit];
+        document.getElementById('diffSuggest').style.display='none';
+        generateProblem();
+    });
+});
 
 document.querySelectorAll('.diff-btn').forEach(b=>b.addEventListener('click',function(){
     document.querySelectorAll('.diff-btn').forEach(x=>x.classList.remove('active'));
@@ -270,26 +348,42 @@ function chemFmt(s){
 function generateProblem(){
     if(!unit)return;
     hinted=false;
+    isReview=false;
+    document.getElementById('diffSuggest').style.display='none';
     const _fb=document.getElementById('feedback');_fb.innerHTML='';_fb.className='feedback';
     document.getElementById('answerInput').value='';
     const gens={measurements:genMeasure,matter:genMatter,moles:genMoles,stoichiometry:genStoich,gases:genGases,solutions:genSolutions,thermochemistry:genThermo,equilibrium:genEquil,acids:genAcids,redox:genRedox,nuclear:genNuclear,nomenclature:genNomencl,electrons:genElectrons,bonding:genBonding,states:genStates,periodic:genPeriodic,reactions:genReactions};
-    if(!seenKeys[unit]) seenKeys[unit]=new Set();
-    let attempts=0;
-    do{prob=gens[unit]();attempts++;}while(attempts<30&&seenKeys[unit].has(probKey(prob)));
-    if(attempts>=30) seenKeys[unit].clear();
-    seenKeys[unit].add(probKey(prob));
 
+    // Spaced repetition: 30% chance to resurface a wrong problem
+    if(wrongProbs[unit]?.length>0 && Math.random()<0.3){
+        prob=wrongProbs[unit][Math.floor(Math.random()*wrongProbs[unit].length)];
+        isReview=true;
+    } else {
+        if(!seenKeys[unit]) seenKeys[unit]=new Set();
+        let attempts=0;
+        do{prob=gens[unit]();attempts++;}while(attempts<30&&seenKeys[unit].has(probKey(prob)));
+        if(attempts>=30) seenKeys[unit].clear();
+        seenKeys[unit].add(probKey(prob));
+    }
+
+    // Update quiz progress bar label
+    if(quiz.active){
+        document.getElementById('quizLabel').textContent=`Question ${quiz.count+1} / ${quiz.target}`;
+        document.getElementById('quizScore').textContent=`${quiz.correct} correct`;
+    }
+
+    const reviewTag=isReview?'<div class="review-tag">📌 REVIEW</div>':'';
     const firstOpt=prob.question.search(/\n\s*\d+\s*=/);
     if(firstOpt>=0){
         const preamble=prob.question.substring(0,firstOpt).trim();
-        document.getElementById('problemBox').innerHTML=`<div>${chemFmt(preamble)}</div>`;
+        document.getElementById('problemBox').innerHTML=`${reviewTag}<div>${chemFmt(preamble)}</div>`;
         const opts=[...prob.question.matchAll(/\n(\d+)\s*=\s*([^\n]+)/g)].map(m=>({n:+m[1],label:m[2].trim()}));
         const mcDiv=document.getElementById('mcOptions');
         mcDiv.style.display='flex';
         mcDiv.innerHTML=opts.map(o=>`<button class="mc-btn" onclick="selectMC(${o.n},this)">${o.n}.&nbsp; ${chemFmt(o.label)}</button>`).join('');
         document.getElementById('answerRow').style.display='none';
     } else {
-        document.getElementById('problemBox').innerHTML=`<div>${chemFmt(prob.question)}</div>`;
+        document.getElementById('problemBox').innerHTML=`${reviewTag}<div>${chemFmt(prob.question)}</div>`;
         document.getElementById('mcOptions').style.display='none';
         document.getElementById('answerRow').style.display='flex';
     }
@@ -2379,10 +2473,33 @@ function checkAnswer(){
     const ua=parseFloat(document.getElementById('answerInput').value);
     if(isNaN(ua)){alert('Please enter a number');return;}
     stats.a++;
+    if(!stats.byUnit[unit]) stats.byUnit[unit]={a:0,c:0};
+    stats.byUnit[unit].a++;
     const tol=Math.max(Math.abs(prob.answer)*0.02,0.001);
     const ok=Math.abs(ua-prob.answer)<=tol;
-    if(ok)stats.c++;
+    if(ok){stats.c++;stats.byUnit[unit].c++;}
     updateStats();
+    playSound(ok);
+    // Streak tracking
+    if(ok){if(streak.unit===unit)streak.count++;else streak={unit,count:1,shown:false};}
+    else{streak={unit,count:0,shown:false};}
+    // Spaced repetition bookkeeping
+    if(!ok){
+        if(!wrongProbs[unit])wrongProbs[unit]=[];
+        if(!wrongProbs[unit].find(p=>probKey(p)===probKey(prob)))wrongProbs[unit].push(prob);
+        if(wrongProbs[unit].length>15)wrongProbs[unit].shift();
+    } else if(isReview){
+        wrongProbs[unit]=wrongProbs[unit].filter(p=>probKey(p)!==probKey(prob));
+    }
+    // Quiz mode
+    if(quiz.active){
+        quiz.count++;
+        if(ok)quiz.correct++;else quiz.wrongs.push(prob);
+        updateQuizBar();
+        if(quiz.count>=quiz.target){setTimeout(showQuizResults,800);}
+    }
+    // Difficulty suggestion after 5-in-a-row
+    if(ok&&streak.count>=5&&diff!=='advanced'&&!streak.shown){streak.shown=true;showDiffSuggest();}
     const fb=document.getElementById('feedback');
     const ans=Math.abs(prob.answer)<1e-4&&prob.answer!==0?prob.answer.toExponential(4):parseFloat(prob.answer.toFixed(4));
     fb.className='feedback '+(ok?'correct':'incorrect');
@@ -2399,15 +2516,145 @@ function updateStats(){
     document.getElementById('sAttempted').textContent=stats.a;
     document.getElementById('sCorrect').textContent=stats.c;
     document.getElementById('sAccuracy').textContent=stats.a>0?(stats.c/stats.a*100).toFixed(0)+'%':'—';
+    // Per-unit accuracy badges in sidebar
+    Object.keys(stats.byUnit).forEach(u=>{
+        const el=document.getElementById('badge-'+u);
+        if(!el)return;
+        const d=stats.byUnit[u];
+        const pct=d.a>0?Math.round(d.c/d.a*100):null;
+        if(pct===null){el.textContent='';return;}
+        el.textContent=pct+'%';
+        el.style.color=pct>=80?'var(--ok)':pct>=60?'var(--yellow)':'var(--err)';
+    });
+    // Persist to localStorage
+    try{localStorage.setItem('chemStats',JSON.stringify(stats));}catch(e){}
+}
+
+// Sound feedback using Web Audio API
+function playSound(ok){
+    try{
+        const ctx=new(window.AudioContext||window.webkitAudioContext)();
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        if(ok){o.frequency.setValueAtTime(520,ctx.currentTime);o.frequency.setValueAtTime(660,ctx.currentTime+0.1);}
+        else{o.frequency.setValueAtTime(220,ctx.currentTime);o.frequency.setValueAtTime(180,ctx.currentTime+0.1);}
+        g.gain.setValueAtTime(0.18,ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.35);
+        o.start(ctx.currentTime);o.stop(ctx.currentTime+0.35);
+    }catch(e){}
+}
+
+// I don't know — reveal answer and count as wrong
+function dontKnow(){
+    const fb=document.getElementById('feedback');
+    if(fb.classList.contains('correct')||fb.classList.contains('incorrect'))return;
+    stats.a++;
+    if(!stats.byUnit[unit])stats.byUnit[unit]={a:0,c:0};
+    stats.byUnit[unit].a++;
+    updateStats();
+    playSound(false);
+    streak={unit,count:0,shown:false};
+    // Add to wrong pool
+    if(!wrongProbs[unit])wrongProbs[unit]=[];
+    if(!wrongProbs[unit].find(p=>probKey(p)===probKey(prob)))wrongProbs[unit].push(prob);
+    if(wrongProbs[unit].length>15)wrongProbs[unit].shift();
+    // Quiz mode
+    if(quiz.active){
+        quiz.count++;quiz.wrongs.push(prob);
+        updateQuizBar();
+        if(quiz.count>=quiz.target){setTimeout(showQuizResults,800);}
+    }
+    // Highlight correct MC option if applicable
+    const mcDiv=document.getElementById('mcOptions');
+    if(mcDiv.style.display!=='none'){
+        const tol=Math.max(Math.abs(prob.answer)*0.02,0.001);
+        mcDiv.querySelectorAll('.mc-btn').forEach(b=>{
+            b.disabled=true;
+            const bn=parseInt(b.textContent);
+            if(Math.abs(bn-prob.answer)<=tol)b.classList.add('mc-correct');
+        });
+    }
+    const ans=Math.abs(prob.answer)<1e-4&&prob.answer!==0?prob.answer.toExponential(4):parseFloat(prob.answer.toFixed(4));
+    fb.className='feedback incorrect';
+    fb.innerHTML=`<div class="fb-title">📖 Answer Revealed</div><p>Correct answer: ${ans} ${chemFmt(prob.unit)}</p><div class="solution"><h4>Solution Steps:</h4>${prob.steps.map(s=>`<div class="step">${chemFmt(s)}</div>`).join('')}</div>`;
+}
+
+// Quiz mode
+function startQuiz(){
+    if(!unit){alert('Please select a unit first.');return;}
+    document.getElementById('quizModal').style.display='flex';
+}
+function closeQuizModal(){
+    if(quiz.active)return;
+    document.getElementById('quizModal').style.display='none';
+}
+function beginQuiz(n){
+    quiz={active:true,target:n,count:0,correct:0,wrongs:[]};
+    const qw=document.getElementById('quizWrap');qw.style.display='flex';
+    document.getElementById('quizLabel').textContent=`Question 1 / ${n}`;
+    document.getElementById('quizScore').textContent='0 correct';
+    document.getElementById('quizFill').style.width='0%';
+    document.getElementById('quizModal').style.display='none';
+    generateProblem();
+}
+function updateQuizBar(){
+    const pct=quiz.target>0?quiz.count/quiz.target*100:0;
+    document.getElementById('quizFill').style.width=pct+'%';
+    document.getElementById('quizLabel').textContent=`Question ${Math.min(quiz.count+1,quiz.target)} / ${quiz.target}`;
+    document.getElementById('quizScore').textContent=`${quiz.correct} correct`;
+}
+function _resetQuizModal(){
+    document.getElementById('quizModalInner').innerHTML=`<h2>🎯 Quiz Mode</h2><p class="sub">Choose a question count to start a scored session.</p><div class="modal-grid"><div class="modal-opt" onclick="beginQuiz(10)">10<span>Quick</span></div><div class="modal-opt" onclick="beginQuiz(20)">20<span>Standard</span></div><div class="modal-opt" onclick="beginQuiz(30)">30<span>Full</span></div><div class="modal-opt" onclick="beginQuiz(50)">50<span>Challenge</span></div></div><button class="modal-close" onclick="closeQuizModal()">Cancel</button>`;
+}
+function showQuizResults(){
+    const pct=Math.round(quiz.correct/quiz.target*100);
+    const grade=pct>=90?'A':pct>=80?'B':pct>=70?'C':pct>=60?'D':'F';
+    const n=quiz.target;
+    document.getElementById('quizModalInner').innerHTML=`<h2>🎯 Quiz Complete!</h2><div class="quiz-score-big">${quiz.correct}/${quiz.target}</div><div class="quiz-grade">${pct}% — Grade: ${grade}</div>${quiz.wrongs.length?`<div class="missed-list">${quiz.wrongs.slice(0,8).map(p=>`<div class="missed-item">${p.question.replace(/\n.*/,'').trim().substring(0,80)}…</div>`).join('')}</div>`:'<p style="color:var(--ok);text-align:center;margin-bottom:16px">Perfect score! 🎉</p>'}<div class="modal-actions"><button class="btn" onclick="beginQuiz(${n})">Try Again</button><button class="modal-close" onclick="endQuiz()">Done</button></div>`;
+    document.getElementById('quizModal').style.display='flex';
+    quiz.active=false;
+}
+function endQuiz(){
+    quiz={active:false,target:0,count:0,correct:0,wrongs:[]};
+    document.getElementById('quizWrap').style.display='none';
+    document.getElementById('quizModal').style.display='none';
+    _resetQuizModal();
+    generateProblem();
+}
+
+// Difficulty suggestion
+function showDiffSuggest(){document.getElementById('diffSuggest').style.display='flex';}
+function dismissDiffSuggest(){document.getElementById('diffSuggest').style.display='none';}
+function bumpDiff(){
+    document.getElementById('diffSuggest').style.display='none';
+    const next=diff==='basic'?'intermediate':'advanced';
+    diff=next;
+    document.querySelectorAll('.diff-btn').forEach(b=>b.classList.toggle('active',b.dataset.diff===next));
+    streak={unit,count:0,shown:false};
+    if(unit){seenKeys[unit]=new Set();generateProblem();}
 }
 
 document.addEventListener('keyup',e=>{
-    if(e.key!=='Enter') return;
     const fb=document.getElementById('feedback');
     const answered=fb.classList.contains('correct')||fb.classList.contains('incorrect');
-    if(answered){ generateProblem(); return; }
-    if(document.getElementById('answerRow').style.display!=='none') checkAnswer();
+    if(e.key==='Enter'){
+        if(answered){generateProblem();return;}
+        if(document.getElementById('answerRow').style.display!=='none') checkAnswer();
+        return;
+    }
+    // 1-4 shortcuts for MCQ selection
+    if(['1','2','3','4'].includes(e.key)&&!answered){
+        const mcDiv=document.getElementById('mcOptions');
+        if(mcDiv.style.display!=='none'){
+            const btns=mcDiv.querySelectorAll('.mc-btn');
+            const idx=parseInt(e.key)-1;
+            if(btns[idx]&&!btns[idx].disabled) btns[idx].click();
+        }
+    }
 });
+
+// Restore badges on page load from persisted stats
+updateStats();
 </script>
 </body>
 </html>
