@@ -269,7 +269,7 @@ function chemFmt(s){
 function generateProblem(){
     if(!unit)return;
     hinted=false;
-    document.getElementById('feedback').innerHTML='';
+    const _fb=document.getElementById('feedback');_fb.innerHTML='';_fb.className='feedback';
     document.getElementById('answerInput').value='';
     const gens={measurements:genMeasure,matter:genMatter,moles:genMoles,stoichiometry:genStoich,gases:genGases,solutions:genSolutions,thermochemistry:genThermo,equilibrium:genEquil,acids:genAcids,redox:genRedox,nuclear:genNuclear,nomenclature:genNomencl,electrons:genElectrons,bonding:genBonding,states:genStates,periodic:genPeriodic,reactions:genReactions};
     prob=gens[unit]();
