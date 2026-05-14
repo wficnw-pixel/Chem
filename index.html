@@ -175,6 +175,12 @@
         <div class="unit-btn" data-unit="acids"><span class="icon">🧫</span><span class="name">Acids &amp; Bases</span></div>
         <div class="unit-btn" data-unit="redox"><span class="icon">⚡</span><span class="name">Redox &amp; Electrochem</span></div>
         <div class="unit-btn" data-unit="nuclear"><span class="icon">☢️</span><span class="name">Nuclear Chemistry</span></div>
+        <div class="unit-btn" data-unit="nomenclature"><span class="icon">🏷️</span><span class="name">Nomenclature</span></div>
+        <div class="unit-btn" data-unit="electrons"><span class="icon">💡</span><span class="name">Electrons &amp; Light</span></div>
+        <div class="unit-btn" data-unit="bonding"><span class="icon">🔗</span><span class="name">Bonding</span></div>
+        <div class="unit-btn" data-unit="states"><span class="icon">🌡️</span><span class="name">States of Matter</span></div>
+        <div class="unit-btn" data-unit="periodic"><span class="icon">📊</span><span class="name">Periodic Trends</span></div>
+        <div class="unit-btn" data-unit="reactions"><span class="icon">⚗</span><span class="name">Reactions</span></div>
     </div>
 
     <!-- PROBLEM PANEL -->
@@ -212,7 +218,7 @@ const sc=document.getElementById('stars');
 for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';sc.appendChild(s);}
 
 let unit=null,diff='basic',prob=null,stats={a:0,c:0},hinted=false;
-const names={measurements:'Measurements',moles:'The Mole',stoichiometry:'Stoichiometry',gases:'Gases',solutions:'Solutions',thermochemistry:'Thermochemistry',equilibrium:'Equilibrium',acids:'Acids & Bases',redox:'Redox & Electrochem',nuclear:'Nuclear Chemistry'};
+const names={measurements:'Measurements',moles:'The Mole',stoichiometry:'Stoichiometry',gases:'Gases',solutions:'Solutions',thermochemistry:'Thermochemistry',equilibrium:'Equilibrium',acids:'Acids & Bases',redox:'Redox & Electrochem',nuclear:'Nuclear Chemistry',nomenclature:'Nomenclature',electrons:'Electrons & Light',bonding:'Bonding',states:'States of Matter',periodic:'Periodic Trends',reactions:'Reactions'};
 
 document.querySelectorAll('.unit-btn').forEach(b=>b.addEventListener('click',function(){
     document.querySelectorAll('.unit-btn').forEach(x=>x.classList.remove('active'));
@@ -248,7 +254,7 @@ function generateProblem(){
     hinted=false;
     document.getElementById('feedback').innerHTML='';
     document.getElementById('answerInput').value='';
-    const gens={measurements:genMeasure,moles:genMoles,stoichiometry:genStoich,gases:genGases,solutions:genSolutions,thermochemistry:genThermo,equilibrium:genEquil,acids:genAcids,redox:genRedox,nuclear:genNuclear};
+    const gens={measurements:genMeasure,moles:genMoles,stoichiometry:genStoich,gases:genGases,solutions:genSolutions,thermochemistry:genThermo,equilibrium:genEquil,acids:genAcids,redox:genRedox,nuclear:genNuclear,nomenclature:genNomencl,electrons:genElectrons,bonding:genBonding,states:genStates,periodic:genPeriodic,reactions:genReactions};
     prob=gens[unit]();
     document.getElementById('problemBox').innerHTML=`<div>${chemFmt(prob.question)}</div>`;
 }
@@ -1309,6 +1315,689 @@ function genNuclear(){
         answer:rem2,unit:'g',
         steps:[`n = ${t_el} / ${iso.t} = ${n_hl} half-lives`,`remaining = ${m0} × (0.5)^${n_hl} = ${rem2.toFixed(3)} g`],
         hint:`n = t/t½, then remaining = m₀ × (½)ⁿ.`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// NOMENCLATURE
+// ══════════════════════════════════════════════════════════════════════════════
+function genNomencl(){
+    const basic=['count_atoms','classify_bond_type'];
+    const inter=['count_atoms','classify_bond_type','ion_charge_basic','ox_state_ionic'];
+    const adv=['ox_state_ionic','acid_formula_atoms','transition_metal_charge'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    const ionicCpds=[
+        {f:'NaCl',name:'Sodium chloride',el:[{s:'Na',n:1},{s:'Cl',n:1}],catChg:1,anChg:-1,cat:'Na⁺',an:'Cl⁻'},
+        {f:'MgO',name:'Magnesium oxide',el:[{s:'Mg',n:1},{s:'O',n:1}],catChg:2,anChg:-2,cat:'Mg²⁺',an:'O²⁻'},
+        {f:'CaCl₂',name:'Calcium chloride',el:[{s:'Ca',n:1},{s:'Cl',n:2}],catChg:2,anChg:-1,cat:'Ca²⁺',an:'Cl⁻'},
+        {f:'Al₂O₃',name:'Aluminum oxide',el:[{s:'Al',n:2},{s:'O',n:3}],catChg:3,anChg:-2,cat:'Al³⁺',an:'O²⁻'},
+        {f:'Na₂S',name:'Sodium sulfide',el:[{s:'Na',n:2},{s:'S',n:1}],catChg:1,anChg:-2,cat:'Na⁺',an:'S²⁻'},
+        {f:'K₂O',name:'Potassium oxide',el:[{s:'K',n:2},{s:'O',n:1}],catChg:1,anChg:-2,cat:'K⁺',an:'O²⁻'},
+        {f:'Li₃N',name:'Lithium nitride',el:[{s:'Li',n:3},{s:'N',n:1}],catChg:1,anChg:-3,cat:'Li⁺',an:'N³⁻'},
+        {f:'MgCl₂',name:'Magnesium chloride',el:[{s:'Mg',n:1},{s:'Cl',n:2}],catChg:2,anChg:-1,cat:'Mg²⁺',an:'Cl⁻'},
+        {f:'AlCl₃',name:'Aluminum chloride',el:[{s:'Al',n:1},{s:'Cl',n:3}],catChg:3,anChg:-1,cat:'Al³⁺',an:'Cl⁻'},
+        {f:'Ca₃N₂',name:'Calcium nitride',el:[{s:'Ca',n:3},{s:'N',n:2}],catChg:2,anChg:-3,cat:'Ca²⁺',an:'N³⁻'},
+        {f:'BaF₂',name:'Barium fluoride',el:[{s:'Ba',n:1},{s:'F',n:2}],catChg:2,anChg:-1,cat:'Ba²⁺',an:'F⁻'},
+        {f:'Na₃P',name:'Sodium phosphide',el:[{s:'Na',n:3},{s:'P',n:1}],catChg:1,anChg:-3,cat:'Na⁺',an:'P³⁻'},
+    ];
+    const covalentCpds=[
+        {f:'CO₂',name:'Carbon dioxide',el:[{s:'C',n:1},{s:'O',n:2}]},
+        {f:'H₂O',name:'Water',el:[{s:'H',n:2},{s:'O',n:1}]},
+        {f:'SO₃',name:'Sulfur trioxide',el:[{s:'S',n:1},{s:'O',n:3}]},
+        {f:'N₂O₄',name:'Dinitrogen tetroxide',el:[{s:'N',n:2},{s:'O',n:4}]},
+        {f:'PCl₃',name:'Phosphorus trichloride',el:[{s:'P',n:1},{s:'Cl',n:3}]},
+        {f:'SF₆',name:'Sulfur hexafluoride',el:[{s:'S',n:1},{s:'F',n:6}]},
+        {f:'CCl₄',name:'Carbon tetrachloride',el:[{s:'C',n:1},{s:'Cl',n:4}]},
+        {f:'NO₂',name:'Nitrogen dioxide',el:[{s:'N',n:1},{s:'O',n:2}]},
+        {f:'P₂O₅',name:'Diphosphorus pentoxide',el:[{s:'P',n:2},{s:'O',n:5}]},
+    ];
+    const allCpds=[...ionicCpds,...covalentCpds];
+
+    if(t==='count_atoms'){
+        const pick=allCpds[Math.floor(Math.random()*allCpds.length)];
+        const elPick=pick.el[Math.floor(Math.random()*pick.el.length)];
+        return{question:`How many ${elPick.s} atoms are in one formula unit of ${pick.f}?`,
+            given:`Formula: ${pick.f}\nName: ${pick.name}`,
+            answer:elPick.n,unit:'atoms',
+            steps:[`Look at the subscript after ${elPick.s} in ${pick.f}`,`Subscript = ${elPick.n} (no subscript means 1)`,`Answer: ${elPick.n} ${elPick.s} atom${elPick.n>1?'s':''}`],
+            hint:`The subscript after each element symbol tells you how many atoms are present. No subscript = 1.`};
+    }
+    if(t==='classify_bond_type'){
+        const pairs=[
+            {a:'NaCl',t:1,r:'Na is a metal, Cl is a nonmetal → ionic bond'},
+            {a:'CO₂',t:2,r:'C and O are both nonmetals → covalent bond'},
+            {a:'Fe',t:3,r:'Iron is a pure metal → metallic bonding'},
+            {a:'MgO',t:1,r:'Mg is a metal, O is a nonmetal → ionic bond'},
+            {a:'HCl',t:2,r:'H and Cl are both nonmetals → polar covalent bond'},
+            {a:'Cu',t:3,r:'Copper is a pure metal → metallic bonding'},
+            {a:'H₂O',t:2,r:'H and O are both nonmetals → covalent bond'},
+            {a:'CaCl₂',t:1,r:'Ca is a metal, Cl is a nonmetal → ionic bond'},
+            {a:'Na',t:3,r:'Sodium is a pure metal → metallic bonding'},
+            {a:'N₂',t:2,r:'Both N atoms are nonmetals → covalent bond'},
+            {a:'Al₂O₃',t:1,r:'Al is a metal, O is a nonmetal → ionic bond'},
+            {a:'NH₃',t:2,r:'N and H are both nonmetals → covalent bond'},
+        ];
+        const p=pairs[Math.floor(Math.random()*pairs.length)];
+        return{question:`What type of bonding is present in ${p.a}?\n\n1 = Ionic\n2 = Covalent\n3 = Metallic\n\nEnter the number.`,
+            given:`Substance: ${p.a}`,answer:p.t,unit:'(1=Ionic, 2=Covalent, 3=Metallic)',
+            steps:[p.r,`Answer: ${p.t}`],
+            hint:`Ionic: metal + nonmetal. Metallic: metal only. Covalent: nonmetal + nonmetal.`};
+    }
+    if(t==='ion_charge_basic'){
+        const ic=ionicCpds[Math.floor(Math.random()*ionicCpds.length)];
+        return{question:`In ${ic.f} (${ic.name}), what is the charge of the ${ic.cat} cation?`,
+            given:`Formula: ${ic.f}\nAnion: ${ic.an} (charge: ${ic.anChg})`,
+            answer:ic.catChg,unit:'+ charge',
+            steps:[`Ionic compounds are electrically neutral (sum of charges = 0)`,
+                `${ic.el[0].n}×(cation charge) + ${ic.el[1].n}×(${ic.anChg}) = 0`,
+                `Cation charge = ${-ic.el[1].n*ic.anChg}/${ic.el[0].n} = +${ic.catChg}`],
+            hint:`Ionic compounds are neutral. Total positive charge = total negative charge.`};
+    }
+    if(t==='ox_state_ionic'){
+        const tmCpds=[
+            {f:'FeCl₂',cat:'Fe',an:'Cl',anChg:-1,anN:2,catN:1,oxState:2,name:'iron(II) chloride'},
+            {f:'FeCl₃',cat:'Fe',an:'Cl',anChg:-1,anN:3,catN:1,oxState:3,name:'iron(III) chloride'},
+            {f:'CuO',cat:'Cu',an:'O',anChg:-2,anN:1,catN:1,oxState:2,name:'copper(II) oxide'},
+            {f:'Cu₂O',cat:'Cu',an:'O',anChg:-2,anN:1,catN:2,oxState:1,name:'copper(I) oxide'},
+            {f:'MnO₂',cat:'Mn',an:'O',anChg:-2,anN:2,catN:1,oxState:4,name:'manganese(IV) oxide'},
+            {f:'SnCl₂',cat:'Sn',an:'Cl',anChg:-1,anN:2,catN:1,oxState:2,name:'tin(II) chloride'},
+            {f:'PbO₂',cat:'Pb',an:'O',anChg:-2,anN:2,catN:1,oxState:4,name:'lead(IV) oxide'},
+            {f:'CrCl₃',cat:'Cr',an:'Cl',anChg:-1,anN:3,catN:1,oxState:3,name:'chromium(III) chloride'},
+            {f:'NiO',cat:'Ni',an:'O',anChg:-2,anN:1,catN:1,oxState:2,name:'nickel(II) oxide'},
+        ];
+        const tm=tmCpds[Math.floor(Math.random()*tmCpds.length)];
+        return{question:`What is the oxidation state of ${tm.cat} in ${tm.f} (${tm.name})?`,
+            given:`Formula: ${tm.f}\nAnion: ${tm.an} has charge ${tm.anChg}`,
+            answer:tm.oxState,unit:`(oxidation state of ${tm.cat})`,
+            steps:[`Compound must be neutral: ${tm.catN>1?tm.catN+'×':''}(${tm.cat} charge) + ${tm.anN}×(${tm.anChg}) = 0`,
+                `${tm.cat} charge = ${-tm.anN*tm.anChg}/${tm.catN} = +${tm.oxState}`],
+            hint:`Use the known anion charge and neutrality rule to find the cation's oxidation state.`};
+    }
+    if(t==='acid_formula_atoms'){
+        const acids=[
+            {f:'HCl',name:'Hydrochloric acid',el:[{s:'H',n:1},{s:'Cl',n:1}]},
+            {f:'H₂SO₄',name:'Sulfuric acid',el:[{s:'H',n:2},{s:'S',n:1},{s:'O',n:4}]},
+            {f:'HNO₃',name:'Nitric acid',el:[{s:'H',n:1},{s:'N',n:1},{s:'O',n:3}]},
+            {f:'H₃PO₄',name:'Phosphoric acid',el:[{s:'H',n:3},{s:'P',n:1},{s:'O',n:4}]},
+            {f:'H₂CO₃',name:'Carbonic acid',el:[{s:'H',n:2},{s:'C',n:1},{s:'O',n:3}]},
+        ];
+        const ac=acids[Math.floor(Math.random()*acids.length)];
+        const elPick=ac.el[Math.floor(Math.random()*ac.el.length)];
+        return{question:`How many ${elPick.s} atoms are in one formula unit of ${ac.f} (${ac.name})?`,
+            given:`Formula: ${ac.f}`,answer:elPick.n,unit:'atoms',
+            steps:[`In ${ac.f}, the subscript on ${elPick.s} is ${elPick.n}`,`Answer: ${elPick.n} ${elPick.s} atom${elPick.n>1?'s':''}`],
+            hint:`Count the subscript number after each element. No subscript = 1.`};
+    }
+    if(t==='transition_metal_charge'){
+        const tmCpds=[
+            {f:'FeCl₂',cat:'Fe',an:'Cl',anChg:-1,anN:2,catN:1,oxState:2,name:'iron(II) chloride'},
+            {f:'FeCl₃',cat:'Fe',an:'Cl',anChg:-1,anN:3,catN:1,oxState:3,name:'iron(III) chloride'},
+            {f:'CuO',cat:'Cu',an:'O',anChg:-2,anN:1,catN:1,oxState:2,name:'copper(II) oxide'},
+            {f:'MnO₂',cat:'Mn',an:'O',anChg:-2,anN:2,catN:1,oxState:4,name:'manganese(IV) oxide'},
+            {f:'CrCl₃',cat:'Cr',an:'Cl',anChg:-1,anN:3,catN:1,oxState:3,name:'chromium(III) chloride'},
+            {f:'SnCl₂',cat:'Sn',an:'Cl',anChg:-1,anN:2,catN:1,oxState:2,name:'tin(II) chloride'},
+        ];
+        const tm=tmCpds[Math.floor(Math.random()*tmCpds.length)];
+        return{question:`What is the Roman numeral (charge) of ${tm.cat} in "${tm.name}" (${tm.f})?`,
+            given:`Formula: ${tm.f}\nAnion: ${tm.an} charge = ${tm.anChg}, Number of anions = ${tm.anN}`,
+            answer:tm.oxState,unit:`(Roman numeral charge of ${tm.cat})`,
+            steps:[`Total anion charge = ${tm.anN}×(${tm.anChg}) = ${tm.anN*tm.anChg}`,
+                `${tm.cat} charge must be +${tm.oxState} to give a neutral compound`,
+                `Roman numeral: ${['','I','II','III','IV','V','VI'][tm.oxState]}`],
+            hint:`The Roman numeral in the name tells you the cation's charge. Use anion charges to find it.`};
+    }
+    const ic=ionicCpds[Math.floor(Math.random()*ionicCpds.length)];
+    return{question:`How many ${ic.el[0].s} atoms are in one formula unit of ${ic.f}?`,
+        given:`Formula: ${ic.f}`,answer:ic.el[0].n,unit:'atoms',
+        steps:[`Subscript after ${ic.el[0].s} in ${ic.f} = ${ic.el[0].n}`],
+        hint:'The subscript tells you how many atoms of that element are in the formula.'};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ELECTRONS & LIGHT
+// ══════════════════════════════════════════════════════════════════════════════
+function genElectrons(){
+    const basic=['max_electrons','sublevel_electrons','valence_electrons'];
+    const inter=['wavelength_freq','max_electrons','sublevel_electrons','valence_electrons'];
+    const adv=['wavelength_freq','energy_freq','energy_wavelength','quantum_n'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+    const c=3e8,h=6.626e-34;
+
+    if(t==='max_electrons'){
+        const n=r(1,4);
+        const mx=2*n*n;
+        return{question:`What is the maximum number of electrons that can occupy energy level n = ${n}?`,
+            given:`n = ${n}`,answer:mx,unit:'electrons',
+            steps:[`Max electrons = 2n²`,`= 2 × (${n})² = 2 × ${n*n} = ${mx}`],
+            hint:`The formula for maximum electrons in energy level n is 2n².`};
+    }
+    if(t==='sublevel_electrons'){
+        const subs=[
+            {s:'s',max:2,orb:1,r:'1 orbital × 2 electrons = 2'},
+            {s:'p',max:6,orb:3,r:'3 orbitals × 2 electrons = 6'},
+            {s:'d',max:10,orb:5,r:'5 orbitals × 2 electrons = 10'},
+            {s:'f',max:14,orb:7,r:'7 orbitals × 2 electrons = 14'},
+        ];
+        const sl=subs[Math.floor(Math.random()*subs.length)];
+        return{question:`What is the maximum number of electrons that can be held in the ${sl.s} sublevel?`,
+            given:`Sublevel: ${sl.s}, Orbitals in ${sl.s}: ${sl.orb}`,answer:sl.max,unit:'electrons',
+            steps:[`Each orbital holds at most 2 electrons (Pauli exclusion principle)`,
+                `${sl.s} sublevel has ${sl.orb} orbital${sl.orb>1?'s':''}`,sl.r],
+            hint:`s=1 orbital (2e), p=3 orbitals (6e), d=5 orbitals (10e), f=7 orbitals (14e).`};
+    }
+    if(t==='valence_electrons'){
+        const els=[
+            {sym:'Na',grp:1,ve:1,cfg:'[Ne]3s¹'},{sym:'Mg',grp:2,ve:2,cfg:'[Ne]3s²'},
+            {sym:'Al',grp:13,ve:3,cfg:'[Ne]3s²3p¹'},{sym:'C',grp:14,ve:4,cfg:'[He]2s²2p²'},
+            {sym:'N',grp:15,ve:5,cfg:'[He]2s²2p³'},{sym:'O',grp:16,ve:6,cfg:'[He]2s²2p⁴'},
+            {sym:'F',grp:17,ve:7,cfg:'[He]2s²2p⁵'},{sym:'Cl',grp:17,ve:7,cfg:'[Ne]3s²3p⁵'},
+            {sym:'Ne',grp:18,ve:8,cfg:'[He]2s²2p⁶'},{sym:'Si',grp:14,ve:4,cfg:'[Ne]3s²3p²'},
+            {sym:'P',grp:15,ve:5,cfg:'[Ne]3s²3p³'},{sym:'S',grp:16,ve:6,cfg:'[Ne]3s²3p⁴'},
+            {sym:'K',grp:1,ve:1,cfg:'[Ar]4s¹'},{sym:'Ca',grp:2,ve:2,cfg:'[Ar]4s²'},
+            {sym:'Li',grp:1,ve:1,cfg:'[He]2s¹'},{sym:'Be',grp:2,ve:2,cfg:'[He]2s²'},
+        ];
+        const el=els[Math.floor(Math.random()*els.length)];
+        return{question:`How many valence electrons does ${el.sym} have?`,
+            given:`Element: ${el.sym}, Group: ${el.grp}`,answer:el.ve,unit:'valence electrons',
+            steps:[`Electron configuration: ${el.cfg}`,
+                `Valence electrons are in the outermost (highest n) shell`,
+                `${el.sym} is in Group ${el.grp} → ${el.ve} valence electron${el.ve>1?'s':''}`],
+            hint:`For main-group elements, valence electrons = last digit of the group number (Groups 1-2 and 13-18).`};
+    }
+    if(t==='wavelength_freq'){
+        const lams=[{v:400e-9,u:'400 nm'},{v:700e-9,u:'700 nm'},{v:500e-9,u:'500 nm'},{v:3e-2,u:'0.030 m'},{v:2e-10,u:'2.0 × 10⁻¹⁰ m'},{v:1e-7,u:'1.0 × 10⁻⁷ m'}];
+        const lam=lams[Math.floor(Math.random()*lams.length)];
+        const freq=c/lam.v;
+        return{question:`Calculate the frequency of electromagnetic radiation with wavelength ${lam.u}.`,
+            given:`λ = ${lam.u}\nc = 3.00 × 10⁸ m/s\nc = λν`,
+            answer:freq,unit:'Hz',
+            steps:[`ν = c / λ`,`ν = (3.00 × 10⁸ m/s) / (${lam.v.toExponential(2)} m)`,`ν = ${freq.toExponential(3)} Hz`],
+            hint:`c = λν → ν = c/λ. Make sure wavelength is in meters (convert nm: 1 nm = 10⁻⁹ m).`};
+    }
+    if(t==='energy_freq'){
+        const frs=[{v:6e14,u:'6.0 × 10¹⁴ Hz'},{v:3e14,u:'3.0 × 10¹⁴ Hz'},{v:1.5e15,u:'1.5 × 10¹⁵ Hz'},{v:9e9,u:'9.0 × 10⁹ Hz'},{v:2e12,u:'2.0 × 10¹² Hz'}];
+        const fr=frs[Math.floor(Math.random()*frs.length)];
+        const E=h*fr.v;
+        return{question:`Calculate the energy of a photon with frequency ${fr.u}.`,
+            given:`ν = ${fr.u}\nh = 6.626 × 10⁻³⁴ J·s\nE = hν`,
+            answer:E,unit:'J',
+            steps:[`E = hν`,`E = (6.626 × 10⁻³⁴ J·s) × (${fr.v.toExponential(2)} s⁻¹)`,`E = ${E.toExponential(4)} J`],
+            hint:`E = hν, where h = 6.626 × 10⁻³⁴ J·s. Energy is directly proportional to frequency.`};
+    }
+    if(t==='energy_wavelength'){
+        const lams=[{v:400e-9,u:'400 nm'},{v:700e-9,u:'700 nm'},{v:2e-10,u:'2.0 × 10⁻¹⁰ m'},{v:1e-7,u:'1.0 × 10⁻⁷ m'}];
+        const lam=lams[Math.floor(Math.random()*lams.length)];
+        const freq=c/lam.v,E=h*freq;
+        return{question:`Calculate the energy of a photon with wavelength ${lam.u}.`,
+            given:`λ = ${lam.u}\nc = 3.00 × 10⁸ m/s, h = 6.626 × 10⁻³⁴ J·s`,
+            answer:E,unit:'J',
+            steps:[`ν = c/λ = (3.00 × 10⁸) / (${lam.v.toExponential(2)}) = ${freq.toExponential(3)} Hz`,
+                `E = hν = (6.626 × 10⁻³⁴) × (${freq.toExponential(3)}) = ${E.toExponential(4)} J`],
+            hint:`Two steps: (1) ν = c/λ, then (2) E = hν. Or use E = hc/λ directly.`};
+    }
+    if(t==='quantum_n'){
+        const qs=[
+            {q:'What is the principal quantum number (n) for electrons in the 3rd energy level?',a:3,h:'n equals the energy level number directly.'},
+            {q:'For n = 2, what is the maximum value of the angular momentum quantum number (l)?',a:1,h:'l ranges from 0 to n−1. For n=2: max l = 1.'},
+            {q:'For l = 2 (d sublevel), how many possible values of the magnetic quantum number (mₗ) are there?',a:5,h:'mₗ ranges from −l to +l → 2l+1 values. For l=2: 5 values.'},
+            {q:'For n = 3, how many sublevels (values of l) are possible?',a:3,h:'l = 0,1,...,n−1 → n sublevels. For n=3: 3 sublevels (s,p,d).'},
+        ];
+        const qp=qs[Math.floor(Math.random()*qs.length)];
+        return{question:qp.q,given:'Quantum number rules',answer:qp.a,unit:'',
+            steps:[qp.h],hint:qp.h};
+    }
+    const n=r(1,4);
+    return{question:`Max electrons in energy level n = ${n}?`,given:`n = ${n}`,answer:2*n*n,unit:'electrons',
+        steps:[`2n² = 2(${n})² = ${2*n*n}`],hint:'Use 2n²'};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BONDING
+// ══════════════════════════════════════════════════════════════════════════════
+function genBonding(){
+    const basic=['bond_type_mc','en_diff'];
+    const inter=['bond_type_mc','en_diff','bond_angle','imf_type'];
+    const adv=['en_diff','bond_angle','imf_type','polar_nonpolar'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    if(t==='bond_type_mc'){
+        const pairs=[
+            {a:'NaCl',t:1,r:'Na is a metal, Cl is a nonmetal → ionic bond (large EN difference)'},
+            {a:'CO₂',t:2,r:'C and O are both nonmetals → covalent bond'},
+            {a:'Fe',t:3,r:'Iron is a pure metal → metallic bonding (sea of electrons)'},
+            {a:'MgO',t:1,r:'Mg is a metal, O is a nonmetal → ionic bond'},
+            {a:'HCl',t:2,r:'H and Cl are both nonmetals → polar covalent bond'},
+            {a:'Cu',t:3,r:'Copper is a pure metal → metallic bonding'},
+            {a:'H₂O',t:2,r:'H and O are both nonmetals → covalent bond'},
+            {a:'CaCl₂',t:1,r:'Ca is a metal, Cl is a nonmetal → ionic bond'},
+            {a:'Na',t:3,r:'Sodium is a pure metal → metallic bonding'},
+            {a:'N₂',t:2,r:'Both N atoms are nonmetals → covalent (triple) bond'},
+            {a:'Al₂O₃',t:1,r:'Al is a metal, O is a nonmetal → ionic bond'},
+            {a:'SO₂',t:2,r:'S and O are both nonmetals → covalent bond'},
+            {a:'KBr',t:1,r:'K is a metal, Br is a nonmetal → ionic bond'},
+            {a:'NH₃',t:2,r:'N and H are both nonmetals → covalent bond'},
+        ];
+        const p=pairs[Math.floor(Math.random()*pairs.length)];
+        return{question:`What type of bonding is present in ${p.a}?\n\n1 = Ionic\n2 = Covalent\n3 = Metallic\n\nEnter the number.`,
+            given:`Substance: ${p.a}`,answer:p.t,unit:'(1=Ionic, 2=Covalent, 3=Metallic)',
+            steps:[p.r,`Answer: ${p.t}`],
+            hint:`Ionic: metal + nonmetal. Metallic: metal elements only. Covalent: nonmetal + nonmetal.`};
+    }
+    if(t==='en_diff'){
+        const bonds=[
+            {a:'H',b:'F',ea:2.1,eb:4.0,diff:1.9,type:'Ionic (ΔEN ≥ 1.7)'},
+            {a:'C',b:'O',ea:2.5,eb:3.5,diff:1.0,type:'Polar covalent (0.4 ≤ ΔEN < 1.7)'},
+            {a:'C',b:'H',ea:2.5,eb:2.1,diff:0.4,type:'Nonpolar covalent (ΔEN < 0.4)'},
+            {a:'Na',b:'Cl',ea:0.9,eb:3.0,diff:2.1,type:'Ionic (ΔEN ≥ 1.7)'},
+            {a:'N',b:'H',ea:3.0,eb:2.1,diff:0.9,type:'Polar covalent'},
+            {a:'S',b:'O',ea:2.5,eb:3.5,diff:1.0,type:'Polar covalent'},
+            {a:'C',b:'C',ea:2.5,eb:2.5,diff:0.0,type:'Nonpolar covalent (ΔEN = 0)'},
+            {a:'K',b:'F',ea:0.8,eb:4.0,diff:3.2,type:'Ionic (ΔEN ≥ 1.7)'},
+            {a:'H',b:'Cl',ea:2.1,eb:3.0,diff:0.9,type:'Polar covalent'},
+        ];
+        const b=bonds[Math.floor(Math.random()*bonds.length)];
+        return{question:`What is the electronegativity difference (ΔEN) for a bond between ${b.a} (EN = ${b.ea}) and ${b.b} (EN = ${b.eb})?`,
+            given:`EN(${b.a}) = ${b.ea}\nEN(${b.b}) = ${b.eb}`,
+            answer:parseFloat(b.diff.toFixed(1)),unit:'',
+            steps:[`ΔEN = |EN(${b.b}) − EN(${b.a})| = |${b.eb} − ${b.ea}| = ${b.diff.toFixed(1)}`,`Bond type: ${b.type}`],
+            hint:`ΔEN = |larger − smaller|. Ionic > 1.7; polar covalent 0.4–1.7; nonpolar covalent < 0.4.`};
+    }
+    if(t==='bond_angle'){
+        const shapes=[
+            {name:'linear (e.g., CO₂)',angle:180,r:'2 bonding pairs, 0 lone pairs → 180°'},
+            {name:'trigonal planar (e.g., BF₃)',angle:120,r:'3 bonding pairs, 0 lone pairs → 120°'},
+            {name:'tetrahedral (e.g., CH₄)',angle:109.5,r:'4 bonding pairs, 0 lone pairs → 109.5°'},
+            {name:'bent/V-shaped with 2 lone pairs (e.g., H₂O)',angle:104.5,r:'2 bonding + 2 lone pairs → lone pairs compress angle to ~104.5°'},
+            {name:'trigonal pyramidal (e.g., NH₃)',angle:107,r:'3 bonding + 1 lone pair → lone pair compresses angle to ~107°'},
+            {name:'octahedral (e.g., SF₆)',angle:90,r:'6 bonding pairs → 90° bond angles'},
+        ];
+        const sh=shapes[Math.floor(Math.random()*shapes.length)];
+        return{question:`What is the approximate bond angle in a ${sh.name} molecule?`,
+            given:`Geometry: ${sh.name}`,answer:sh.angle,unit:'degrees',
+            steps:[sh.r],
+            hint:`VSEPR: linear=180°, trigonal planar=120°, tetrahedral=109.5°. Lone pairs compress angles.`};
+    }
+    if(t==='imf_type'){
+        const imfs=[
+            {mol:'Ar (noble gas)',t:1,r:'Noble gas — no permanent dipole, no H on F/O/N → London dispersion forces only'},
+            {mol:'HF',t:3,r:'H is bonded directly to F (highly electronegative) → hydrogen bonding'},
+            {mol:'H₂O',t:3,r:'H is bonded to O → water molecules form strong hydrogen bonds'},
+            {mol:'HCl',t:2,r:'HCl is polar but H is not on F, O, or N → dipole-dipole forces'},
+            {mol:'CH₄',t:1,r:'CH₄ is nonpolar (tetrahedral, symmetric) → London dispersion forces only'},
+            {mol:'NH₃',t:3,r:'H is bonded to N → hydrogen bonding between NH₃ molecules'},
+            {mol:'CO₂',t:1,r:'CO₂ is linear and nonpolar overall → London dispersion forces only'},
+            {mol:'SO₂',t:2,r:'SO₂ is bent and polar, but no H on F/O/N → dipole-dipole forces'},
+            {mol:'I₂',t:1,r:'I₂ is nonpolar diatomic → London dispersion forces (strong due to many electrons)'},
+            {mol:'HBr',t:2,r:'HBr is polar but H is on Br (not F, O, N) → dipole-dipole forces'},
+        ];
+        const m=imfs[Math.floor(Math.random()*imfs.length)];
+        return{question:`What is the strongest intermolecular force (IMF) in ${m.mol}?\n\n1 = London dispersion\n2 = Dipole-dipole\n3 = Hydrogen bonding\n\nEnter the number.`,
+            given:`Molecule: ${m.mol}`,answer:m.t,unit:'(1=London, 2=Dipole-dipole, 3=H-bonding)',
+            steps:[m.r,`Answer: ${m.t}`],
+            hint:`H-bonding: H directly bonded to F, O, or N. Dipole-dipole: polar molecules. London: all molecules (only force in nonpolar).`};
+    }
+    if(t==='polar_nonpolar'){
+        const mols=[
+            {mol:'CO₂',p:1,r:'Linear — two C=O dipoles point in opposite directions and cancel → nonpolar'},
+            {mol:'H₂O',p:2,r:'Bent — the two O−H dipoles do not cancel → polar molecule'},
+            {mol:'NH₃',p:2,r:'Trigonal pyramidal — dipoles do not cancel → polar molecule'},
+            {mol:'CH₄',p:1,r:'Tetrahedral with all identical bonds — dipoles cancel → nonpolar'},
+            {mol:'HCl',p:2,r:'Diatomic with two different atoms — always polar'},
+            {mol:'CCl₄',p:1,r:'Tetrahedral with identical bonds — dipoles cancel → nonpolar'},
+            {mol:'SO₂',p:2,r:'Bent shape — dipoles do not cancel → polar molecule'},
+            {mol:'BF₃',p:1,r:'Trigonal planar with identical bonds — dipoles cancel → nonpolar'},
+        ];
+        const m=mols[Math.floor(Math.random()*mols.length)];
+        return{question:`Is ${m.mol} a polar or nonpolar molecule?\n\n1 = Nonpolar\n2 = Polar\n\nEnter the number.`,
+            given:`Molecule: ${m.mol}`,answer:m.p,unit:'(1=Nonpolar, 2=Polar)',
+            steps:[m.r],
+            hint:`Nonpolar if symmetric and bond dipoles cancel. Polar if dipoles don't cancel or molecule is asymmetric.`};
+    }
+    return{question:'What type of bond is in NaCl?\n\n1 = Ionic\n2 = Covalent\n3 = Metallic\n\nEnter the number.',
+        given:'NaCl: Na is a metal, Cl is a nonmetal',answer:1,unit:'(1=Ionic)',
+        steps:['Metal + nonmetal → ionic bond'],hint:'Ionic: metal + nonmetal'};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STATES OF MATTER
+// ══════════════════════════════════════════════════════════════════════════════
+function genStates(){
+    const basic=['phase_change_id','heat_fusion','heat_vaporization'];
+    const inter=['phase_change_id','heat_fusion','heat_vaporization','imf_bp','phase_direction'];
+    const adv=['calorimetry_sense','heat_fusion','heat_vaporization','imf_bp','vapor_pressure_compare'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    if(t==='phase_change_id'){
+        const changes=[
+            {desc:'A block of ice melts in your hand',ch:1,name:'Melting (fusion)'},
+            {desc:'Liquid water in a cup freezes solid overnight',ch:2,name:'Freezing'},
+            {desc:'Water boils on a stove, producing steam',ch:3,name:'Vaporization'},
+            {desc:'Steam from a shower condenses on a cold mirror',ch:4,name:'Condensation'},
+            {desc:'Dry ice (solid CO₂) disappears without forming a liquid',ch:5,name:'Sublimation'},
+            {desc:'Frost forms on a cold window pane directly from water vapor',ch:6,name:'Deposition'},
+            {desc:'Rubbing alcohol on your skin evaporates quickly',ch:3,name:'Vaporization (evaporation)'},
+            {desc:'Dew forms on grass on a cool morning',ch:4,name:'Condensation'},
+            {desc:'Snow disappears on a cold dry day without melting',ch:5,name:'Sublimation'},
+            {desc:'A candle wax melts near the flame',ch:1,name:'Melting (fusion)'},
+            {desc:'Water vapor in your breath becomes visible in cold air',ch:4,name:'Condensation'},
+            {desc:'Liquid nitrogen rapidly turns to gas when poured',ch:3,name:'Vaporization'},
+        ];
+        const ch=changes[Math.floor(Math.random()*changes.length)];
+        return{question:`Identify the phase change:\n"${ch.desc}"\n\n1 = Melting\n2 = Freezing\n3 = Vaporization\n4 = Condensation\n5 = Sublimation\n6 = Deposition\n\nEnter the number.`,
+            given:`Observation: ${ch.desc}`,answer:ch.ch,unit:`(= ${ch.name})`,
+            steps:[`Process: ${ch.name}`],
+            hint:`Melting=solid→liquid, Freezing=liquid→solid, Vaporization=liquid→gas, Condensation=gas→liquid, Sublimation=solid→gas, Deposition=gas→solid.`};
+    }
+    if(t==='heat_fusion'){
+        const subs=[
+            {name:'water',dH:334,u:'J/g'},{name:'benzene',dH:126,u:'J/g'},
+            {name:'ethanol',dH:109,u:'J/g'},{name:'naphthalene',dH:150,u:'J/g'},
+        ];
+        const s=subs[Math.floor(Math.random()*subs.length)];
+        const mass=r(10,200,1),q=parseFloat((mass*s.dH).toFixed(1));
+        return{question:`How much heat is required to melt ${mass} g of ${s.name}? (ΔHfus = ${s.dH} ${s.u})`,
+            given:`m = ${mass} g\nΔHfus = ${s.dH} J/g`,answer:q,unit:'J',
+            steps:[`q = m × ΔHfus`,`q = ${mass} × ${s.dH} = ${q} J`],
+            hint:`q = m × ΔHfus. Heat of fusion is the energy needed to melt a substance at its melting point.`};
+    }
+    if(t==='heat_vaporization'){
+        const subs=[
+            {name:'water',dH:2260,u:'J/g'},{name:'ethanol',dH:855,u:'J/g'},
+            {name:'benzene',dH:395,u:'J/g'},{name:'acetone',dH:519,u:'J/g'},
+        ];
+        const s=subs[Math.floor(Math.random()*subs.length)];
+        const mass=r(10,150,1),q=parseFloat((mass*s.dH).toFixed(1));
+        return{question:`How much heat is needed to completely vaporize ${mass} g of ${s.name}? (ΔHvap = ${s.dH} ${s.u})`,
+            given:`m = ${mass} g\nΔHvap = ${s.dH} J/g`,answer:q,unit:'J',
+            steps:[`q = m × ΔHvap`,`q = ${mass} × ${s.dH} = ${q} J`],
+            hint:`q = m × ΔHvap. Vaporization requires far more energy than melting.`};
+    }
+    if(t==='phase_direction'){
+        const trends=[
+            {prop:'vapor pressure',dir:2,r:'Stronger IMFs hold molecules in the liquid → fewer escape → lower vapor pressure'},
+            {prop:'boiling point',dir:1,r:'Stronger IMFs → more energy needed to overcome attractions → higher boiling point'},
+            {prop:'melting point',dir:1,r:'Stronger IMFs → more energy needed to break the solid structure → higher melting point'},
+        ];
+        const tr=trends[Math.floor(Math.random()*trends.length)];
+        return{question:`As intermolecular force (IMF) strength increases, what happens to the ${tr.prop} of a substance?\n\n1 = Increases\n2 = Decreases\n\nEnter the number.`,
+            given:`Property: ${tr.prop}`,answer:tr.dir,unit:'(1=Increases, 2=Decreases)',
+            steps:[tr.r],
+            hint:`Stronger IMFs → higher bp/mp, lower vapor pressure. Weaker IMFs → lower bp/mp, higher vapor pressure.`};
+    }
+    if(t==='imf_bp'){
+        const pairs=[
+            {a:'H₂O',b:'H₂S',hi:1,r:'H₂O has hydrogen bonding; H₂S has only dipole-dipole → H₂O has much higher boiling point'},
+            {a:'CH₄',b:'C₄H₁₀',hi:2,r:'Both nonpolar (London only); C₄H₁₀ is larger with more electrons → stronger London forces → higher bp'},
+            {a:'HF',b:'HCl',hi:1,r:'HF has hydrogen bonding (H on F); HCl has only dipole-dipole → HF has higher bp'},
+            {a:'NH₃',b:'PH₃',hi:1,r:'NH₃ has H-bonding (H on N); PH₃ has only dipole-dipole → NH₃ has higher bp'},
+            {a:'Ne',b:'Xe',hi:2,r:'Both noble gases (London only); Xe is larger with more electrons → stronger London forces → higher bp'},
+        ];
+        const cp=pairs[Math.floor(Math.random()*pairs.length)];
+        return{question:`Which substance has the higher boiling point?\n\n1 = ${cp.a}\n2 = ${cp.b}\n\nEnter the number.`,
+            given:`Compare: ${cp.a} vs ${cp.b}`,answer:cp.hi,unit:`(1=${cp.a}, 2=${cp.b})`,
+            steps:[cp.r],
+            hint:`Higher IMF strength → higher boiling point. H-bonding > dipole-dipole > London. Larger molecules have stronger London forces.`};
+    }
+    if(t==='calorimetry_sense'){
+        const c_water=4.18,c_ice=2.09,c_steam=2.01;
+        const mass=r(10,100,0);
+        const phases=[
+            {desc:`heating ${mass} g of liquid water from 20°C to 80°C`,c:c_water,dT:60,phase:'liquid water'},
+            {desc:`heating ${mass} g of ice from −30°C to 0°C`,c:c_ice,dT:30,phase:'ice'},
+            {desc:`heating ${mass} g of steam from 100°C to 140°C`,c:c_steam,dT:40,phase:'steam'},
+        ];
+        const ph=phases[Math.floor(Math.random()*phases.length)];
+        const q=parseFloat((mass*ph.c*ph.dT).toFixed(2));
+        return{question:`Calculate the heat required for ${ph.desc}. (c = ${ph.c} J/g·°C)`,
+            given:`m = ${mass} g, ΔT = ${ph.dT} °C, c = ${ph.c} J/g·°C`,answer:q,unit:'J',
+            steps:[`q = mcΔT`,`q = ${mass} × ${ph.c} × ${ph.dT} = ${q} J`],
+            hint:`q = mcΔT. Use the specific heat for the current phase (solid, liquid, or gas).`};
+    }
+    if(t==='vapor_pressure_compare'){
+        const pairs=[
+            {a:'ethanol',b:'water',hi:1,r:'Ethanol has weaker IMFs (dipole-dipole) vs water (H-bonding) → ethanol evaporates more easily → higher vapor pressure'},
+            {a:'H₂O at 20°C',b:'H₂O at 80°C',hi:2,r:'Higher temperature → more molecules have enough KE to escape → vapor pressure increases with temperature'},
+            {a:'CH₄',b:'C₄H₁₀',hi:1,r:'CH₄ is smaller with weaker London forces → evaporates more easily → higher vapor pressure'},
+        ];
+        const p=pairs[Math.floor(Math.random()*pairs.length)];
+        return{question:`Which has higher vapor pressure?\n\n1 = ${p.a}\n2 = ${p.b}\n\nEnter the number.`,
+            given:`Compare: ${p.a} vs ${p.b}`,answer:p.hi,unit:`(1=${p.a}, 2=${p.b})`,
+            steps:[p.r],
+            hint:`Higher vapor pressure = evaporates more easily. Weaker IMFs → higher VP. Higher temperature → higher VP.`};
+    }
+    return{question:'Liquid water freezes to solid ice. What phase change is this?\n\n1 = Melting\n2 = Freezing\n3 = Vaporization\n\nEnter the number.',
+        given:'Liquid → Solid',answer:2,unit:'(= Freezing)',
+        steps:['Liquid → Solid = Freezing'],hint:'Freezing = liquid to solid'};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PERIODIC TRENDS
+// ══════════════════════════════════════════════════════════════════════════════
+function genPeriodic(){
+    const basic=['radius_compare','ie_compare','trend_direction'];
+    const inter=['radius_compare','ie_compare','en_compare','trend_direction'];
+    const adv=['ie_compare','en_compare','radius_compare','electron_affinity','trend_direction'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    const E={
+        H:{row:1,grp:1,r:53,IE:1312,EN:2.2},
+        Li:{row:2,grp:1,r:167,IE:520,EN:1.0},Be:{row:2,grp:2,r:112,IE:899,EN:1.6},
+        B:{row:2,grp:13,r:87,IE:800,EN:2.0},C:{row:2,grp:14,r:77,IE:1086,EN:2.5},
+        N:{row:2,grp:15,r:75,IE:1402,EN:3.0},O:{row:2,grp:16,r:73,IE:1314,EN:3.5},
+        F:{row:2,grp:17,r:64,IE:1681,EN:4.0},
+        Na:{row:3,grp:1,r:190,IE:496,EN:0.9},Mg:{row:3,grp:2,r:145,IE:738,EN:1.3},
+        Al:{row:3,grp:13,r:118,IE:577,EN:1.6},Si:{row:3,grp:14,r:111,IE:786,EN:1.9},
+        P:{row:3,grp:15,r:98,IE:1012,EN:2.1},S:{row:3,grp:16,r:88,IE:1000,EN:2.5},
+        Cl:{row:3,grp:17,r:79,IE:1251,EN:3.0},
+        K:{row:4,grp:1,r:243,IE:419,EN:0.8},Ca:{row:4,grp:2,r:194,IE:590,EN:1.0},
+        Br:{row:4,grp:17,r:114,IE:1140,EN:2.8},
+        Rb:{row:5,grp:1,r:265,IE:403,EN:0.8},I:{row:5,grp:17,r:133,IE:1008,EN:2.5},
+        Cs:{row:6,grp:1,r:298,IE:376,EN:0.8},
+    };
+
+    if(t==='radius_compare'){
+        const pairs=[
+            {a:'Na',b:'Cl',lg:1,r:'Same period 3; atomic radius decreases left to right → Na (group 1) is larger than Cl (group 17)'},
+            {a:'Li',b:'Na',lg:2,r:'Same group 1; atomic radius increases going down → Na (row 3) is larger than Li (row 2)'},
+            {a:'F',b:'Cl',lg:2,r:'Same group 17; Cl has more electron shells (row 3 vs row 2) → Cl is larger'},
+            {a:'Na',b:'K',lg:2,r:'Same group 1; K is in row 4 vs Na row 3 → K is larger'},
+            {a:'O',b:'S',lg:2,r:'Same group 16; S (row 3) has more shells than O (row 2) → S is larger'},
+            {a:'Mg',b:'Ca',lg:2,r:'Same group 2; Ca (row 4) has more shells than Mg (row 3) → Ca is larger'},
+            {a:'Li',b:'F',lg:1,r:'Same period 2; Li (group 1) is much larger than F (group 17)'},
+            {a:'Be',b:'Mg',lg:2,r:'Same group 2; Mg (row 3) has more shells than Be (row 2) → Mg is larger'},
+            {a:'C',b:'Si',lg:2,r:'Same group 14; Si (row 3) has more shells than C (row 2) → Si is larger'},
+        ];
+        const p=pairs[Math.floor(Math.random()*pairs.length)];
+        return{question:`Which element has the larger atomic radius?\n\n1 = ${p.a}\n2 = ${p.b}\n\nEnter the number.`,
+            given:`${p.a}: period ${E[p.a].row}, group ${E[p.a].grp}\n${p.b}: period ${E[p.b].row}, group ${E[p.b].grp}`,
+            answer:p.lg,unit:`(1=${p.a}, 2=${p.b})`,
+            steps:[p.r],
+            hint:`Atomic radius increases going down a group (more shells) and increases going right to left across a period (fewer protons pulling electrons).`};
+    }
+    if(t==='ie_compare'){
+        const pairs=[
+            {a:'Na',b:'Cl',hi:2,r:'Same period 3; IE increases left to right → Cl has higher first IE'},
+            {a:'Li',b:'Na',hi:1,r:'Same group 1; IE decreases going down → Li (row 2) has higher IE than Na (row 3)'},
+            {a:'F',b:'Cl',hi:1,r:'Same group 17; IE decreases going down → F has higher IE than Cl'},
+            {a:'Na',b:'Mg',hi:2,r:'Same period 3; IE generally increases left to right → Mg has slightly higher IE'},
+            {a:'K',b:'Na',hi:2,r:'Same group 1; IE decreases going down → Na (row 3) has higher IE than K (row 4)'},
+            {a:'O',b:'S',hi:1,r:'Same group 16; IE decreases going down → O has higher IE than S'},
+            {a:'Li',b:'F',hi:2,r:'Same period 2; IE increases left to right → F has much higher IE than Li'},
+        ];
+        const p=pairs[Math.floor(Math.random()*pairs.length)];
+        return{question:`Which element has the higher first ionization energy?\n\n1 = ${p.a}\n2 = ${p.b}\n\nEnter the number.`,
+            given:`${p.a}: period ${E[p.a]?.row||'?'}, group ${E[p.a]?.grp||'?'}\n${p.b}: period ${E[p.b]?.row||'?'}, group ${E[p.b]?.grp||'?'}`,
+            answer:p.hi,unit:`(1=${p.a}, 2=${p.b})`,
+            steps:[p.r],
+            hint:`Ionization energy: increases going up a group and increases left to right across a period.`};
+    }
+    if(t==='en_compare'){
+        const pairs=[
+            {a:'Na',b:'Cl',hi:2,r:'Same period 3; EN increases left to right → Cl is more electronegative'},
+            {a:'F',b:'Cl',hi:1,r:'Same group 17; EN decreases going down → F is the most electronegative element'},
+            {a:'O',b:'S',hi:1,r:'Same group 16; EN decreases going down → O is more electronegative'},
+            {a:'Li',b:'F',hi:2,r:'Same period 2; EN increases left to right → F (group 17) is far more electronegative'},
+            {a:'N',b:'P',hi:1,r:'Same group 15; EN decreases going down → N is more electronegative than P'},
+            {a:'Cl',b:'Br',hi:1,r:'Same group 17; EN decreases going down → Cl is more electronegative than Br'},
+            {a:'K',b:'Ca',hi:2,r:'Same period 4; EN increases left to right → Ca is more electronegative than K'},
+        ];
+        const p=pairs[Math.floor(Math.random()*pairs.length)];
+        return{question:`Which element is more electronegative?\n\n1 = ${p.a}\n2 = ${p.b}\n\nEnter the number.`,
+            given:`EN(${p.a}) = ${E[p.a]?.EN||'?'}\nEN(${p.b}) = ${E[p.b]?.EN||'?'}`,
+            answer:p.hi,unit:`(1=${p.a}, 2=${p.b})`,
+            steps:[p.r],
+            hint:`Electronegativity increases going up a group and left to right across a period. F is the most electronegative element.`};
+    }
+    if(t==='trend_direction'){
+        const trends=[
+            {q:'Moving left to right across a period, atomic radius:',a:2,r:'More protons pull electrons in tighter → radius decreases across a period'},
+            {q:'Moving down a group, atomic radius:',a:1,r:'Each new period adds another electron shell → radius increases going down'},
+            {q:'Moving down a group, first ionization energy:',a:2,r:'Electrons are farther from the nucleus and more shielded → easier to remove → IE decreases going down'},
+            {q:'Moving left to right across a period, first ionization energy:',a:1,r:'More protons attract valence electrons more strongly → IE generally increases across a period'},
+            {q:'Moving left to right across a period, electronegativity:',a:1,r:'More protons attract bonding electrons more strongly → EN increases across a period'},
+            {q:'Moving down a group, electronegativity:',a:2,r:'Bonding electrons are farther from nucleus → EN decreases going down a group'},
+        ];
+        const tr=trends[Math.floor(Math.random()*trends.length)];
+        return{question:`${tr.q}\n\n1 = Increases\n2 = Decreases\n\nEnter the number.`,
+            given:'Periodic table trends',answer:tr.a,unit:'(1=Increases, 2=Decreases)',
+            steps:[tr.r],
+            hint:`Atomic radius and metallic character increase going down/left. IE, EN increase going up/right.`};
+    }
+    if(t==='electron_affinity'){
+        const pairs=[
+            {a:'Na',b:'Cl',hi:2,r:'Cl (group 17) strongly attracts an extra electron to complete its octet; Na (group 1) has low EA → Cl has higher EA'},
+            {a:'O',b:'N',hi:1,r:'O needs only 1 more electron to complete its octet; N has a half-filled stable p sublevel → O has higher EA'},
+            {a:'F',b:'Ne',hi:1,r:'Ne (noble gas) has zero EA (stable octet); F has one of the highest EAs → F is much higher'},
+        ];
+        const p=pairs[Math.floor(Math.random()*pairs.length)];
+        return{question:`Which element has the higher electron affinity?\n\n1 = ${p.a}\n2 = ${p.b}\n\nEnter the number.`,
+            given:'Electron affinity = energy released when a neutral atom gains one electron',
+            answer:p.hi,unit:`(1=${p.a}, 2=${p.b})`,
+            steps:[p.r],
+            hint:`EA generally increases going up and to the right (like IE and EN). Halogens have very high EA; noble gases have ~0.`};
+    }
+    return{question:'Which element has a larger atomic radius: Na or Cl?\n\n1 = Na\n2 = Cl\n\nEnter the number.',
+        given:'Na: group 1, Cl: group 17 (both in period 3)',answer:1,unit:'(1=Na)',
+        steps:['Same period: radius decreases left to right → Na is larger'],
+        hint:'Atomic radius decreases across a period.'};
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REACTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function genReactions(){
+    const basic=['classify_reaction','balance_coeff_basic'];
+    const inter=['classify_reaction','balance_coeff_basic','predict_product_type'];
+    const adv=['classify_reaction','balance_coeff_adv','activity_series','combustion_product'];
+    const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
+    const t=pool[Math.floor(Math.random()*pool.length)];
+
+    if(t==='classify_reaction'){
+        const rxns=[
+            {eq:'2H₂ + O₂ → 2H₂O',type:1,name:'Synthesis',r:'Two reactants combine into one product (A + B → AB) → Synthesis'},
+            {eq:'2H₂O → 2H₂ + O₂',type:2,name:'Decomposition',r:'One reactant breaks into two products (AB → A + B) → Decomposition'},
+            {eq:'Zn + 2HCl → ZnCl₂ + H₂',type:3,name:'Single Replacement',r:'One element (Zn) displaces another (H) in a compound → Single Replacement'},
+            {eq:'AgNO₃ + NaCl → AgCl + NaNO₃',type:4,name:'Double Replacement',r:'Ions from two compounds swap partners → Double Replacement'},
+            {eq:'CH₄ + 2O₂ → CO₂ + 2H₂O',type:5,name:'Combustion',r:'Hydrocarbon + O₂ → CO₂ + H₂O → Combustion'},
+            {eq:'N₂ + 3H₂ → 2NH₃',type:1,name:'Synthesis',r:'Two elements combine into one compound → Synthesis'},
+            {eq:'2NaCl → 2Na + Cl₂',type:2,name:'Decomposition',r:'One compound breaks into its elements → Decomposition'},
+            {eq:'Fe + CuSO₄ → FeSO₄ + Cu',type:3,name:'Single Replacement',r:'Fe replaces Cu in the compound → Single Replacement'},
+            {eq:'HCl + NaOH → NaCl + H₂O',type:4,name:'Double Replacement (neutralization)',r:'H⁺ and Na⁺ swap partners → Double Replacement'},
+            {eq:'C₃H₈ + 5O₂ → 3CO₂ + 4H₂O',type:5,name:'Combustion',r:'Propane + O₂ → CO₂ + H₂O → Combustion'},
+            {eq:'2Mg + O₂ → 2MgO',type:1,name:'Synthesis',r:'Mg and O₂ combine to form MgO → Synthesis'},
+            {eq:'2KClO₃ → 2KCl + 3O₂',type:2,name:'Decomposition',r:'One reactant produces two products → Decomposition'},
+            {eq:'Cl₂ + 2KBr → 2KCl + Br₂',type:3,name:'Single Replacement',r:'Cl₂ displaces Br from KBr → Single Replacement'},
+            {eq:'BaCl₂ + Na₂SO₄ → BaSO₄ + 2NaCl',type:4,name:'Double Replacement',r:'Ba²⁺ pairs with SO₄²⁻; Na⁺ pairs with Cl⁻ → Double Replacement'},
+            {eq:'2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O',type:5,name:'Combustion',r:'Ethane + O₂ → CO₂ + H₂O → Combustion'},
+        ];
+        const rx=rxns[Math.floor(Math.random()*rxns.length)];
+        return{question:`Classify the following reaction:\n${rx.eq}\n\n1 = Synthesis\n2 = Decomposition\n3 = Single Replacement\n4 = Double Replacement\n5 = Combustion\n\nEnter the number.`,
+            given:`Reaction: ${rx.eq}`,answer:rx.type,unit:`(= ${rx.name})`,
+            steps:[rx.r],
+            hint:`Synthesis: A+B→AB. Decomposition: AB→A+B. Single replace: A+BC→AC+B. Double replace: AB+CD→AD+CB. Combustion: fuel+O₂→CO₂+H₂O.`};
+    }
+    if(t==='balance_coeff_basic'){
+        const rxns=[
+            {eq:'__ H₂ + __ O₂ → __ H₂O',coeffs:[2,1,2],ask_i:0,ask_l:'H₂',ans:2},
+            {eq:'__ N₂ + __ H₂ → __ NH₃',coeffs:[1,3,2],ask_i:1,ask_l:'H₂',ans:3},
+            {eq:'__ Mg + __ O₂ → __ MgO',coeffs:[2,1,2],ask_i:0,ask_l:'Mg',ans:2},
+            {eq:'__ Fe + __ Cl₂ → __ FeCl₃',coeffs:[2,3,2],ask_i:1,ask_l:'Cl₂',ans:3},
+            {eq:'__ Na + __ H₂O → __ NaOH + __ H₂',coeffs:[2,2,2,1],ask_i:0,ask_l:'Na',ans:2},
+            {eq:'__ Al + __ O₂ → __ Al₂O₃',coeffs:[4,3,2],ask_i:1,ask_l:'O₂',ans:3},
+            {eq:'__ P₄ + __ O₂ → __ P₄O₁₀',coeffs:[1,5,1],ask_i:1,ask_l:'O₂',ans:5},
+        ];
+        const rx=rxns[Math.floor(Math.random()*rxns.length)];
+        return{question:`What is the coefficient in front of ${rx.ask_l} in the balanced equation?\n\n${rx.eq}`,
+            given:`Unbalanced: ${rx.eq}`,answer:rx.ans,unit:`(coefficient of ${rx.ask_l})`,
+            steps:[`Balanced coefficients: ${rx.coeffs.join(', ')}`,`Coefficient of ${rx.ask_l} = ${rx.ans}`],
+            hint:`Balance by counting atoms on each side. Start with elements that appear in only one compound.`};
+    }
+    if(t==='predict_product_type'){
+        const qs=[
+            {q:'In a single replacement: Zn + 2HCl → ZnCl₂ + ?\nWhat gas is produced?\n\n1 = O₂\n2 = H₂\n3 = Cl₂\n4 = ZnH₂',
+              a:2,r:'Zn displaces H from HCl → ZnCl₂ + H₂ gas'},
+            {q:'An acid + base reaction always produces:\n\n1 = Two new acids\n2 = Salt + water\n3 = Only a precipitate\n4 = Metal + H₂',
+              a:2,r:'Acid + Base → Salt + Water (neutralization). e.g., HCl + NaOH → NaCl + H₂O'},
+            {q:'When a metal carbonate decomposes, what products form?\n\n1 = Metal oxide + CO₂\n2 = Metal + C + O₂\n3 = Metal carbide + H₂O\n4 = Metal + CO',
+              a:1,r:'Metal carbonate → Metal oxide + CO₂. e.g., CaCO₃ → CaO + CO₂'},
+        ];
+        const qp=qs[Math.floor(Math.random()*qs.length)];
+        return{question:qp.q,given:'',answer:qp.a,unit:'',steps:[qp.r],
+            hint:'Think about the reaction type and what products are typically formed.'};
+    }
+    if(t==='balance_coeff_adv'){
+        const rxns=[
+            {eq:'__ Al + __ HCl → __ AlCl₃ + __ H₂',coeffs:[2,6,2,3],ask_i:1,ask_l:'HCl',ans:6},
+            {eq:'__ C₃H₈ + __ O₂ → __ CO₂ + __ H₂O',coeffs:[1,5,3,4],ask_i:1,ask_l:'O₂',ans:5},
+            {eq:'__ Fe₂O₃ + __ C → __ Fe + __ CO₂',coeffs:[2,3,4,3],ask_i:1,ask_l:'C',ans:3},
+            {eq:'__ Cu + __ HNO₃ → __ Cu(NO₃)₂ + __ H₂O + __ NO',coeffs:[3,8,3,4,2],ask_i:1,ask_l:'HNO₃',ans:8},
+        ];
+        const rx=rxns[Math.floor(Math.random()*rxns.length)];
+        return{question:`What coefficient goes in front of ${rx.ask_l} in the balanced equation?\n\n${rx.eq}`,
+            given:`Unbalanced: ${rx.eq}`,answer:rx.ans,unit:`(coefficient of ${rx.ask_l})`,
+            steps:[`Balanced: ${rx.coeffs.join(', ')}`,`Coefficient of ${rx.ask_l} = ${rx.ans}`],
+            hint:`Balance by inspection. Ensure atom counts are equal on both sides.`};
+    }
+    if(t==='activity_series'){
+        const qs=[
+            {q:'Can Zn displace Cu from CuSO₄ solution?\n\n1 = Yes\n2 = No',a:1,
+              r:'Zn is above Cu in the activity series → Zn is more reactive → Zn + CuSO₄ → ZnSO₄ + Cu ✓'},
+            {q:'Can Cu displace Zn from ZnSO₄ solution?\n\n1 = Yes\n2 = No',a:2,
+              r:'Cu is below Zn in the activity series → Cu is less reactive → reaction does NOT occur'},
+            {q:'Can Fe displace H₂ from HCl solution?\n\n1 = Yes\n2 = No',a:1,
+              r:'Fe is above H in the activity series → Fe + 2HCl → FeCl₂ + H₂ ✓'},
+            {q:'Can Ag displace H₂ from HCl solution?\n\n1 = Yes\n2 = No',a:2,
+              r:'Ag is below H in the activity series → Ag cannot displace H₂ from acids'},
+            {q:'Can Mg displace Fe from FeSO₄ solution?\n\n1 = Yes\n2 = No',a:1,
+              r:'Mg is above Fe in the activity series → Mg is more reactive → reaction occurs ✓'},
+        ];
+        const qp=qs[Math.floor(Math.random()*qs.length)];
+        return{question:qp.q,
+            given:'Activity series (most reactive first): K > Ca > Na > Mg > Al > Zn > Fe > Ni > Sn > Pb > H > Cu > Ag > Au',
+            answer:qp.a,unit:'(1=Yes, 2=No)',steps:[qp.r],
+            hint:'A metal displaces another metal (or H₂) only if it is HIGHER (more reactive) on the activity series.'};
+    }
+    if(t==='combustion_product'){
+        const fuels=[
+            {fuel:'CH₄ (methane)',CO2:1,eq:'CH₄ + 2O₂ → CO₂ + 2H₂O'},
+            {fuel:'C₂H₆ (ethane)',CO2:2,eq:'2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O (or 1 mol → 2 mol CO₂)'},
+            {fuel:'C₃H₈ (propane)',CO2:3,eq:'C₃H₈ + 5O₂ → 3CO₂ + 4H₂O'},
+            {fuel:'C₄H₁₀ (butane)',CO2:4,eq:'2C₄H₁₀ + 13O₂ → 8CO₂ + 10H₂O (1 mol → 4 mol CO₂)'},
+        ];
+        const f=fuels[Math.floor(Math.random()*fuels.length)];
+        return{question:`In the complete combustion of ${f.fuel}, how many moles of CO₂ are produced per mole of fuel?\n\n${f.eq}`,
+            given:`Balanced equation: ${f.eq}`,answer:f.CO2,unit:'mol CO₂ per mol fuel',
+            steps:[`Complete combustion: CₓHᵧ + O₂ → CO₂ + H₂O`,`For ${f.fuel}: ${f.CO2} C atoms → ${f.CO2} mol CO₂`],
+            hint:`In complete combustion, each C atom becomes one CO₂. Count the carbons in the fuel formula.`};
+    }
+    return{question:'Classify: 2H₂ + O₂ → 2H₂O\n\n1 = Synthesis\n2 = Decomposition\n3 = Single Replacement\n\nEnter the number.',
+        given:'Two reactants → one product',answer:1,unit:'(= Synthesis)',
+        steps:['A + B → AB = Synthesis'],hint:'Synthesis: two things combine into one'};
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
