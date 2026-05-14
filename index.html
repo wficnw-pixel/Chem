@@ -2373,7 +2373,16 @@ function updateStats(){
     document.getElementById('sAccuracy').textContent=stats.a>0?(stats.c/stats.a*100).toFixed(0)+'%':'—';
 }
 
-document.getElementById('answerInput').addEventListener('keypress',e=>{if(e.key==='Enter')checkAnswer();});
+document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter') return;
+    const fb=document.getElementById('feedback');
+    const answered=fb.classList.contains('correct')||fb.classList.contains('incorrect');
+    if(answered){ generateProblem(); return; }
+    if(document.getElementById('answerRow').style.display!=='none'
+       && document.activeElement===document.getElementById('answerInput')){
+        checkAnswer();
+    }
+});
 </script>
 </body>
 </html>
