@@ -243,7 +243,7 @@
             <div class="big">⚗️</div>
             <p>SELECT A UNIT FROM THE LEFT TO BEGIN</p>
         </div>
-        <div id="problemUI" style="display:none; display:flex; flex-direction:column; gap:16px;">
+        <div id="problemUI" style="display:none; flex-direction:column; gap:16px;">
             <div class="unit-header">
                 <div class="unit-title-lbl" id="unitLbl"></div>
                 <div class="diff-row">
@@ -304,7 +304,7 @@ let wrongProbs={};   // {[unit]: [{prob, hits}]}
 let lastReviewKey={}; // {[unit]: probKey} — prevents back-to-back identical review
 let quiz={active:false,target:0,count:0,correct:0,wrongs:[]};
 let streak={unit:null,count:0};
-try{const _s=JSON.parse(localStorage.getItem('chemStats'));if(_s)stats=_s;}catch(e){}
+try{const _s=JSON.parse(localStorage.getItem('chemStats'));if(_s){stats=_s;if(!stats.byUnit)stats.byUnit={};}}catch(e){}
 const names={measurements:'Measurements',matter:'Matter',moles:'The Mole',stoichiometry:'Stoichiometry',gases:'Gases',solutions:'Solutions',thermochemistry:'Thermochemistry',equilibrium:'Equilibrium',acids:'Acids & Bases',redox:'Redox & Electrochem',nuclear:'Nuclear Chemistry',nomenclature:'Nomenclature',electrons:'Electrons & Light',bonding:'Bonding',states:'States of Matter',periodic:'Periodic Trends',reactions:'Reactions'};
 
 // Add accuracy badges to sidebar buttons
