@@ -574,35 +574,187 @@ function genThermo(){
 // EQUILIBRIUM
 // ══════════════════════════════════════════════════════════════════════════════
 function genEquil(){
-    const basic=['keq_calc','keq_coeff'];
-    const inter=['keq_calc','keq_coeff','ice_simple','find_conc'];
-    const adv=['ice_quadratic','q_direction','keq_reverse'];
+    const basic=['keq_named','keq_coeff_named','ksp_from_sol'];
+    const inter=['keq_named','keq_coeff_named','q_direction_named','ksp_from_sol','sol_from_ksp'];
+    const adv=['q_direction_named','ksp_from_sol','sol_from_ksp','gibbs','ice_simple'];
     const pool=diff==='basic'?basic:diff==='intermediate'?inter:adv;
     const t=pool[Math.floor(Math.random()*pool.length)];
 
-    if(t==='keq_calc'){const A=r(0.1,1,3),B=r(0.1,1,3),C=r(0.1,1,3),D=r(0.1,1,3),Keq=C*D/(A*B);return{question:`For A+B⇌C+D: [A]=${A},[B]=${B},[C]=${C},[D]=${D} M. Find Keq.`,given:`[A]=${A},[B]=${B},[C]=${C},[D]=${D}`,answer:Keq,unit:'',steps:[`Keq=[C][D]/([A][B])=(${C}×${D})/(${A}×${B})=${Keq.toFixed(4)}`],hint:`Keq = products/reactants, each raised to its coefficient`};}
-    if(t==='keq_coeff'){const A=r(0.2,2,3),B=r(0.2,2,3),C=r(0.1,1,3),Keq=C**2/(A*B);return{question:`For A+B⇌2C: [A]=${A},[B]=${B},[C]=${C} M. Find Keq.`,given:`[A]=${A},[B]=${B},[C]=${C}`,answer:Keq,unit:'',steps:[`Keq=[C]²/([A][B])=${C}²/(${A}×${B})=${Keq.toFixed(4)}`],hint:`Coefficients become exponents in Keq expression`};}
-    if(t==='ice_simple'){const Keq=r(0.01,4,4),init=r(0.5,2,2),x=Keq*init/(1+Keq);return{question:`For A⇌B, Keq=${Keq}. Starting [A]₀=${init} M, [B]₀=0. Find [B] at equilibrium.`,given:`Keq=${Keq},[A]₀=${init} M`,answer:x,unit:'M',steps:[`ICE: x=amount reacted`,`Keq=x/(${init}-x)=${Keq}`,`x=${Keq}×${init}/(1+${Keq})=${x.toFixed(4)} M`],hint:`Set up ICE table, write Keq expression, solve for x.`};}
-    if(t==='find_conc'){const Keq=r(0.5,5,3),A=r(0.1,1,3),B=r(0.1,1,3),C=Math.sqrt(Keq*A*B);return{question:`For A+B⇌2C, Keq=${Keq}. At equilibrium [A]=${A},[B]=${B}. Find [C].`,given:`Keq=${Keq},[A]=${A},[B]=${B}`,answer:C,unit:'M',steps:[`Keq=[C]²/([A][B]) → [C]=√(Keq×[A]×[B])=√(${(Keq*A*B).toFixed(5)})=${C.toFixed(4)} M`],hint:`Rearrange Keq expression to isolate [C], then take square root.`};}
-    // ADVANCED MULTI-STEP
-    if(t==='ice_quadratic'){
-        // A + B ⇌ C, Keq given, both reactants start at same concentration
-        const Keq=r(0.5,8,3),init=r(0.5,2,2);
-        // x/(init-x)^2 = Keq → quadratic
-        // Keq(init-x)^2 = x → Keq*init^2 - 2Keq*init*x + Keq*x^2 = x
-        // Keq*x^2 - (2Keq*init+1)*x + Keq*init^2 = 0
-        const a=Keq,b=-(2*Keq*init+1),c_=Keq*init*init;
-        const disc=b*b-4*a*c_,x=(-b-Math.sqrt(disc))/(2*a);
-        const Ceq=x;
-        return{question:`For A+B⇌C with Keq=${Keq}, both [A]₀=[B]₀=${init} M and [C]₀=0. Find [C] at equilibrium. (Requires quadratic formula)`,given:`Keq=${Keq}, [A]₀=[B]₀=${init} M, [C]₀=0`,answer:Ceq,unit:'M',steps:[`ICE: [A]=${init}-x, [B]=${init}-x, [C]=x`,`Keq = x/(${init}-x)² = ${Keq}`,`Expand: ${Keq}x² - ${(2*Keq*init+1).toFixed(4)}x + ${(Keq*init*init).toFixed(4)} = 0`,`x = ${Ceq.toFixed(4)} M = [C]_eq`],hint:`Set up ICE, write Keq expression, rearrange to quadratic ax²+bx+c=0, use quadratic formula.`};
+    // Named reactions from the worksheet
+    const namedRxns=[
+        {eq:'N₂(g) + O₂(g) ⇌ 2NO(g)',expr:'[NO]² / ([N₂][O₂])',
+         lab:['N₂','O₂','NO'],coeff:[1,1,2],
+         exprFn:(c)=>c[2]**2/(c[0]*c[1]),
+         desc:'formation of nitrogen monoxide'},
+        {eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',expr:'[SO₃]² / ([SO₂]²[O₂])',
+         lab:['SO₂','O₂','SO₃'],coeff:[2,1,2],
+         exprFn:(c)=>c[2]**2/(c[0]**2*c[1]),
+         desc:'formation of sulfur trioxide'},
+        {eq:'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)',expr:'[NH₃]² / ([N₂][H₂]³)',
+         lab:['N₂','H₂','NH₃'],coeff:[1,3,2],
+         exprFn:(c)=>c[2]**2/(c[0]*c[1]**3),
+         desc:'Haber process (ammonia synthesis)'},
+        {eq:'CO(g) + 2H₂(g) ⇌ CH₃OH(g)',expr:'[CH₃OH] / ([CO][H₂]²)',
+         lab:['CO','H₂','CH₃OH'],coeff:[1,2,1],
+         exprFn:(c)=>c[2]/(c[0]*c[1]**2),
+         desc:'methanol synthesis'}
+    ];
+
+    if(t==='keq_named'){
+        const rxn=namedRxns[Math.floor(Math.random()*namedRxns.length)];
+        const c=[r(0.10,2.00,2),r(0.10,2.00,2),r(0.10,2.00,2)];
+        const Keq=rxn.exprFn(c);
+        const concs=rxn.lab.map((l,i)=>`[${l}] = ${c[i]} M`).join(', ');
+        return{question:`For the reaction: ${rxn.eq}\nAt equilibrium: ${concs}. Calculate Keq.`,
+            given:rxn.lab.map((l,i)=>`[${l}] = ${c[i]} M`).join('\n'),
+            answer:Keq,unit:'',
+            steps:[`Write the Keq expression: Keq = ${rxn.expr}`,
+                `Keq = ${rxn.expr.replace(/\[([^\]]+)\]/g,(_,s)=>{const i=rxn.lab.indexOf(s);return i>=0?c[i].toString():'['+s+']'})} = ${Keq.toFixed(4)}`],
+            hint:`Keq = products/reactants, each raised to its stoichiometric coefficient.`};
     }
-    if(t==='q_direction'){
-        const A=r(0.3,1,3),B=r(0.3,1,3),C=r(0.1,0.5,3),D=r(0.1,0.5,3),Keq=r(1,10,3),Q=C*D/(A*B);
-        return{question:`For A+B⇌C+D, Keq=${Keq}. Current concentrations: [A]=${A},[B]=${B},[C]=${C},[D]=${D} M. Calculate Q.`,given:`Keq=${Keq},[A]=${A},[B]=${B},[C]=${C},[D]=${D}`,answer:Q,unit:'(Q value)',steps:[`Q=[C][D]/([A][B])=(${C}×${D})/(${A}×${B})=${Q.toFixed(4)}`,`Q ${Q<Keq?'<':Q>Keq?'>':'='} Keq → reaction goes ${Q<Keq?'forward':'reverse'}`],hint:`Q uses same expression as Keq but with current (not equilibrium) concentrations.`};
+    if(t==='keq_coeff_named'){
+        const rxn=namedRxns[Math.floor(Math.random()*namedRxns.length)];
+        // give Keq and two concentrations, solve for the third
+        const c=[r(0.10,2.00,2),r(0.10,2.00,2),r(0.10,2.00,2)];
+        const Keq=parseFloat(rxn.exprFn(c).toFixed(4));
+        // ask student to verify / write expression
+        return{question:`Write the Keq expression for: ${rxn.eq}\nThen calculate Keq given: ${rxn.lab.map((l,i)=>`[${l}] = ${c[i]} M`).join(', ')}.`,
+            given:rxn.lab.map((l,i)=>`[${l}] = ${c[i]} M`).join('\n'),
+            answer:Keq,unit:'',
+            steps:[`Keq expression: Keq = ${rxn.expr}`,
+                `Substitute: Keq = ${Keq.toFixed(4)}`],
+            hint:`Coefficients in the balanced equation become exponents in the Keq expression.`};
     }
-    // keq_reverse: given Keq for forward, find Keq for reverse reaction
-    const Keq_fwd=r(0.1,100,4),Keq_rev=1/Keq_fwd;
-    return{question:`The equilibrium constant for A+B⇌C+D is Keq=${Keq_fwd}. What is the Keq for the reverse reaction C+D⇌A+B?`,given:`Keq(forward)=${Keq_fwd}`,answer:Keq_rev,unit:'',steps:[`Reversing a reaction inverts the equilibrium constant`,`Keq(reverse) = 1/Keq(forward) = 1/${Keq_fwd} = ${Keq_rev.toFixed(5)}`],hint:`For the reverse reaction, Keq_rev = 1 / Keq_forward.`};
+    if(t==='q_direction_named'){
+        const rxn=namedRxns[Math.floor(Math.random()*namedRxns.length)];
+        const Keq=parseFloat((Math.random()*0.09+0.001).toFixed(4));
+        const c=[r(0.10,2.00,2),r(0.10,2.00,2),r(0.10,2.00,2)];
+        const Q=parseFloat(rxn.exprFn(c).toFixed(4));
+        const dir=Q<Keq?'forward (→)':Q>Keq?'reverse (←)':'at equilibrium';
+        const dirExp=Q<Keq?'Q < Keq: more products must form → reaction shifts forward':
+                     Q>Keq?'Q > Keq: too many products → reaction shifts reverse':
+                     'Q = Keq: system is already at equilibrium';
+        return{question:`At a certain temperature, Keq = ${Keq} for:\n${rxn.eq}\nThe current concentrations are: ${rxn.lab.map((l,i)=>`[${l}] = ${c[i]} M`).join(', ')}.\nCalculate Q and predict which direction the reaction will proceed.`,
+            given:`Keq = ${Keq}\n`+rxn.lab.map((l,i)=>`[${l}] = ${c[i]} M`).join('\n'),
+            answer:Q,unit:'(Q value)',
+            steps:[`Q = ${rxn.expr}`,
+                `Q = ${Q.toFixed(4)}`,
+                dirExp,
+                `Reaction proceeds ${dir}`],
+            hint:`Calculate Q using current concentrations (same formula as Keq). Compare Q to Keq: Q < Keq → forward, Q > Keq → reverse.`};
+    }
+
+    // Ksp compounds: 1:1 (AB type) and 1:2 (AB₂ type)
+    const ksp11=[
+        {name:'zinc carbonate',f:'ZnCO₃',ions:'Zn²⁺ + CO₃²⁻',Ksp:1.46e-9},
+        {name:'calcium sulfate',f:'CaSO₄',ions:'Ca²⁺ + SO₄²⁻',Ksp:5.1e-5},
+        {name:'zinc sulfite',f:'ZnSO₃',ions:'Zn²⁺ + SO₃²⁻',Ksp:7.50e-9},
+        {name:'copper(II) carbonate',f:'CuCO₃',ions:'Cu²⁺ + CO₃²⁻',Ksp:1.4e-10},
+        {name:'silver chloride',f:'AgCl',ions:'Ag⁺ + Cl⁻',Ksp:1.77e-10},
+        {name:'manganese(II) carbonate',f:'MnCO₃',ions:'Mn²⁺ + CO₃²⁻',Ksp:2.24e-11}
+    ];
+    const ksp12=[
+        {name:'barium chloride',f:'BaCl₂',ions:'Ba²⁺ + 2Cl⁻',Ksp:2.4e-4,type:'AB2'},
+        {name:'lead(II) chloride',f:'PbCl₂',ions:'Pb²⁺ + 2Cl⁻',Ksp:1.17e-5,type:'AB2'},
+        {name:'copper(II) chloride',f:'CuCl₂',ions:'Cu²⁺ + 2Cl⁻',Ksp:1.57e-6,type:'AB2'},
+        {name:'barium fluoride',f:'BaF₂',ions:'Ba²⁺ + 2F⁻',Ksp:1.84e-7,type:'AB2'}
+    ];
+
+    if(t==='ksp_from_sol'){
+        const use12=Math.random()<0.4;
+        if(use12){
+            const cpd=ksp12[Math.floor(Math.random()*ksp12.length)];
+            // solubility s mol/L → [Ba²⁺]=s, [Cl⁻]=2s → Ksp=s(2s)²=4s³
+            const s=parseFloat((cpd.Ksp/4)**(1/3)*r(0.85,1.15,3));
+            const Ksp=4*s**3;
+            return{question:`${cpd.name[0].toUpperCase()+cpd.name.slice(1)} (${cpd.f}) dissolves in water at 25°C with a solubility of ${s.toExponential(2)} mol/L. Calculate Ksp.`,
+                given:`Solubility of ${cpd.f} = ${s.toExponential(2)} mol/L\n${cpd.f} ⇌ ${cpd.ions}`,
+                answer:Ksp,unit:'',
+                steps:[`Dissolution: ${cpd.f} ⇌ ${cpd.ions}`,
+                    `If solubility = s = ${s.toExponential(3)} mol/L`,
+                    `[${cpd.ions.split('+')[0].trim()}] = s = ${s.toExponential(3)} M`,
+                    `[${cpd.ions.split('+')[1].trim()}] = 2s = ${(2*s).toExponential(3)} M`,
+                    `Ksp = [A²⁺][B⁻]² = (s)(2s)² = 4s³ = 4 × (${s.toExponential(3)})³ = ${Ksp.toExponential(3)}`],
+                hint:`Set up the dissociation. If solubility = s, the 2:1 ion has concentration 2s. Ksp = s × (2s)² = 4s³.`};
+        }
+        const cpd=ksp11[Math.floor(Math.random()*ksp11.length)];
+        const s=parseFloat(Math.sqrt(cpd.Ksp)*r(0.85,1.15,3));
+        const Ksp=s*s;
+        return{question:`${cpd.name[0].toUpperCase()+cpd.name.slice(1)} (${cpd.f}) has a solubility of ${s.toExponential(2)} mol/L at 22°C. Calculate Ksp.`,
+            given:`Solubility of ${cpd.f} = ${s.toExponential(2)} mol/L\n${cpd.f} ⇌ ${cpd.ions}`,
+            answer:Ksp,unit:'',
+            steps:[`Dissolution: ${cpd.f} ⇌ ${cpd.ions}`,
+                `[${cpd.ions.split('+')[0].trim()}] = ${s.toExponential(3)} M`,
+                `[${cpd.ions.split('+')[1].trim()}] = ${s.toExponential(3)} M`,
+                `Ksp = (${s.toExponential(3)})(${s.toExponential(3)}) = (${s.toExponential(3)})² = ${Ksp.toExponential(3)}`],
+            hint:`For a 1:1 salt (AB ⇌ A⁺ + B⁻): both ions equal the solubility s. Ksp = s².`};
+    }
+    if(t==='sol_from_ksp'){
+        const use12=Math.random()<0.4;
+        if(use12){
+            const cpd=ksp12[Math.floor(Math.random()*ksp12.length)];
+            const s=(cpd.Ksp/4)**(1/3);
+            return{question:`The Ksp for ${cpd.name} (${cpd.f}) is ${cpd.Ksp.toExponential(2)}. Calculate the solubility of ${cpd.f} in mol/L.`,
+                given:`Ksp(${cpd.f}) = ${cpd.Ksp.toExponential(2)}\n${cpd.f} ⇌ ${cpd.ions}`,
+                answer:s,unit:'mol/L',
+                steps:[`Let solubility = s mol/L`,
+                    `${cpd.f} ⇌ ${cpd.ions}`,
+                    `[A²⁺] = s, [B⁻] = 2s`,
+                    `Ksp = (s)(2s)² = 4s³`,
+                    `s = (Ksp/4)^(1/3) = (${cpd.Ksp.toExponential(2)}/4)^(1/3) = ${s.toExponential(3)} mol/L`],
+                hint:`For AB₂ salts: Ksp = 4s³ → s = (Ksp/4)^(1/3).`};
+        }
+        const cpd=ksp11[Math.floor(Math.random()*ksp11.length)];
+        const s=Math.sqrt(cpd.Ksp);
+        return{question:`The Ksp for ${cpd.name} (${cpd.f}) is ${cpd.Ksp.toExponential(2)}. Calculate the solubility of ${cpd.f} in mol/L.`,
+            given:`Ksp(${cpd.f}) = ${cpd.Ksp.toExponential(2)}\n${cpd.f} ⇌ ${cpd.ions}`,
+            answer:s,unit:'mol/L',
+            steps:[`Let solubility = s mol/L`,
+                `${cpd.f} ⇌ ${cpd.ions}`,
+                `Ksp = s × s = s²`,
+                `s = √(Ksp) = √(${cpd.Ksp.toExponential(2)}) = ${s.toExponential(3)} mol/L`],
+            hint:`For a 1:1 salt: Ksp = s² → s = √Ksp.`};
+    }
+    if(t==='gibbs'){
+        const scenarios=[
+            {dH:-285,dS:-163,T:298,desc:'combustion of methanol'},
+            {dH:-44,dS:-122,T:298,desc:'formation of ammonia (Haber process)'},
+            {dH:+92,dS:+198,T:1000,desc:'decomposition of ammonia'},
+            {dH:-572,dS:-11,T:500,desc:'oxidation of sulfur dioxide'},
+            {dH:+178,dS:+160,T:298,desc:'decomposition of calcium carbonate'},
+            {dH:-890,dS:-243,T:298,desc:'combustion of methane'},
+            {dH:+100,dS:+300,T:450,desc:'endothermic decomposition'}
+        ];
+        const sc=scenarios[Math.floor(Math.random()*scenarios.length)];
+        // add small random variation
+        const dH=sc.dH+Math.round((Math.random()-0.5)*20);
+        const dS=sc.dS+Math.round((Math.random()-0.5)*20);
+        const T=sc.T+Math.round((Math.random()-0.5)*50/10)*10;
+        const dG=dH-T*(dS/1000); // dS in J/mol·K → kJ: dG=dH(kJ)-T*dS(kJ/K)
+        const spont=dG<0?'spontaneous (−ΔG)':'non-spontaneous (+ΔG)';
+        return{question:`Calculate ΔG for a reaction where ΔH = ${dH} kJ/mol and ΔS = ${dS} J/mol·K at T = ${T} K. Is the reaction spontaneous?`,
+            given:`ΔH = ${dH} kJ/mol\nΔS = ${dS} J/mol·K = ${(dS/1000).toFixed(3)} kJ/mol·K\nT = ${T} K\nΔG = ΔH − TΔS`,
+            answer:dG,unit:'kJ/mol',
+            steps:[`Convert ΔS: ${dS} J/mol·K ÷ 1000 = ${(dS/1000).toFixed(3)} kJ/mol·K`,
+                `ΔG = ΔH − TΔS = ${dH} − (${T} × ${(dS/1000).toFixed(3)})`,
+                `ΔG = ${dH} − (${(T*dS/1000).toFixed(2)}) = ${dG.toFixed(2)} kJ/mol`,
+                `ΔG ${dG<0?'< 0':'> 0'} → reaction is ${spont}`],
+            hint:`ΔG = ΔH − TΔS. Remember to convert ΔS from J to kJ (÷ 1000) before subtracting. Negative ΔG = spontaneous.`};
+    }
+    // ice_simple: basic ICE table with a named reaction (A⇌B style simplified)
+    const Keq=parseFloat(r(0.01,4,4));
+    const init=parseFloat(r(0.5,2,2));
+    const x=Keq*init/(1+Keq);
+    return{question:`For the reaction N₂(g) + O₂(g) ⇌ 2NO(g), Keq = ${Keq}.\nIf [N₂]₀ = ${init} M, [O₂]₀ = ${init} M, and [NO]₀ = 0, find [NO] at equilibrium.`,
+        given:`Keq = ${Keq}\n[N₂]₀ = [O₂]₀ = ${init} M\n[NO]₀ = 0 M`,
+        answer:2*x,unit:'M',
+        steps:[`ICE table: let x = moles/L that react`,
+            `[N₂] = ${init}−x, [O₂] = ${init}−x, [NO] = 2x`,
+            `Keq = (2x)²/((${init}−x)(${init}−x)) = ${Keq}`,
+            `Simplify: 4x²/(${init}−x)² = ${Keq}`,
+            `2x/(${init}−x) = √${Keq} = ${Math.sqrt(Keq).toFixed(4)}`,
+            `x = ${x.toFixed(4)} M → [NO] = 2x = ${(2*x).toFixed(4)} M`],
+        hint:`Set up ICE table. Write Keq expression with exponents from coefficients. Solve for x.`};
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
