@@ -300,7 +300,8 @@ for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s
 
 let unit=null,diff='basic',prob=null,hinted=false,seenKeys={},isReview=false;
 let stats={a:0,c:0,byUnit:{}};
-let wrongProbs={};
+let wrongProbs={};   // {[unit]: [{prob, hits}]}
+let lastReviewKey={}; // {[unit]: probKey} — prevents back-to-back identical review
 let quiz={active:false,target:0,count:0,correct:0,wrongs:[]};
 let streak={unit:null,count:0};
 try{const _s=JSON.parse(localStorage.getItem('chemStats'));if(_s)stats=_s;}catch(e){}
@@ -356,7 +357,12 @@ function generateProblem(){
 
     // Spaced repetition: 30% chance to resurface a wrong problem
     if(wrongProbs[unit]?.length>0 && Math.random()<0.3){
-        prob=wrongProbs[unit][Math.floor(Math.random()*wrongProbs[unit].length)];
+        const pool=wrongProbs[unit];
+        // Avoid the same question back-to-back if alternatives exist
+        const candidates=pool.length>1?pool.filter(e=>probKey(e.prob)!==lastReviewKey[unit]):pool;
+        const entry=(candidates.length?candidates:pool)[Math.floor(Math.random()*(candidates.length||pool.length))];
+        prob=entry.prob;
+        lastReviewKey[unit]=probKey(prob);
         isReview=true;
     } else {
         if(!seenKeys[unit]) seenKeys[unit]=new Set();
@@ -2484,12 +2490,24 @@ function checkAnswer(){
     if(ok){if(streak.unit===unit)streak.count++;else streak={unit,count:1,shown:false};}
     else{streak={unit,count:0,shown:false};}
     // Spaced repetition bookkeeping
+    let reviewNote='';
     if(!ok){
         if(!wrongProbs[unit])wrongProbs[unit]=[];
-        if(!wrongProbs[unit].find(p=>probKey(p)===probKey(prob)))wrongProbs[unit].push(prob);
+        const existing=wrongProbs[unit].find(e=>probKey(e.prob)===probKey(prob));
+        if(!existing)wrongProbs[unit].push({prob,hits:0});
+        else existing.hits=0; // reset progress on wrong answer
         if(wrongProbs[unit].length>15)wrongProbs[unit].shift();
     } else if(isReview){
-        wrongProbs[unit]=wrongProbs[unit].filter(p=>probKey(p)!==probKey(prob));
+        const entry=wrongProbs[unit]?.find(e=>probKey(e.prob)===probKey(prob));
+        if(entry){
+            entry.hits++;
+            if(entry.hits>=3){
+                wrongProbs[unit]=wrongProbs[unit].filter(e=>probKey(e.prob)!==probKey(prob));
+                reviewNote='<p style="color:var(--ok);margin-top:8px;font-family:\'JetBrains Mono\',monospace;font-size:.8rem;">✅ Cleared from review queue!</p>';
+            } else {
+                reviewNote=`<p style="color:var(--yellow);margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:.8rem;">📌 Review progress: ${entry.hits}/3 — keep it up!</p>`;
+            }
+        }
     }
     // Quiz mode
     if(quiz.active){
@@ -2503,7 +2521,7 @@ function checkAnswer(){
     const fb=document.getElementById('feedback');
     const ans=Math.abs(prob.answer)<1e-4&&prob.answer!==0?prob.answer.toExponential(4):parseFloat(prob.answer.toFixed(4));
     fb.className='feedback '+(ok?'correct':'incorrect');
-    fb.innerHTML=`<div class="fb-title">${ok?'✓ Correct!':'✗ Not quite'}</div>${!ok?`<p>Your answer: ${ua} ${prob.unit}</p>`:''}<p>Correct answer: ${ans} ${chemFmt(prob.unit)}</p><div class="solution"><h4>Solution Steps:</h4>${prob.steps.map(s=>`<div class="step">${chemFmt(s)}</div>`).join('')}</div>`;
+    fb.innerHTML=`<div class="fb-title">${ok?'✓ Correct!':'✗ Not quite'}</div>${!ok?`<p>Your answer: ${ua} ${prob.unit}</p>`:''}<p>Correct answer: ${ans} ${chemFmt(prob.unit)}</p><div class="solution"><h4>Solution Steps:</h4>${prob.steps.map(s=>`<div class="step">${chemFmt(s)}</div>`).join('')}</div>${reviewNote}`;
 }
 
 function showHint(){
@@ -2554,9 +2572,11 @@ function dontKnow(){
     updateStats();
     playSound(false);
     streak={unit,count:0,shown:false};
-    // Add to wrong pool
+    // Add to wrong pool (reset hits since they didn't answer it)
     if(!wrongProbs[unit])wrongProbs[unit]=[];
-    if(!wrongProbs[unit].find(p=>probKey(p)===probKey(prob)))wrongProbs[unit].push(prob);
+    const _ex=wrongProbs[unit].find(e=>probKey(e.prob)===probKey(prob));
+    if(!_ex)wrongProbs[unit].push({prob,hits:0});
+    else _ex.hits=0;
     if(wrongProbs[unit].length>15)wrongProbs[unit].shift();
     // Quiz mode
     if(quiz.active){
