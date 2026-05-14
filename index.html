@@ -2520,7 +2520,6 @@ function checkAnswer(){
     }
     // Difficulty suggestion after 5-in-a-row
     if(ok&&streak.count>=5&&diff!=='advanced'&&!streak.shown){streak.shown=true;showDiffSuggest();}
-    const fb=document.getElementById('feedback');
     const ans=Math.abs(prob.answer)<1e-4&&prob.answer!==0?prob.answer.toExponential(4):parseFloat(prob.answer.toFixed(4));
     fb.className='feedback '+(ok?'correct':'incorrect');
     fb.innerHTML=`<div class="fb-title">${ok?'✓ Correct!':'✗ Not quite'}</div>${!ok?`<p>Your answer: ${ua} ${prob.unit}</p>`:''}<p>Correct answer: ${ans} ${chemFmt(prob.unit)}</p><div class="solution"><h4>Solution Steps:</h4>${prob.steps.map(s=>`<div class="step">${chemFmt(s)}</div>`).join('')}</div>${reviewNote}`;
