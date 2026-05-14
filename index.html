@@ -2334,10 +2334,10 @@ function genReactions(){
             {fuel:'C₄H₁₀ (butane)',CO2:4,eq:'2C₄H₁₀ + 13O₂ → 8CO₂ + 10H₂O (1 mol → 4 mol CO₂)'},
         ];
         const f=fuels[Math.floor(Math.random()*fuels.length)];
-        return{question:`In the complete combustion of ${f.fuel}, how many moles of CO₂ are produced per mole of fuel?\n\n${f.eq}`,
-            given:`Balanced equation: ${f.eq}`,answer:f.CO2,unit:'mol CO₂ per mol fuel',
-            steps:[`Complete combustion: CₓHᵧ + O₂ → CO₂ + H₂O`,`For ${f.fuel}: ${f.CO2} C atoms → ${f.CO2} mol CO₂`],
-            hint:`In complete combustion, each C atom becomes one CO₂. Count the carbons in the fuel formula.`};
+        return{question:`In the complete combustion of ${f.fuel}, how many moles of CO₂ are produced per mole of fuel?`,
+            given:`Fuel: ${f.fuel}`,answer:f.CO2,unit:'mol CO₂ per mol fuel',
+            steps:[`Complete combustion: CₓHᵧ + O₂ → CO₂ + H₂O`,`Count the C atoms in ${f.fuel} → ${f.CO2} C atoms → ${f.CO2} mol CO₂`,`Balanced: ${f.eq}`],
+            hint:`In complete combustion, each C atom becomes one CO₂. Count the number of carbons in the fuel formula.`};
     }
     return{question:'Classify: 2H₂ + O₂ → 2H₂O\n\n1 = Synthesis\n2 = Decomposition\n3 = Single Replacement\n\nEnter the number.',
         given:'Two reactants → one product',answer:1,unit:'(= Synthesis)',
