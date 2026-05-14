@@ -2378,10 +2378,7 @@ document.addEventListener('keydown',e=>{
     const fb=document.getElementById('feedback');
     const answered=fb.classList.contains('correct')||fb.classList.contains('incorrect');
     if(answered){ generateProblem(); return; }
-    if(document.getElementById('answerRow').style.display!=='none'
-       && document.activeElement===document.getElementById('answerInput')){
-        checkAnswer();
-    }
+    if(document.getElementById('answerRow').style.display!=='none') checkAnswer();
 });
 </script>
 </body>
