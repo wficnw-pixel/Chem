@@ -2373,7 +2373,7 @@ function updateStats(){
     document.getElementById('sAccuracy').textContent=stats.a>0?(stats.c/stats.a*100).toFixed(0)+'%':'—';
 }
 
-document.addEventListener('keydown',e=>{
+document.addEventListener('keyup',e=>{
     if(e.key!=='Enter') return;
     const fb=document.getElementById('feedback');
     const answered=fb.classList.contains('correct')||fb.classList.contains('incorrect');
