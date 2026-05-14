@@ -136,6 +136,18 @@
         .step { margin:8px 0; padding-left:16px; border-left:3px solid var(--border); font-size:.95rem; }
         .hint-box { background:rgba(255,215,0,.08); border:2px solid var(--yellow); border-radius:10px; padding:14px; font-size:.95rem; }
 
+        .mc-options { display:flex; flex-direction:column; gap:8px; }
+        .mc-btn {
+            padding:13px 18px; background:var(--card); border:2px solid var(--border);
+            border-radius:10px; color:var(--text); font-family:'JetBrains Mono',monospace;
+            font-size:.85rem; font-weight:600; cursor:pointer; transition:all .2s;
+            text-align:left; white-space:normal; word-break:break-word;
+        }
+        .mc-btn:hover:not(:disabled) { border-color:var(--blue); background:rgba(74,158,255,.1); transform:translateX(3px); }
+        .mc-btn:disabled { opacity:.65; cursor:default; transform:none; }
+        .mc-btn.mc-correct { border-color:var(--ok); background:rgba(0,255,136,.12); color:var(--ok); }
+        .mc-btn.mc-wrong { border-color:var(--err); background:rgba(255,68,102,.12); color:var(--err); }
+
         /* ── MOBILE ── */
         @media(max-width:700px){
             html,body{ overflow:auto; }
@@ -200,7 +212,8 @@
                 </div>
             </div>
             <div class="problem-box" id="problemBox"></div>
-            <div class="answer-row">
+            <div class="mc-options" id="mcOptions" style="display:none"></div>
+            <div class="answer-row" id="answerRow">
                 <input type="number" id="answerInput" placeholder="Enter your answer…" step="any">
                 <button class="btn" onclick="checkAnswer()">Submit</button>
             </div>
@@ -257,7 +270,35 @@ function generateProblem(){
     document.getElementById('answerInput').value='';
     const gens={measurements:genMeasure,matter:genMatter,moles:genMoles,stoichiometry:genStoich,gases:genGases,solutions:genSolutions,thermochemistry:genThermo,equilibrium:genEquil,acids:genAcids,redox:genRedox,nuclear:genNuclear,nomenclature:genNomencl,electrons:genElectrons,bonding:genBonding,states:genStates,periodic:genPeriodic,reactions:genReactions};
     prob=gens[unit]();
-    document.getElementById('problemBox').innerHTML=`<div>${chemFmt(prob.question)}</div>`;
+
+    const firstOpt=prob.question.search(/\n\s*\d+\s*=/);
+    if(firstOpt>=0){
+        const preamble=prob.question.substring(0,firstOpt).trim();
+        document.getElementById('problemBox').innerHTML=`<div>${chemFmt(preamble)}</div>`;
+        const opts=[...prob.question.matchAll(/\n(\d+)\s*=\s*([^\n]+)/g)].map(m=>({n:+m[1],label:m[2].trim()}));
+        const mcDiv=document.getElementById('mcOptions');
+        mcDiv.style.display='flex';
+        mcDiv.innerHTML=opts.map(o=>`<button class="mc-btn" onclick="selectMC(${o.n},this)">${o.n}.&nbsp; ${chemFmt(o.label)}</button>`).join('');
+        document.getElementById('answerRow').style.display='none';
+    } else {
+        document.getElementById('problemBox').innerHTML=`<div>${chemFmt(prob.question)}</div>`;
+        document.getElementById('mcOptions').style.display='none';
+        document.getElementById('answerRow').style.display='flex';
+    }
+}
+
+function selectMC(n,btn){
+    const btns=document.querySelectorAll('.mc-btn');
+    btns.forEach(b=>b.disabled=true);
+    document.getElementById('answerInput').value=n;
+    const tol=Math.max(Math.abs(prob.answer)*0.02,0.001);
+    const ok=Math.abs(n-prob.answer)<=tol;
+    btns.forEach(b=>{
+        const bn=parseInt(b.textContent);
+        if(Math.abs(bn-prob.answer)<=tol) b.classList.add('mc-correct');
+    });
+    if(!ok) btn.classList.add('mc-wrong');
+    checkAnswer();
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
