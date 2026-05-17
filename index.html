@@ -81,6 +81,14 @@
             font-family:'JetBrains Mono',monospace; font-size:0.8rem; text-transform:uppercase;
             letter-spacing:2px; color:var(--cyan);
         }
+        .unit-ws-ref {
+            font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--muted);
+            margin-top:3px; letter-spacing:0.5px;
+        }
+        .unit-ws-ref a {
+            color:var(--yellow); text-decoration:none; opacity:0.85;
+        }
+        .unit-ws-ref a:hover { opacity:1; text-decoration:underline; }
         .diff-row { display:flex; gap:8px; }
         .diff-btn {
             padding:7px 16px; background:var(--card); border:2px solid var(--border);
@@ -245,7 +253,10 @@
         </div>
         <div id="problemUI" style="display:none; flex-direction:column; gap:16px;">
             <div class="unit-header">
-                <div class="unit-title-lbl" id="unitLbl"></div>
+                <div>
+                    <div class="unit-title-lbl" id="unitLbl"></div>
+                    <div class="unit-ws-ref" id="unitWsRef"></div>
+                </div>
                 <div class="diff-row">
                     <button class="diff-btn active" data-diff="basic">Basic</button>
                     <button class="diff-btn" data-diff="intermediate">Intermediate</button>
@@ -306,6 +317,26 @@ let quiz={active:false,target:0,count:0,correct:0,wrongs:[]};
 let streak={unit:null,count:0};
 try{const _s=JSON.parse(localStorage.getItem('chemStats'));if(_s){stats=_s;if(!stats.byUnit)stats.byUnit={};}}catch(e){}
 const names={measurements:'Measurements',matter:'Matter',moles:'The Mole',stoichiometry:'Stoichiometry',gases:'Gases',solutions:'Solutions',thermochemistry:'Thermochemistry',equilibrium:'Equilibrium',acids:'Acids & Bases',redox:'Redox & Electrochem',nuclear:'Nuclear Chemistry',nomenclature:'Nomenclature',electrons:'Electrons & Light',bonding:'Bonding',states:'States of Matter',periodic:'Periodic Trends',reactions:'Reactions'};
+// Packet worksheet references — shown in unit header so students know what to review
+const worksheets={
+    matter:       'Packet: Module 2 — WS 1–4',
+    measurements: 'Packet: Module 1 — WS 1–4',
+    nuclear:      'Packet: Module 3 — WS 1–3',
+    electrons:    'Packet: Module 4 — Atomic Theory WS 1–4',
+    periodic:     'Packet: Module 5 — WS 1–6',
+    bonding:      'Packet: Bonding — WS 1–9',
+    nomenclature: 'Packet: Nomenclature — WS 1–3',
+    moles:        'Packet: Mole Worksheet Keys',
+    reactions:    'Packet: Stoichiometry — WS 1–5',
+    stoichiometry:'Packet: Stoichiometry — WS 1–5',
+    gases:        'Packet: Module 11 — WS 1–7',
+    states:       'Packet: Module 12 — WS 1–4',
+    solutions:    'Packet: Module 13 — WS 1–6',
+    thermochemistry:'Packet: Module 14 — WS 1–7',
+    equilibrium:  'Packet: Modules 15&16 — WS 1–5',
+    acids:        'Packet: Module 17 — WS 1–4',
+    redox:        'Packet: RedOx — WS 1–3',
+};
 
 // Add accuracy badges to sidebar buttons
 document.querySelectorAll('.unit-btn').forEach(b=>{
@@ -318,6 +349,8 @@ document.querySelectorAll('.unit-btn').forEach(b=>{
         document.getElementById('placeholder').style.display='none';
         document.getElementById('problemUI').style.display='flex';
         document.getElementById('unitLbl').textContent='// '+names[unit];
+        const wsRef=document.getElementById('unitWsRef');
+        wsRef.textContent=worksheets[unit]||'';
         document.getElementById('diffSuggest').style.display='none';
         generateProblem();
     });
